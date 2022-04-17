@@ -1,0 +1,32 @@
+{
+    "name": "sdpmlab/anser",
+    "description": "PHP microservice orchestration pattern library.",
+    "keywords": [
+		"php",
+		"orchestration",
+        "saga"
+	],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "SDPM-lab",
+            "homepage": "https://github.com/SDPM-lab"
+        },
+        {
+            "name": "MonkenWu",
+            "homepage": "https://github.com/monkenWu"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php" : "^7.4",
+        "sdpmlab/anser-action": "^0.3.0"
+    },
+    "autoload": {
+		"psr-4": {
+            "SDPMlab\\Anser\\Orchestration": "src/Orchestration",
+            "SDPMlab\\Anser\\Exception": "src/Exception"
+		}
+	}
+}
