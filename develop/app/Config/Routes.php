@@ -33,6 +33,7 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
+$routes->get('/redis/index', 'Redis::index');
 
 $routes->group(
     'api/v1',
@@ -58,6 +59,7 @@ $routes->group(
         //Fail APIs
         $routes->get('fail','Fail::awayls429');
         $routes->get('fail/(:num)','Fail::awayls500/$1');
+
     }
 );
 
