@@ -1,31 +1,30 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\V1;
 
 use App\Controllers\BaseController;
-use Predis\Client;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 
 class Redis extends BaseController
 {
     /**
-     * Redis client;
+     * The redis of orchestrator controller instance.
      *
-     * @var Client
+     * @var CacheHandlerInterface
      */
     protected $client;
 
     public function __construct()
     {
-        $this->client = new Client([
+        $this->client = CacheFactory::initCacheDriver('redis', [
             'scheme' => 'tcp',
             'host'   => 'service_redis',
             'port'   => '6379'
-        ]);
+        ], null);
     }
 
     public function index()
     {
-        $this->client->set('foo', 'bar');
-        dd($this->client->get('foo'));
+        var_dump($this->client->getOrchestratorStatus('2'));
     }
 }

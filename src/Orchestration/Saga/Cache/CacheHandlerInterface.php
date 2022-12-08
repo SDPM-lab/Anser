@@ -4,8 +4,6 @@ namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 
 interface CacheHandlerInterface
 {
-    public function initCacheDriver();
-
     /**
      * Initialize the orchestrator status into the cache.
      */

@@ -4,10 +4,8 @@ namespace SDPMlab\Anser\Orchestration\Saga\Cache\Redis;
 
 use SDPMlab\Anser\Orchestration\Saga\Cache\BaseCacheHandler;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
-
-use Redis;
-use Exception;
-use RedisException;
+use Predis\Client;
+use Predis\ClientException;
 
 class RedisHandler extends BaseCacheHandler
 {
@@ -17,50 +15,44 @@ class RedisHandler extends BaseCacheHandler
         'password' => null,
         'port'     => 6379,
         'timeout'  => 0,
-        'database' => 0,
     ];
 
     protected $option = [];
 
+    protected $path = '';
+
     /**
-     * Redis conntion.
+     * The client of Redis.
      *
-     * @var Redis
+     * @var client
      */
-    protected $redis;
+    protected $client;
 
-    public function __construct(BaseCacheHandler $baseCacheHandler)
+    public function __construct($config = null, $option = null)
     {
-        $this->config = $baseCacheHandler->config;
-        $this->option = $baseCacheHandler->option;
-    }
-
-    public function __destruct()
-    {
-        if (isset($this->redis)) {
-            $this->redis->close();
-        }
-    }
-
-    public function initCacheDriver()
-    {
-        $this->redis = new Redis();
-
         try {
-            if (!$this->redis->connect($this->config["hostname"], $this->config["port"])) {
-                throw new Exception("Redis connection failed.");
+            if (!is_null($option)) {
+                $this->option = $option;
+
+                if (is_string($config)) {
+                    $config = explode(':', $config);
+                    $config["host"] = str_replace("/", "", $config["host"]);
+                }
+
+                if (is_array($config)) {
+                    $this->config = $config;
+                }
+
+                $this->client = new Client($config ?? $this->config, $option);
+            } else {
+                $this->client = new Client($config ?? $config);
             }
 
-            if (!$this->redis->auth($this->config["password"])) {
-                throw new Exception("Redis authentication failed.");
-            }
-
-            if (!$this->redis->select($this->config["database"])) {
-                throw new Exception("Redis select database failed.");
-            }
-        } catch (RedisException $e) {
-            throw new Exception('RedisException occurred with message (' . $e->getMessage() . ').');
+            return $this;
+        } catch (ClientException $e) {
+            var_dump($e->getMessage());
         }
+        
     }
 
     public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface {
