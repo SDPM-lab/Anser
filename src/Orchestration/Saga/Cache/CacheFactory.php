@@ -40,7 +40,7 @@ class CacheFactory
             self::$driver = new self::$cacheMapping[$cacheDriver]($config, $option);
             return self::$driver;
         } else {
-            RedisException::forCacheDriverNotFound($driver);
+            throw RedisException::forCacheDriverNotFound($driver);
         }
     }
 }

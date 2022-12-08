@@ -50,7 +50,7 @@ class RedisHandler extends BaseCacheHandler
 
             return $this;
         } catch (ClientException $e) {
-            var_dump($e->getMessage());
+            throw new ClientException($e->getMessage());
         }
         
     }
