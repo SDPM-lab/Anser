@@ -10,8 +10,8 @@ use Predis\ClientException;
 class RedisHandler extends BaseCacheHandler
 {
     protected $config = [
+        'scheme'   => 'tcp',
         'host'     => '127.0.0.1',
-        'password' => null,
         'port'     => 6379,
         'timeout'  => 0,
     ];
@@ -30,21 +30,23 @@ class RedisHandler extends BaseCacheHandler
     public function __construct($config = null, $option = null)
     {
         try {
+            if (is_string($config)) {
+                $configArr = explode(':', $config);
+
+                $this->config["scheme"] = $configArr[0];
+                $this->config["host"]   = str_replace("/", "", $configArr[1]);
+                $this->config["port"]   = $configArr[2];
+            }
+
+            if (is_array($config)) {
+                $this->config = $config;
+            }
+
             if (!is_null($option)) {
                 $this->option = $option;
-
-                if (is_string($config)) {
-                    $config = explode(':', $config);
-                    $config["host"] = str_replace("/", "", $config["host"]);
-                }
-
-                if (is_array($config)) {
-                    $this->config = $config;
-                }
-
                 $this->client = new Client($config ?? $this->config, $option);
             } else {
-                $this->client = new Client($config ?? $config);
+                $this->client = new Client($config ?? $this->config);
             }
 
             return $this;
