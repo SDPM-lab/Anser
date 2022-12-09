@@ -58,6 +58,8 @@ $routes->group(
         //Fail APIs
         $routes->get('fail','Fail::awayls429');
         $routes->get('fail/(:num)','Fail::awayls500/$1');
+
+        $routes->get('redis/index', 'Redis::index');
     }
 );
 

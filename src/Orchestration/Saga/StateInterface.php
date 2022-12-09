@@ -11,5 +11,4 @@ interface StateInterface
     public function update(int $state);
     public function getNowStep(): StepInterface;
     public function getNowState(): int;
-
 }

@@ -125,3 +125,6 @@ nb-configuration.xml
 /phpunit*.xml
 /.phpunit.*.cache
 
+# The fixer and rector
+/.php-cs-fixer.cache
+/rector.php
