@@ -9,7 +9,6 @@ use Predis\ClientException;
 
 class RedisHandler extends BaseCacheHandler
 {
-
     protected $config = [
         'host'     => '127.0.0.1',
         'password' => null,
@@ -52,10 +51,10 @@ class RedisHandler extends BaseCacheHandler
         } catch (ClientException $e) {
             throw new ClientException($e->getMessage());
         }
-        
     }
 
-    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface {
+    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface
+    {
         return $this;
     }
 

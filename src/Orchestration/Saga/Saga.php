@@ -10,7 +10,6 @@ use SDPMlab\Anser\Orchestration\Saga\SimpleSagaInterface;
 
 class Saga implements SagaInterface
 {
-
     /**
      * 開發者所實作之 SAGA 實體
      *
@@ -148,7 +147,7 @@ class Saga implements SagaInterface
     {
         if (method_exists($this->simpleSagaInstance, $methodName)) {
             $this->compensationMethods[$stepNumber] = $methodName;
-        } else {            
+        } else {
             //拋出例外
         }
     }

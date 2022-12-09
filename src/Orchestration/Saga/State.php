@@ -8,12 +8,11 @@ use SDPMlab\Anser\Orchestration\StepInterface;
 
 class State implements StateInterface
 {
-
-    const start = 0;
-    const stepProcessing = 1;
-    const stepCompensating = 2;
-    const compensated = 3;
-    const end = 4;
+    public const start = 0;
+    public const stepProcessing = 1;
+    public const stepCompensating = 2;
+    public const compensated = 3;
+    public const end = 4;
 
     protected int $nowState;
     protected ?StepInterface $nowStep = null;
@@ -21,20 +20,21 @@ class State implements StateInterface
 
     public function __construct(
         OrchestratorInterface $runtimeOrch
-    )
-    {
+    ) {
         $this->runtimeOrch = $runtimeOrch;
     }
 
     public function setStepProceeesing(StepInterface $step)
     {
-        if(is_null($this->nowStep)) $this->nowState = State::stepProcessing;
+        if (is_null($this->nowStep)) {
+            $this->nowState = State::stepProcessing;
+        }
         $this->nowStep = $step;
     }
 
     public function setStepCompensating(StepInterface $step)
     {
-        $this->nowState = State::stepCompensating; 
+        $this->nowState = State::stepCompensating;
         $this->nowStep = $step;
     }
 

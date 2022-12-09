@@ -16,11 +16,11 @@ class Redis extends BaseController
 
     public function __construct()
     {
-        $this->client = CacheFactory::initCacheDriver('redis', [
+        $this->client = CacheFactory::initCacheDriver('wewew', [
             'scheme' => 'tcp',
             'host'   => 'service_redis',
             'port'   => '6379'
-        ], null);
+        ]);
     }
 
     public function index()
