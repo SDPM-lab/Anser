@@ -5,10 +5,12 @@ namespace App\Controllers\V1;
 use App\Controllers\BaseController;
 use stdClass;
 use Zumba\JsonSerializer\JsonSerializer;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
+use SDPMlab\Anser\Orchestration\Orchestrator;
 
 class Serialize extends BaseController
 {
-    public function index()
+    public function testJsonSerializer()
     {
         $toBeSerialized = new stdClass();
         $toBeSerialized->data = [1, 2, 3];

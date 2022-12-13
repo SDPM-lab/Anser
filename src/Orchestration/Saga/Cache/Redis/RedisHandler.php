@@ -29,6 +29,8 @@ class RedisHandler extends BaseCacheHandler
 
     public function __construct($config = null, $option = null)
     {
+        parent::__construct();
+        
         try {
             if (is_string($config)) {
                 $configArr = explode(':', $config);

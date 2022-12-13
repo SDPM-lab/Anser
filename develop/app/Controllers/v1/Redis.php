@@ -4,6 +4,7 @@ namespace App\Controllers\V1;
 
 use App\Controllers\BaseController;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
+use App\Anser\Orchestrators\UserOrchestrator;
 
 class Redis extends BaseController
 {
@@ -22,5 +23,12 @@ class Redis extends BaseController
     public function index()
     {
         var_dump($this->client->getOrchestratorStatus('2'));
+    }
+
+    public function testCacheSerialize()
+    {
+        $orch = new UserOrchestrator();
+        $serializedOrch = $this->client->serializeOrchestrator($orch);
+        var_dump($serializedOrch);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 
+use SDPMlab\Anser\Orchestration\OrchestratorInterface;
+
 interface CacheHandlerInterface
 {
     /**
@@ -23,15 +25,17 @@ interface CacheHandlerInterface
      * Serialize the meta data of orchestrator,
      * and get the serialized orchestratorNumber
      *
-     * @return string $orchestratorNumber
+     * @param OrchestratorInterface $orchestrator
+     * @return string
      */
-    public function serializeOrchestrator(array $orchestratorData): string;
+    public function serializeOrchestrator(OrchestratorInterface $orchestrator): string;
 
     /**
      * Using the serialized orchestratorNumber to unserialize,
      * and get the original orchestrator data.
      *
-     * @return array $orchestratorData
+     * @param string $orchestratorNumber
+     * @return OrchestratorInterface
      */
-    public function unserializeOrchestrator(string $orchestratorNumber): array;
+    public function unserializeOrchestrator(string $orchestratorNumber): OrchestratorInterface;
 }
