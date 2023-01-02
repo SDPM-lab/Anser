@@ -29,7 +29,10 @@ class Redis extends BaseController
     {
         $orch = new UserOrchestrator();
 
-        $serializedOrch = $this->client->serializeOrchestrator($orch);
-        var_dump($this->client->initOrchestrator('1', $serializedOrch));
+        $orchNumber = 16;
+
+        $this->client->initOrchestrator($orchNumber, $orch);
+        $this->client->setOrchestrator($orch);
+        var_dump($this->client->getOrchestrator() == $orch);
     }
 }

@@ -7,30 +7,36 @@ use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 interface CacheHandlerInterface
 {
     /**
-     * Initialize the orchestrator status into the cache.
+     * Initialize the orchestrator into the redis.
      *
      * @param string $orchestratorNumber
-     * @param string $serializedOrchestrator
+     * @param OrchestratorInterface $runtimeOrchestrator
      * @return CacheHandlerInterface
      */
-    public function initOrchestrator(string $orchestratorNumber, string $serializedOrchestrator): CacheHandlerInterface;
+    public function initOrchestrator(string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface;
 
     /**
-     * Set the orchestor status after each step has finished.
+     * Set the runtime orchestor into redis after each step has finished.
      *
-     * @param string $orchestratorNumber
-     * @param string $orchestratorStatus
+     * @param OrchestratorInterface $runtimeOrchestrator
      * @return CacheHandlerInterface
      */
-    public function setOrchestratorStatus(string $orchestratorNumber, string $orchestratorStatus): CacheHandlerInterface;
+    public function setOrchestrator(OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface;
 
     /**
-     * Get the orchestor status by usint orchestratorNumber.
+     * When the steps of orchestrator already finished,
+     * release the store resource of redis.
      *
-     * @param string $orchestratorNumber
-     * @return string
+     * @return boolean
      */
-    public function getOrchestratorStatus(string $orchestratorNumber): string;
+    public function clearOrchestrator(): bool;
+
+    /**
+     * Get the runtime orchestor into redis by using orchestratorNumber.
+     *
+     * @return OrchestratorInterface
+     */
+    public function getOrchestrator(): OrchestratorInterface;
 
     /**
      * Serialize the meta data of orchestrator,

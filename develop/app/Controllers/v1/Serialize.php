@@ -7,6 +7,7 @@ use stdClass;
 use Zumba\JsonSerializer\JsonSerializer;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 use SDPMlab\Anser\Orchestration\Orchestrator;
+use App\Anser\Orchestrators\UserOrchestrator;
 
 class Serialize extends BaseController
 {
@@ -26,13 +27,14 @@ class Serialize extends BaseController
         // $jsonSerializer = new JsonSerializer($superClosure);
         // $serialized = $jsonSerializer->serialize($toBeSerialized);
         // $superClosure = new \SuperClosure\Serializer();
+
+        $userOrch = new UserOrchestrator();
         $jsonSerializer = new JsonSerializer();
 
-        $serialized = $jsonSerializer->serialize($toBeSerialized);
+        $serialized = $jsonSerializer->serialize($userOrch);
         $unserialized = $jsonSerializer->unserialize($serialized);
 
-        var_dump($toBeSerialized == $unserialized);
-        var_dump($unserialized->data);
-        var_dump($unserialized->name);
+        var_dump($unserialized);
+        var_dump($userOrch == $unserialized);
     }
 }

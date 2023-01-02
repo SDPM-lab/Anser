@@ -6,7 +6,6 @@ use SDPMlab\Anser\Exception\AnserException;
 
 class RedisException extends AnserException
 {
-
     /**
      * 初始化　RedisException
      *
@@ -32,4 +31,8 @@ class RedisException extends AnserException
         return new self("此 Redis 路徑格式不正確，請重新輸入。");
     }
 
+    public static function forCacheOrchestratorNumberNotFound($alias): RedisException
+    {
+        return new self("Redis 內找不到此編排器編號- {$alias} ，請重新輸入。");
+    }
 }
