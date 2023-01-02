@@ -4,6 +4,7 @@ namespace SDPMlab\Anser\Orchestration\Saga\Cache\Redis;
 
 use SDPMlab\Anser\Orchestration\Saga\Cache\BaseCacheHandler;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
+use SDPMlab\Anser\Exception\RedisException;
 use Predis\Client;
 use Predis\ClientException;
 
@@ -27,6 +28,20 @@ class RedisHandler extends BaseCacheHandler
      */
     protected $client;
 
+    /**
+     * The key(number) of serialized orchestrator.
+     *
+     * @var string
+     */
+    protected $orchestratorNumber;
+
+    /**
+     * The serialized orchestrator.
+     *
+     * @var string
+     */
+    protected $serializedOrchestrator;
+
     public function __construct($config = null, $option = null)
     {
         parent::__construct();
@@ -34,6 +49,10 @@ class RedisHandler extends BaseCacheHandler
         try {
             if (is_string($config)) {
                 $configArr = explode(':', $config);
+
+                if (count($configArr) !== 3) {
+                    throw RedisException::forCacheFormatError();
+                }
 
                 $this->config["scheme"] = $configArr[0];
                 $this->config["host"]   = str_replace("/", "", $configArr[1]);
@@ -57,8 +76,16 @@ class RedisHandler extends BaseCacheHandler
         }
     }
 
-    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface
+    public function initOrchestrator(string $orchestratorNumber, string $serializedOrchestrator): CacheHandlerInterface
     {
+        $this->orchestratorNumber = $orchestratorNumber;
+
+        if (!is_null($this->client->get($orchestratorNumber))) {
+            throw RedisException::forCacheRepeatOrch($orchestratorNumber);
+        }
+        
+        $this->client->set($orchestratorNumber, $serializedOrchestrator);
+
         return $this;
     }
 

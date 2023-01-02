@@ -17,7 +17,7 @@ class Redis extends BaseController
 
     public function __construct()
     {
-        $this->client = CacheFactory::initCacheDriver('redis', 'tcp://127.0.0.1:6379');
+        $this->client = CacheFactory::initCacheDriver('redis', 'tcp://service_redis:6379');
     }
 
     public function index()
@@ -28,7 +28,8 @@ class Redis extends BaseController
     public function testCacheSerialize()
     {
         $orch = new UserOrchestrator();
+
         $serializedOrch = $this->client->serializeOrchestrator($orch);
-        var_dump($serializedOrch);
+        var_dump($this->client->initOrchestrator('1', $serializedOrch));
     }
 }

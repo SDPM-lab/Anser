@@ -8,16 +8,27 @@ interface CacheHandlerInterface
 {
     /**
      * Initialize the orchestrator status into the cache.
+     *
+     * @param string $orchestratorNumber
+     * @param string $serializedOrchestrator
+     * @return CacheHandlerInterface
      */
-    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface;
+    public function initOrchestrator(string $orchestratorNumber, string $serializedOrchestrator): CacheHandlerInterface;
 
     /**
      * Set the orchestor status after each step has finished.
+     *
+     * @param string $orchestratorNumber
+     * @param string $orchestratorStatus
+     * @return CacheHandlerInterface
      */
     public function setOrchestratorStatus(string $orchestratorNumber, string $orchestratorStatus): CacheHandlerInterface;
 
     /**
      * Get the orchestor status by usint orchestratorNumber.
+     *
+     * @param string $orchestratorNumber
+     * @return string
      */
     public function getOrchestratorStatus(string $orchestratorNumber): string;
 
