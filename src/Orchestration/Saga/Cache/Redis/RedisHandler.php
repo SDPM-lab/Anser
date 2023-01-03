@@ -4,6 +4,8 @@ namespace SDPMlab\Anser\Orchestration\Saga\Cache\Redis;
 
 use SDPMlab\Anser\Orchestration\Saga\Cache\BaseCacheHandler;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
+use SDPMlab\Anser\Orchestration\OrchestratorInterface;
+use SDPMlab\Anser\Exception\RedisException;
 use Predis\Client;
 use Predis\ClientException;
 
@@ -27,11 +29,31 @@ class RedisHandler extends BaseCacheHandler
      */
     protected $client;
 
+    /**
+     * The key(number) of serialized orchestrator.
+     *
+     * @var string
+     */
+    protected $orchestratorNumber;
+
+    /**
+     * The serialized orchestrator.
+     *
+     * @var string
+     */
+    protected $serializedOrchestrator;
+
     public function __construct($config = null, $option = null)
     {
+        parent::__construct();
+
         try {
             if (is_string($config)) {
                 $configArr = explode(':', $config);
+
+                if (count($configArr) !== 3) {
+                    throw RedisException::forCacheFormatError();
+                }
 
                 $this->config["scheme"] = $configArr[0];
                 $this->config["host"]   = str_replace("/", "", $configArr[1]);
@@ -55,20 +77,49 @@ class RedisHandler extends BaseCacheHandler
         }
     }
 
-    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface
+    public function initOrchestrator(string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
+        $this->orchestratorNumber = $orchestratorNumber;
+
+        if ($this->client->exists($orchestratorNumber) === 1) {
+            throw RedisException::forCacheRepeatOrch($orchestratorNumber);
+        }
+
+        $serializedOrchestrator = $this->serializeOrchestrator($runtimeOrchestrator);
+
+        $this->client->set($this->orchestratorNumber, $serializedOrchestrator);
+
         return $this;
     }
 
-    public function setOrchestratorStatus(string $orchestratorNumber, string $orchestratorStatus): CacheHandlerInterface
+    public function setOrchestrator(OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
+        if ($this->client->exists($this->orchestratorNumber) === 0) {
+            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
+        }
+
+        $this->client->set($this->orchestratorNumber, $this->serializeOrchestrator($runtimeOrchestrator));
+
         return $this;
     }
 
-    public function getOrchestratorStatus(string $orchestratorNumber): string
+    public function getOrchestrator(): OrchestratorInterface
     {
-        $status = "";
+        if ($this->client->exists($this->orchestratorNumber) === 0) {
+            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
+        }
 
-        return $status;
+        $runtimeOrchestrator = $this->unserializeOrchestrator($this->client->get($this->orchestratorNumber));
+
+        return $runtimeOrchestrator;
+    }
+
+    public function clearOrchestrator(): bool
+    {
+        if ($this->client->exists($this->orchestratorNumber) === 0) {
+            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
+        }
+
+        return $this->client->del($this->orchestratorNumber);
     }
 }

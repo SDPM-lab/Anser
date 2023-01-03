@@ -2,36 +2,57 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 
+use SDPMlab\Anser\Orchestration\OrchestratorInterface;
+
 interface CacheHandlerInterface
 {
     /**
-     * Initialize the orchestrator status into the cache.
+     * Initialize the orchestrator into the redis.
+     *
+     * @param string $orchestratorNumber
+     * @param OrchestratorInterface $runtimeOrchestrator
+     * @return CacheHandlerInterface
      */
-    public function initOrchestrator(string $orchestratorNumber): CacheHandlerInterface;
+    public function initOrchestrator(string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface;
 
     /**
-     * Set the orchestor status after each step has finished.
+     * Set the runtime orchestor into redis after each step has finished.
+     *
+     * @param OrchestratorInterface $runtimeOrchestrator
+     * @return CacheHandlerInterface
      */
-    public function setOrchestratorStatus(string $orchestratorNumber, string $orchestratorStatus): CacheHandlerInterface;
+    public function setOrchestrator(OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface;
 
     /**
-     * Get the orchestor status by usint orchestratorNumber.
+     * When the steps of orchestrator already finished,
+     * release the store resource of redis.
+     *
+     * @return boolean
      */
-    public function getOrchestratorStatus(string $orchestratorNumber): string;
+    public function clearOrchestrator(): bool;
+
+    /**
+     * Get the runtime orchestor into redis by using orchestratorNumber.
+     *
+     * @return OrchestratorInterface
+     */
+    public function getOrchestrator(): OrchestratorInterface;
 
     /**
      * Serialize the meta data of orchestrator,
      * and get the serialized orchestratorNumber
      *
-     * @return string $orchestratorNumber
+     * @param OrchestratorInterface $orchestrator
+     * @return string
      */
-    public function serializeOrchestrator(array $orchestratorData): string;
+    public function serializeOrchestrator(OrchestratorInterface $orchestrator): string;
 
     /**
      * Using the serialized orchestratorNumber to unserialize,
      * and get the original orchestrator data.
      *
-     * @return array $orchestratorData
+     * @param string $orchestratorNumber
+     * @return OrchestratorInterface
      */
-    public function unserializeOrchestrator(string $orchestratorNumber): array;
+    public function unserializeOrchestrator(string $orchestratorNumber): OrchestratorInterface;
 }
