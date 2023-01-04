@@ -62,6 +62,8 @@ $routes->group(
         $routes->get('redis/index', 'Redis::index');
         $routes->get('redis/testSerialize', 'Redis::testCacheSerialize');
         $routes->get('serialize', 'Serialize::testJsonSerializer');
+
+        $routes->get('userOrder', 'UserOrder::userOrder');
     }
 );
 
