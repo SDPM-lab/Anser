@@ -5,6 +5,7 @@ namespace SDPMlab\Anser\Orchestration;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Service\ActionInterface;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 
 Interface OrchestratorInterface
 {
@@ -14,6 +15,29 @@ Interface OrchestratorInterface
      * @return StepInterface
      */
     public function setStep(): StepInterface;
+
+    /**
+     * 設定此編排器快取之實體
+     *
+     * @param CacheHandlerInterface $cacheInstance
+     * @return OrchestratorInterface
+     */
+    public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface;
+
+    /**
+     * 取得此次編排器快取之實體
+     *
+     * @return CacheHandlerInterface
+     */
+    public function getCacheInstance(): CacheHandlerInterface;
+
+    /**
+     * 設定快取編排器之索引
+     *
+     * @param string $orchestratorNumber
+     * @return OrchestratorInterface
+     */
+    public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface;
 
     /**
      * 標註交易開始，由此之後發生的 Step 失敗或任何程式例外將觸發 Rollback
