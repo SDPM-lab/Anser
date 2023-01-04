@@ -35,16 +35,16 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * 快取實體
      *
-     * @var CacheHandlerInterface
+     * @var CacheHandlerInterface|null
      */
-    protected CacheHandlerInterface $cacheInstance = null;
+    protected ?CacheHandlerInterface $cacheInstance = null;
 
     /**
      * 編排器快取 key
      *
-     * @var string
+     * @var string|null
      */
-    protected string $cacheOrchestratorNumber = null;
+    protected ?string $cacheOrchestratorNumber = null;
 
     /**
      * 設定一個新的 Step
