@@ -63,7 +63,43 @@ $routes->group(
     }
 );
 
+$routes->group(
+    'api/v2',
+    [
+        'namespace' => 'App\Controllers\v2'
+    ],
+    function (\CodeIgniter\Router\RouteCollection $routes) {
+        //PRODUCT APIs
+        $routes->resource("product", [
+            'controller' => 'ProductController',
+            'only' => ['index','show', 'create', 'update','delete'],
+        ]);
 
+        //ORDER APIs
+        $routes->resource("order", [
+            'controller' => 'OrderController',
+            'only' => ['index', 'show', 'create', 'update', 'delete'],
+            'filter' => 'user'
+        ]);
+        //PAYMENT APIs
+        $routes->resource("payment", [
+            'controller' => 'PaymentController',
+            'only' => ['index', 'show', 'create', 'update', 'delete'],
+            'filter' => 'user'
+        ]);
+
+        //PAYMENT APIs
+        $routes->resource("wallet", [
+            'controller' => 'WalletController',
+            'only' => ['show', 'create'],
+            'filter' => 'user'
+        ]);
+
+        //PRODUCT AMOUNT API
+        $routes->post('inventory/addInventory', 'ProductController::addInventory');
+        $routes->post('inventory/reduceInventory', 'ProductController::reduceInventory');
+    }
+);
 /*
  * --------------------------------------------------------------------
  * Additional Routing
