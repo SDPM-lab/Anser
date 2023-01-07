@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4081e732d7b06fcbb508110442b12d54",
+    "content-hash": "c12c9900b892f329c67101ffff8d0a1f",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -2931,7 +2931,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-14T15:52:41+00:00"
+            "time": "2022-11-30T17:13:47+00:00"
         }
     ],
     "packages-dev": [

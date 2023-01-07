@@ -60,6 +60,8 @@ $routes->group(
         $routes->get('fail/(:num)','Fail::awayls500/$1');
 
         $routes->get('redis/index', 'Redis::index');
+        $routes->get('redis/testSerialize', 'Redis::testCacheSerialize');
+        $routes->get('serialize', 'Serialize::testJsonSerializer');
     }
 );
 
