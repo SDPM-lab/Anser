@@ -10,10 +10,9 @@ class Order extends Migration
     {
         $this->forge->addField([
             'o_key'           => [
-                'type'           => 'INT',
-                'constraint'     => 5,
+                'type'           => 'VARCHAR',
+                'constraint'     => 200,
                 'unique'         => true,
-                'auto_increment' => true,
                 'comment'        => "order primary key"
             ],
             'u_key'         => [

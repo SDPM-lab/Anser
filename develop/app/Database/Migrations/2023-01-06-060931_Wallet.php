@@ -17,7 +17,7 @@ class Wallet extends Migration
             ],
             'balance'           => [
                 'type'           => 'INT',
-                'constraint'     => 5,
+                'constraint'     => 10,
                 'unsigned'       => false
             ],
             "created_at"    => [

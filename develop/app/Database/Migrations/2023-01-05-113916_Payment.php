@@ -22,8 +22,8 @@ class Payment extends Migration
                 'comment'        => "user primary key"
             ],
             'o_key'           => [
-                'type'           => 'INT',
-                'constraint'     => 5,
+                'type'           => 'VARCHAR',
+                'constraint'     => 200,
                 'comment'        => "order primary key"
             ],
             'total'           => [

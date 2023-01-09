@@ -6,6 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Services\User;
+use PHPUnit\Framework\Constraint\IsEmpty;
 
 class UserFilter implements FilterInterface
 {
@@ -44,7 +45,8 @@ class UserFilter implements FilterInterface
                 "error" => "The user not valid!"
             ]
         ];
-        if ($user_key == "") {
+        
+        if (empty($user_key)) {
             return $this->response->setStatusCode(401, 'Unauthorized')->setJSON($failBody);
         }
 

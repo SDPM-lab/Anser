@@ -12,7 +12,7 @@ class Product extends Seeder
         $faker = Factory::create();
         $now   = date("Y-m-d H:i:s");
 
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $data = [
                 'name'       => $faker->words(1, true),
                 'price'      => $faker->numberBetween(500, 1000),
@@ -21,17 +21,6 @@ class Product extends Seeder
                 'updated_at' => $now,
             ];
             $this->db->table('product')->insert($data);
-
-            $orderData =[
-                "u_key"  => random_int(1, 50),
-                "p_key"  => $this->db->insertID(),
-                "amount" => random_int(1, 700),
-                "price"  => $data["price"],
-                "status" => "orderCreate",
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-            $this->db->table('order')->insert($orderData);
         }
     }
 }
