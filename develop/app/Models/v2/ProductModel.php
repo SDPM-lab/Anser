@@ -57,8 +57,6 @@ class ProductModel extends Model
         return $productEntity;
     }
 
-
-
     /**
      * Product Create
      *
@@ -67,29 +65,20 @@ class ProductModel extends Model
      * @param integer $amount
      * @return boolean
      */
-    public function createProductTransaction(string $name, int $price, int $amount):bool
+    public function createProductTransaction(string $name, int $price, int $amount): bool
     {
         $productData = [
-            "name" => $name,
-            "price" => $price,
-            "amount" => $amount,
+            "name"       => $name,
+            "price"      => $price,
+            "amount"     => $amount,
             "created_at" => date("Y-m-d H:i:s"),
             "updated_at" => date("Y-m-d H:i:s")
         ];
 
-        try {
-            $this->db->transStart();
+        $result =  $this->db->table("product")
+                            ->insert($productData);
 
-            $this->db->table("product")
-            ->insert($productData);
-
-            $result = $this->db->transComplete();
-
-            return $result;
-        } catch (\Exception $e) {
-            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
-            return false;
-        }
+        return $result;
     }
 
     /**
@@ -102,23 +91,15 @@ class ProductModel extends Model
      */
     public function addInventoryTransaction(int $p_key, int $addAmount, int $nowAmount): bool
     {
-        try {
-            $this->db->transStart();
+        $inventory = [
+            "amount"     => $nowAmount + $addAmount,
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
 
-            $inventory = [
-                "amount" => $nowAmount + $addAmount,
-                "updated_at" => date("Y-m-d H:i:s")
-            ];
+        $result = $this->db->table("product")
+                           ->where("p_key", $p_key)
+                           ->update($inventory);
 
-            $this->db->table("product")
-                     ->where("p_key", $p_key)
-                     ->update($inventory);
-
-            $result = $this->db->transComplete();
-        } catch (\Exception $e) {
-            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
-            return false;
-        }
         return $result;
     }
 
@@ -132,29 +113,16 @@ class ProductModel extends Model
      */
     public function reduceInventoryTransaction(int $p_key, int $reduceAmount, int $nowAmount): bool
     {
-        try {
-            $this->db->transBegin();
+        $inventory = [
+            "amount"     => $nowAmount - $reduceAmount,
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
 
-            $inventory = [
-                "amount" => $nowAmount - $reduceAmount,
-                "updated_at" => date("Y-m-d H:i:s")
-            ];
+        $result = $this->db->table("product")
+                           ->where("p_key", $p_key)
+                           ->where("amount >=", $reduceAmount)
+                           ->update($inventory);
 
-            $this->db->table("product")
-                     ->where("p_key", $p_key)
-                     ->where("amount >=", $reduceAmount)
-                     ->update($inventory);
-
-            if ($this->db->transStatus() === false || $this->db->affectedRows() == 0) {
-                $this->db->transRollback();
-                return false;
-            } else {
-                $this->db->transCommit();
-                return true;
-            }
-        } catch (\Exception $e) {
-            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
-            return false;
-        }
+        return $result;
     }
 }

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Entities\v2\WalletEntity;
 use App\Models\v2\WalletModel;
 
-class User
+class UserService
 {
     /**
      * 使用者主鍵
@@ -42,11 +42,12 @@ class User
      * @param integer $user_key
      * @return WalletEntity|null
      */
-    public static function verifyUserIsExist($user_key):?WalletEntity
+    public static function verifyUserIsExist($user_key): ?WalletEntity
     {
         $walletModel = new WalletModel();
+
         $userWalletEntity = $walletModel->find($user_key);
-        
+
         return $userWalletEntity;
     }
 }

@@ -5,7 +5,7 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use App\Services\User;
+use App\Services\UserService;
 
 class UserFilter implements FilterInterface
 {
@@ -57,14 +57,13 @@ class UserFilter implements FilterInterface
             return $this->response->setStatusCode(401, 'Unauthorized')->setJSON($failBody);
         }
 
-        $userWalletEntity = User::verifyUserIsExist($user_key);
+        $userWalletEntity = UserService::verifyUserIsExist($user_key);
 
-        if(is_null($userWalletEntity)){
+        if (is_null($userWalletEntity)) {
             return $this->response->setStatusCode(404, 'Unauthorized')->setJSON($userNotExistBody);
         }
-        
-        User::setUserKey($userWalletEntity->u_key);
-        
+
+        UserService::setUserKey($userWalletEntity->u_key);
     }
 
     /**

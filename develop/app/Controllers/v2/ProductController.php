@@ -32,10 +32,10 @@ class ProductController extends BaseController
             $query->like("name", $search);
         }
         $dataCount = $query->countAllResults(false);
-        $product = $query->findAll($limit, $offset);
+        $product   = $query->findAll($limit, $offset);
 
         $data = [
-            "list"   => [],
+            "list"      => [],
             "dataCount" => $dataCount
         ];
 
@@ -52,14 +52,13 @@ class ProductController extends BaseController
                 $data["list"][] = $productData;
             }
         } else {
-            return $this->fail("product data not found", 404);
+            return $this->fail("Product data not found", 404);
         }
-
 
         return $this->respond([
             "status" => true,
-            "data"  => $data,
-            "msg" => "product index method successful."
+            "data"   => $data,
+            "msg"    => "Product index method successful."
         ]);
     }
 
@@ -74,7 +73,7 @@ class ProductController extends BaseController
     public function show($p_key = null)
     {
         if (is_null($p_key)) {
-            return $this->fail("Incoming data(Product Key) not true", 400);
+            return $this->fail("The Product key is required", 400);
         }
 
         $productEntity = new ProductEntity();
@@ -87,17 +86,17 @@ class ProductController extends BaseController
                 "p_key"       => $productEntity->p_key,
                 "name"        => $productEntity->name,
                 "price"       => $productEntity->price,
-                "amount"       => $productEntity->amount,
+                "amount"      => $productEntity->amount,
                 "createdAt"   => $productEntity->createdAt,
                 "updatedAt"   => $productEntity->updatedAt
             ];
         } else {
-            return $this->fail("product data not found", 404);
+            return $this->fail("Product data not found", 404);
         }
 
         return $this->respond([
             "data" => $data,
-            "msg" => "product show method successful."
+            "msg"  => "Product show method successful."
         ]);
     }
 
@@ -125,11 +124,11 @@ class ProductController extends BaseController
         if ($productCreateResult) {
             return $this->respond([
                 "status" => true,
-                "data" => $productCreateResult,
-                "msg" => "product create method successful."
+                "data"   => $productCreateResult,
+                "msg"    => "Product create method successful."
             ]);
         } else {
-            return $this->fail("product create method fail.", 400);
+            return $this->fail("The product create failed, please try again.", 400);
         }
     }
 
@@ -143,7 +142,7 @@ class ProductController extends BaseController
     public function update($p_key = null)
     {
         if (is_null($p_key)) {
-            return $this->fail("Incoming data not found", 400);
+            return $this->fail("The Product key is required", 400);
         }
 
         $data = $this->request->getJSON(true);
@@ -154,9 +153,6 @@ class ProductController extends BaseController
         $productEntity = new ProductEntity();
         $productModel  = new ProductModel();
 
-        if (is_null($p_key)) {
-            return $this->fail("Please enter product key", 404);
-        }
         if (is_null($name) && is_null($price)) {
             return $this->fail("Incoming data error", 404);
         }
@@ -175,12 +171,12 @@ class ProductController extends BaseController
         }
 
         $result = $productModel->where('p_key', $productEntity->p_key)
-            ->save($productEntity);
+                               ->save($productEntity);
 
         if ($result) {
             return $this->respond([
                 "status" => true,
-                "msg" => "update method successful."
+                "msg"    => "update method successful."
             ]);
         } else {
             return $this->fail("update method fail.", 400);
@@ -197,7 +193,7 @@ class ProductController extends BaseController
     public function delete($p_key = null)
     {
         if (is_null($p_key)) {
-            return $this->fail("Please enter product key", 404);
+            return $this->fail("The Product key is required", 404);
         }
 
         $productModel  = new ProductModel();
@@ -211,8 +207,8 @@ class ProductController extends BaseController
 
         return $this->respond([
             "status" => true,
-            "id" => $result,
-            "msg" => "product delete method successful."
+            "id"     => $result,
+            "msg"    => "Product delete method successful."
         ]);
     }
 
@@ -249,7 +245,7 @@ class ProductController extends BaseController
 
         return $this->respond([
             "status" => true,
-            "msg" => "product amount add method successful."
+            "msg"    => "Product amount add method successful."
         ]);
     }
 
@@ -276,7 +272,6 @@ class ProductController extends BaseController
             return $this->fail("This product not found", 404);
         }
 
-
         if (is_null($productionEntity)) {
             return $this->fail("This product not found", 404);
         }
@@ -287,13 +282,13 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
         $productAmountReduceResult = $productModel->reduceInventoryTransaction($p_key, $reduceAmount, $productionEntity->amount);
-        if (is_null($productAmountReduceResult)) {
+        if (!$productAmountReduceResult) {
             return $this->fail("This product amount reduce fail", 400);
         }
 
         return $this->respond([
             "status" => true,
-            "msg" => "product amount reduce method successful."
+            "msg"    => "Product amount reduce method successful."
         ]);
     }
 }
