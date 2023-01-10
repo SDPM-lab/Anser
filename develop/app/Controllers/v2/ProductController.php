@@ -119,7 +119,16 @@ class ProductController extends BaseController
         }
 
         $productModel = new ProductModel();
-        $productCreateResult =  $productModel->createProductTransaction($name, $price, $amount);
+
+        $productData = [
+            "name"       => $name,
+            "price"      => $price,
+            "amount"     => $amount,
+            "created_at" => date("Y-m-d H:i:s"),
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+
+        $productCreateResult =  $productModel->insert($productData);
 
         if ($productCreateResult) {
             return $this->respond([
@@ -238,7 +247,14 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
 
-        $productAmountAddResult = $productModel->addInventoryTransaction($p_key, $addAmount, $nowAmount);
+        $inventory = [
+            "amount"     => $nowAmount + $addAmount,
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+        $productAmountAddResult = $productModel->where("p_key", $p_key)
+                                               ->set($inventory)
+                                               ->update();
+
         if (!$productAmountAddResult) {
             return $this->fail("This product amount add fail", 400);
         }
@@ -260,7 +276,7 @@ class ProductController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        $p_key     = $data["p_key"];
+        $p_key        = $data["p_key"];
         $reduceAmount = $data["reduceAmount"];
 
         if (is_null($p_key) || is_null($reduceAmount)) {
@@ -268,6 +284,7 @@ class ProductController extends BaseController
         }
 
         $productionEntity = ProductModel::getProduct($p_key);
+
         if (is_null($productionEntity)) {
             return $this->fail("This product not found", 404);
         }
@@ -281,7 +298,16 @@ class ProductController extends BaseController
         }
 
         $productModel = new ProductModel();
-        $productAmountReduceResult = $productModel->reduceInventoryTransaction($p_key, $reduceAmount, $productionEntity->amount);
+
+        $inventory = [
+            "amount"     => $productionEntity->amount - $reduceAmount,
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+        $productAmountReduceResult = $productModel->where("p_key", $p_key)
+                                                  ->where("amount >=", $reduceAmount)
+                                                  ->set($inventory)
+                                                  ->update();
+
         if (!$productAmountReduceResult) {
             return $this->fail("This product amount reduce fail", 400);
         }
