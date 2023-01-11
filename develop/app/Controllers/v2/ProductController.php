@@ -13,7 +13,7 @@ class ProductController extends BaseController
 
     /**
      * [GET] api/v2/product/
-     * get all product
+     * Get all product.
      *
      * @return void
      */
@@ -65,7 +65,7 @@ class ProductController extends BaseController
 
     /**
      * [GET] api/v2/product/{p_key}
-     * get someone product by p_key
+     * Get someone product by p_key.
      *
      * @param integer $p_key
      * @return void
@@ -102,7 +102,7 @@ class ProductController extends BaseController
 
     /**
      * [POST] api/v2/product/
-     * create product
+     * Create product.
      *
      * @return void
      */
@@ -143,7 +143,7 @@ class ProductController extends BaseController
 
     /**
      * [PUT] api/v2/product/{p_key}
-     * update someone product by p_key
+     * Update someone product by p_key.
      *
      * @param integer $p_key
      * @return void
@@ -194,7 +194,7 @@ class ProductController extends BaseController
 
     /**
      * [DELETE] api/v2/product/{p_key}
-     * delete someone product
+     * Delete product by p_key.
      *
      * @param integer $p_key
      * @return void
@@ -223,7 +223,7 @@ class ProductController extends BaseController
 
     /**
      * [POST] /api/v2/inventory/addInventory
-     * add product amount
+     * Add product amount.
      *
      * @return void
      */
@@ -267,7 +267,7 @@ class ProductController extends BaseController
 
     /**
      * [POST] /api/v2/inventory/reduceInventory
-     * reduce product amount
+     * Reduce product amount.
      *
      * @return void
      */
