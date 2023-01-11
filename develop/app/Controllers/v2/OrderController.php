@@ -124,11 +124,18 @@ class OrderController extends BaseController
             return $this->fail("Incoming data error", 404);
         }
 
-        $orderModel   = new OrderModel();
+        $now              = date("Y-m-d H:i:s");
+        $orderKey = sha1($u_key . $p_key . $now);
 
-        $now        = date("Y-m-d H:i:s");
+        $orderModel = new OrderModel();
+
+        $orderEntity = $orderModel->find($orderKey);
+        if ($orderEntity) {
+            return $this->fail("Order key repeated input, Please try it later!", 404);
+        }
+
         $orderData  = [
-            "o_key"        => sha1($u_key . $p_key . $now . random_int(0, 10000000)),
+            "o_key"        => $orderKey,
             "u_key"        => $u_key,
             "p_key"        => $p_key,
             "amount"       => $amount,
