@@ -8,7 +8,7 @@ use App\Services\UserService;
 use App\Models\v2\OrderModel;
 use App\Entities\v2\OrderEntity;
 
-class OrderController extends BaseController
+class OrderController extends BaseController 
 {
     use ResponseTrait;
 
@@ -20,7 +20,7 @@ class OrderController extends BaseController
     }
     /**
      * [GET] api/v2/order/
-     * index method
+     * Get all order.
      *
      * @return void
      */
@@ -69,7 +69,7 @@ class OrderController extends BaseController
 
     /**
      * [GET] api/v2/order/{orderKey}
-     *  get someone order by order key
+     * Get someone order by order key.
      *
      * @param string $orderKey
      * @return void
@@ -107,7 +107,7 @@ class OrderController extends BaseController
 
     /**
      * [POST] api/v2/order/
-     * create order
+     * Create order.
      *
      * @return void
      */
@@ -131,7 +131,7 @@ class OrderController extends BaseController
 
         $orderEntity = $orderModel->find($orderKey);
         if ($orderEntity) {
-            return $this->fail("Order key repeated input, Please try it later!", 404);
+            return $this->fail("Order key repeated input, Please try it later!", 403);
         }
 
         $orderData  = [
@@ -160,6 +160,7 @@ class OrderController extends BaseController
 
     /**
      * [PUT] api/v2/order/{orderKey}
+     * Update order by order key.
      *
      * @param string $orderKey
      * @return void
@@ -215,7 +216,7 @@ class OrderController extends BaseController
 
     /**
      * [DELETE] api/v2/order/{orderKey}
-     * delete order
+     * Delete order by order key.
      *
      * @param string $orderKey
      * @return void
