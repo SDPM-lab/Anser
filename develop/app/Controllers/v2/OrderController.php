@@ -124,7 +124,7 @@ class OrderController extends BaseController
             return $this->fail("Incoming data error", 404);
         }
 
-        $now              = date("Y-m-d H:i:s");
+        $now      = date("Y-m-d H:i:s");
         $orderKey = sha1($u_key . $p_key . $now);
 
         $orderModel = new OrderModel();
