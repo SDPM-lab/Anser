@@ -42,23 +42,6 @@ class PaymentModel extends Model
     protected $afterDelete    = [];
 
     /**
-     * get someone payment data
-     *
-     * @param integer $paymentKey
-     * @param integer $userKey
-     * @return PaymentEntity|null
-     */
-    public static function getPayment(int $paymentKey, int $userKey): ?PaymentEntity
-    {
-        $paymentModel = new PaymentModel();
-
-        $paymentEntity = $paymentModel->where("u_key", $userKey)
-                                      ->find($paymentKey);
-
-        return $paymentEntity;
-    }
-
-    /**
      * create payment transaction
      *
      * @param integer $u_key
