@@ -40,4 +40,19 @@ class WalletModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    /**
+     * Get user balance by user id.
+     *
+     * @param integer $u_key
+     * @return WalletEntity|null
+     */
+    public static function getWalletByUserID(int $u_key): ?WalletEntity
+    {
+        $walletModel  = new WalletModel();
+
+        $walletEntity = $walletModel->find($u_key);
+
+        return $walletEntity;
+    }
 }

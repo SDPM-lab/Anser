@@ -236,7 +236,7 @@ class OrderController extends BaseController
         }
 
         $setDeleteStatus = $orderModel->where('o_key', $orderKey)
-                                      ->set("status", "OrderDelete")
+                                      ->set("status", "orderDelete")
                                       ->update();
         if (!$setDeleteStatus) {
             return $this->fail("This order status change to 'DELETE' fail.", 400);
