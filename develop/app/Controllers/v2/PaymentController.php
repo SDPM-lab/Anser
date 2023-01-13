@@ -18,7 +18,7 @@ class PaymentController extends BaseController
 
     public function __construct()
     {
-        $this->u_key     = UserService::getUserKey();
+        $this->u_key = UserService::getUserKey();
     }
 
     /**
@@ -81,14 +81,13 @@ class PaymentController extends BaseController
      */
     public function show($paymentKey = null)
     {
-        if (is_null($paymentKey)) {
+        if ($paymentKey === null) {
             return $this->fail("The payment key is required.", 404);
         }
 
         $paymentModel = new PaymentModel();
 
-        $paymentEntity = $paymentModel->where("u_key",$this->u_key)
-                                      ->find($paymentKey);
+        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist or cannot found.", 404);
         }
@@ -139,13 +138,12 @@ class PaymentController extends BaseController
             return $this->fail("This payment information is not exist or cannot found.", 403);
         }
 
-        $userWallet = $walletModel->where('u_key', $u_key)
-                                  ->first();
-        if (is_null($userWallet)) {
+        $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+        if (is_null($walletEntity)) {
             return $this->fail("This user isn't exist.", 400);
         }
 
-        $userBalance = $userWallet->balance;
+        $userBalance = $walletEntity->balance;
 
         if ($userBalance < $total) {
             return $this->fail("Insufficient balance", 400);
@@ -187,8 +185,7 @@ class PaymentController extends BaseController
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $paymentModel->where("u_key", $this->u_key)
-                                      ->find($paymentKey);
+        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist or cannot found.", 404);
         }
@@ -223,8 +220,7 @@ class PaymentController extends BaseController
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $paymentModel->where("u_key", $this->u_key)
-                                      ->find($paymentKey);
+        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist or cannot found.", 404);
         }
@@ -246,5 +242,21 @@ class PaymentController extends BaseController
         } else {
             return $this->fail("Payment delete fail", 400);
         }
+    }
+
+    /**
+     * Get payment entity by payment key
+     *
+     * @param int $payment_key
+     * @return PaymentEntity|null
+     */
+    public function getPaymentEntityByPaymentKey($payment_key = null): ?PaymentEntity
+    {
+        $paymentModel  = new PaymentModel();
+
+        $paymentEntity = $paymentModel->where("u_key", $this->u_key)
+                                      ->find($payment_key);
+
+        return $paymentEntity;
     }
 }
