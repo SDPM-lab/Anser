@@ -87,7 +87,7 @@ class PaymentController extends BaseController
 
         $paymentModel = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($paymentKey);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist or cannot found.", 404);
         }
@@ -135,7 +135,7 @@ class PaymentController extends BaseController
                                       ->where("o_key", $o_key)
                                       ->first();
         if (!is_null($paymentEntity)) {
-            return $this->fail("This payment information is not exist or cannot found.", 403);
+            return $this->fail("This payment information is not exist.", 403);
         }
 
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
@@ -185,9 +185,9 @@ class PaymentController extends BaseController
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($paymentKey);
         if (is_null($paymentEntity)) {
-            return $this->fail("This payment information is not exist or cannot found.", 404);
+            return $this->fail("This payment information is not exist", 404);
         }
 
         $result = $paymentModel->where('pm_key', $paymentKey)
@@ -220,9 +220,9 @@ class PaymentController extends BaseController
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntityByPaymentKey($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($paymentKey);
         if (is_null($paymentEntity)) {
-            return $this->fail("This payment information is not exist or cannot found.", 404);
+            return $this->fail("This payment information is not exist.", 404);
         }
 
         $setDeleteStatus = $paymentModel->where('pm_key', $paymentKey)
@@ -250,7 +250,7 @@ class PaymentController extends BaseController
      * @param int $payment_key
      * @return PaymentEntity|null
      */
-    public function getPaymentEntityByPaymentKey($payment_key = null): ?PaymentEntity
+    public function getPaymentEntity(int $payment_key = null): ?PaymentEntity
     {
         $paymentModel  = new PaymentModel();
 
