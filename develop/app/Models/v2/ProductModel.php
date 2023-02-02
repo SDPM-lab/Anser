@@ -7,7 +7,7 @@ use App\Entities\v2\ProductEntity;
 
 class ProductModel extends Model
 {
-    protected $DBGroup          = 'default';
+    protected $DBGroup          = USE_DB_GROUP;
     protected $table            = 'product';
     protected $primaryKey       = 'p_key';
     protected $useAutoIncrement = true;
