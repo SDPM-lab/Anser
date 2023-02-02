@@ -7,7 +7,7 @@ use App\Entities\v2\WalletEntity;
 
 class WalletModel extends Model
 {
-    protected $DBGroup          = 'default';
+    protected $DBGroup          = USE_DB_GROUP;
     protected $table            = 'wallet';
     protected $primaryKey       = 'u_key';
     protected $useAutoIncrement = true;

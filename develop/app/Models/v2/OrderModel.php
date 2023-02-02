@@ -7,7 +7,7 @@ use App\Entities\v2\OrderEntity;
 
 class OrderModel extends Model
 {
-    protected $DBGroup          = 'default';
+    protected $DBGroup          = USE_DB_GROUP;
     protected $table            = 'order';
     protected $primaryKey       = 'o_key';
     protected $useAutoIncrement = false;
