@@ -218,9 +218,9 @@ class ProductTest extends DatabaseTestCase
         $results->assertStatus(200);
 
         $productsAssertData = [
-            "name" => "iphone 15",
+            "name"   => "iphone 15",
             "amount" => 25,
-            "price" => 32000,
+            "price"  => 32000,
         ];
 
         $this->seeInDatabase("db_product", $productsAssertData);
@@ -236,7 +236,7 @@ class ProductTest extends DatabaseTestCase
     public function testUpdate()
     {
         $productionData = [
-            "name"       => " iphone 21",
+            "name"       => "iphone 21",
             "amount"     => 10,
             "price"      => 30000,
             "created_at" => date("Y-m-d H:i:s"),
@@ -248,8 +248,8 @@ class ProductTest extends DatabaseTestCase
 
         // p_key isn't exist
         $keyNotHasData = [
-            "name"   => "iphone 15",
-            "price"  => 30
+            "name"  => "iphone 15",
+            "price" => 30
         ];
 
         $keyNotHasResults = $this->withBodyFormat('json')->put('api/v2/product/999', $keyNotHasData);
@@ -279,7 +279,7 @@ class ProductTest extends DatabaseTestCase
 
         //success test
         $data = [
-            "name"  => " iphone 22",
+            "name"  => "iphone 22",
             "price" => 40000
         ];
 
@@ -302,7 +302,7 @@ class ProductTest extends DatabaseTestCase
     {
         $productionData = [
             "name"       => "iPad Air",
-            "amount"     =>10,
+            "amount"     => 10,
             "price"      => 30,
             "created_at" => date("Y-m-d H:i:s"),
             "updated_at" => date("Y-m-d H:i:s")

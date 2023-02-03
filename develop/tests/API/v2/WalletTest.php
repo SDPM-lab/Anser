@@ -3,24 +3,22 @@
 
 use Tests\Support\DatabaseTestCase;
 
-class WalletTest extends DatabaseTestCase{
-
+class WalletTest extends DatabaseTestCase
+{
     public function setUp(): void
-	{
-		parent::setUp();
+    {
+        parent::setUp();
 
-		// Extra code to run before each test
-	}
+        // Extra code to run before each test
+    }
 
     public function tearDown(): void
-	{
-		parent::tearDown();
+    {
+        parent::tearDown();
 
         $this->db->table('db_wallet')->emptyTable('db_wallet');
-
-	}
+    }
     public function testIndex()
     {
-        
     }
 }

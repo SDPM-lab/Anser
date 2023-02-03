@@ -3,24 +3,22 @@
 
 use Tests\Support\DatabaseTestCase;
 
-class PaymentTest extends DatabaseTestCase{
-
+class PaymentTest extends DatabaseTestCase
+{
     public function setUp(): void
-	{
-		parent::setUp();
+    {
+        parent::setUp();
 
-		// Extra code to run before each test
-	}
+        // Extra code to run before each test
+    }
 
     public function tearDown(): void
-	{
-		parent::tearDown();
+    {
+        parent::tearDown();
 
         $this->db->table('db_payment')->emptyTable('db_payment');
-
-	}
+    }
     public function testIndex()
     {
-        
     }
 }
