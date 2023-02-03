@@ -7,7 +7,7 @@ use App\Entities\v2\PaymentEntity;
 
 class PaymentModel extends Model
 {
-    protected $DBGroup          = 'default';
+    protected $DBGroup          = USE_DB_GROUP;
     protected $table            = 'payment';
     protected $primaryKey       = 'pm_key';
     protected $useAutoIncrement = true;
