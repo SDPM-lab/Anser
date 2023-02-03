@@ -20,10 +20,9 @@ class WalletController extends BaseController
     }
 
     /**
-     * [GET] /api/v2/wallet/{userKey}
+     * [GET] /api/v2/wallet
      * Get someone wallet balance by user key.
      *
-     * @param int $userKey
      * @return void
      */
     public function show()
@@ -54,7 +53,7 @@ class WalletController extends BaseController
     public function create()
     {
         $data = $this->request->getJSON(true);
-
+        
         $addAmount = $data["addAmount"] ?? null;
         $u_key     = $this->u_key;
 
