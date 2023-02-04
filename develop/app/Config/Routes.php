@@ -93,9 +93,10 @@ $routes->group(
         //PAYMENT APIs
         $routes->resource("wallet", [
             'controller' => 'WalletController',
-            'only' => ['show', 'create'],
+            'only' => ['create'],
             'filter' => 'user'
         ]);
+        $routes->get('wallet', 'WalletController::show',['filter' => 'user']);
 
         //PRODUCT AMOUNT API
         $routes->post('inventory/addInventory', 'ProductController::addInventory');
