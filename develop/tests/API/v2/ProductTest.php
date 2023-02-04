@@ -323,4 +323,174 @@ class ProductTest extends DatabaseTestCase
         $deleteCheckResult = $this->grabFromDatabase('db_product', 'deleted_at', ['p_key' => $insertID]);
         $this->assertTrue(!is_null($deleteCheckResult));
     }
+
+    public function testAddInventory()
+    {
+        $productionData = [
+            "name"       => "iPad Air",
+            "amount"     => 10,
+            "price"      => 30,
+            "created_at" => date("Y-m-d H:i:s"),
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+
+        $this->db->table("db_product")->insert($productionData);
+        $insertID = $this->db->insertID();
+
+        // Incoming data not found test
+        $errorData = [
+            "p_key" => $insertID
+        ];
+
+        $dataNotFoundResults = $this->withBodyFormat('json')
+                                    ->post('api/v2/inventory/addInventory', $errorData);
+
+        $dataNotFoundResults->assertStatus(404);
+
+        $decodeDataNotFoundResults = json_decode($dataNotFoundResults->getJSON());
+
+        $decodeDataNotFoundResultsErrMsg = $decodeDataNotFoundResults->messages->error;
+
+        $this->assertEquals($decodeDataNotFoundResultsErrMsg, "Incoming data not found");
+
+        // product key not found test
+        $pKeyNotExistData = [
+            "p_key"     => 5,
+            "addAmount" => 10
+        ];
+
+        $pKeyNotFoundResults = $this->withBodyFormat('json')
+                                    ->post('api/v2/inventory/addInventory', $pKeyNotExistData);
+
+        $pKeyNotFoundResults->assertStatus(404);
+
+        $decodePKeyNotFoundResults = json_decode($pKeyNotFoundResults->getJSON());
+
+        $decodePKeyNotFoundResultsErrMsg = $decodePKeyNotFoundResults->messages->error;
+
+        $this->assertEquals($decodePKeyNotFoundResultsErrMsg, "This product not found");
+
+        // success test
+        $data = [
+            "p_key"     => $insertID,
+            "addAmount" => 10
+        ];
+
+        $result = $this->withBodyFormat('json')
+                       ->post('api/v2/inventory/addInventory', $data);
+
+        if (!$result->isOK()) {
+            $result->assertStatus(400);
+        }
+
+        $result->assertStatus(200);
+
+        $decodeResult = json_decode($result->getJSON());
+
+        $decodeResultMsg = $decodeResult->msg;
+
+        $this->assertEquals($decodeResultMsg, "Product amount add method successful.");
+
+        $checkData = [
+            "p_key"  => $insertID,
+            "amount" => $productionData["amount"] + 10,
+            "price"  => $productionData["price"],
+            "name"   => $productionData["name"],
+        ];
+        $this->seeInDatabase("db_product", $checkData);
+    }
+
+    public function testReduceInventory()
+    {
+        $productionData = [
+            "name"       => "iPad Air",
+            "amount"     => 10,
+            "price"      => 30,
+            "created_at" => date("Y-m-d H:i:s"),
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+
+        $this->db->table("db_product")->insert($productionData);
+        $insertID = $this->db->insertID();
+
+        //Incoming data not found test
+        $errorData = [
+            "p_key" => $insertID
+        ];
+
+        $dataNotFoundResults = $this->withBodyFormat('json')
+                                    ->post('api/v2/inventory/reduceInventory', $errorData);
+
+        $dataNotFoundResults->assertStatus(404);
+
+        $decodeDataNotFoundResults = json_decode($dataNotFoundResults->getJSON());
+
+        $decodeDataNotFoundResultsErrMsg = $decodeDataNotFoundResults->messages->error;
+
+        $this->assertEquals($decodeDataNotFoundResultsErrMsg, "Incoming data not found");
+
+        // product key not found test
+        $pKeyNotExistData = [
+            "p_key"        => 5,
+            "reduceAmount" => 10
+        ];
+
+        $pKeyNotFoundResults = $this->withBodyFormat('json')
+                                    ->post('api/v2/inventory/reduceInventory', $pKeyNotExistData);
+
+        $pKeyNotFoundResults->assertStatus(404);
+
+        $decodePKeyNotFoundResults = json_decode($pKeyNotFoundResults->getJSON());
+
+        $decodePKeyNotFoundResultsErrMsg = $decodePKeyNotFoundResults->messages->error;
+
+        $this->assertEquals($decodePKeyNotFoundResultsErrMsg, "This product not found");
+
+        //product amount not enough test
+        $amountNotEnoughData = [
+            "p_key"        => $insertID,
+            "reduceAmount" => $productionData["amount"]+10
+        ];
+
+        $amountNotEnoughResults = $this->withBodyFormat('json')
+                                       ->post('api/v2/inventory/reduceInventory', $amountNotEnoughData);
+
+        $amountNotEnoughResults->assertStatus(400);
+
+        $decodeAmountNotEnoughResults = json_decode($amountNotEnoughResults->getJSON());
+
+        $decodeAmountNotEnoughResultsErrMsg = $decodeAmountNotEnoughResults->messages->error;
+
+        $this->assertEquals($decodeAmountNotEnoughResultsErrMsg, "This product amount not enough");
+
+        // success test
+        $data = [
+            "p_key"        => $insertID,
+            "reduceAmount" => 10
+        ];
+
+        $result = $this->withBodyFormat('json')
+                       ->post('api/v2/inventory/reduceInventory', $data);
+
+        if (!$result->isOK()) {
+            $result->assertStatus(400);
+        }
+
+        $result->assertStatus(200);
+
+        $decodeResult = json_decode($result->getJSON());
+
+        $decodeResultMsg = $decodeResult->msg;
+
+        $this->assertEquals($decodeResultMsg, "Product amount reduce method successful.");
+
+        $checkData = [
+            "p_key"  => $insertID,
+            "amount" => $productionData["amount"]-10,
+            "price"  => $productionData["price"],
+            "name"   => $productionData["name"],
+        ];
+
+        $this->seeInDatabase("db_product", $checkData);
+    }
 }
