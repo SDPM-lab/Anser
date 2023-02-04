@@ -53,7 +53,7 @@ class WalletController extends BaseController
     public function create()
     {
         $data = $this->request->getJSON(true);
-        
+
         $addAmount = $data["addAmount"] ?? null;
         $u_key     = $this->u_key;
 
