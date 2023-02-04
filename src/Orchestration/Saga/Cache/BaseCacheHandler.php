@@ -5,6 +5,7 @@ namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 use Zumba\JsonSerializer\JsonSerializer;
+use Pingyi\JsonSerializer\ClosureSerializer\ClosureSerializer;
 
 abstract class BaseCacheHandler implements CacheHandlerInterface
 {
@@ -17,7 +18,7 @@ abstract class BaseCacheHandler implements CacheHandlerInterface
 
     public function __construct()
     {
-        $this->serializer = new JsonSerializer();
+        $this->serializer = new JsonSerializer(new ClosureSerializer());
     }
 
     public function serializeOrchestrator(OrchestratorInterface $orchestrator): string
