@@ -231,8 +231,8 @@ class ProductController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        $p_key     = $data["p_key"];
-        $addAmount = $data["addAmount"];
+        $p_key     = $data["p_key"] ?? null;
+        $addAmount = $data["addAmount"] ?? null;
 
         if (is_null($p_key)  || is_null($addAmount)) {
             return $this->fail("Incoming data not found", 404);
@@ -276,18 +276,14 @@ class ProductController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        $p_key        = $data["p_key"];
-        $reduceAmount = $data["reduceAmount"];
+        $p_key        = $data["p_key"] ?? null;
+        $reduceAmount = $data["reduceAmount"] ?? null;
 
         if (is_null($p_key) || is_null($reduceAmount)) {
             return $this->fail("Incoming data not found", 404);
         }
 
         $productionEntity = ProductModel::getProduct($p_key);
-
-        if (is_null($productionEntity)) {
-            return $this->fail("This product not found", 404);
-        }
 
         if (is_null($productionEntity)) {
             return $this->fail("This product not found", 404);
