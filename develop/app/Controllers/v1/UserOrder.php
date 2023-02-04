@@ -10,10 +10,10 @@ class UserOrder extends BaseController
 {
     public function __construct()
     {
-        ServiceList::addLocalService("order_service", "localhost", 8080, false);
-        ServiceList::addLocalService("payment_service", "localhost", 8080, false);
-        ServiceList::addLocalService("fail_service", "localhost", 8080, false);
-        ServiceList::addLocalService("user_service", "localhost", 8080, false);
+        // ServiceList::addLocalService("order_service", "localhost", 8080, false);
+        // ServiceList::addLocalService("payment_service", "localhost", 8080, false);
+        // ServiceList::addLocalService("fail_service", "localhost", 8080, false);
+        ServiceList::addLocalService("userService", "localhost", 8080, false);
     
     }
 
@@ -21,6 +21,6 @@ class UserOrder extends BaseController
     {
         $userOrch = new UserOrchestrator();
         $res = $userOrch->build();
-        var_dump($res);
+        // var_dump($userOrch);
     }
 }

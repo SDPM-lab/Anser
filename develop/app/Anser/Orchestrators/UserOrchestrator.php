@@ -24,18 +24,20 @@ class UserOrchestrator extends Orchestrator
 
     protected function definition()
     {
-        $orderAction   = new Action("order_service", "GET", "/api/v1/order/1");
-        $paymentAction = new Action("payment_service", "GET", "/api/v1/payment/1");
-        $userAction    = new Action("user_service", "GET", "/api/v1/user");
-
         $this->setCacheInstance(CacheFactory::initCacheDriver('redis', 'tcp://service_redis:6379'));
         $this->setCacheOrchestratorKey("userOrder");
         
-        $this->setStep()
-            ->addAction("order", $orderAction);
-        $this->setStep()
-            ->addAction("payment", $paymentAction);
-        $this->setStep()
-            ->addAction("user", $userAction);
+        // $this->setStep()
+        //     ->addAction("order", $orderAction);
+        // $this->setStep()
+        //     ->addAction("payment", $paymentAction);
+        // $this->setStep()
+        //     ->addAction("user", $userAction);
+
+        // After fixed.
+
+        $userService   = new UserService();
+
+        $this->setStep()->addAction("user_service", $userService->getUserData("1"));
     }
 }
