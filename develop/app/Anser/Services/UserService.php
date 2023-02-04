@@ -18,7 +18,7 @@ class UserService extends SimpleService
         ]
     ];
     protected $retry = 1;
-    protected $retryDelay = 0.5;
+    protected $retryDelay = 1;
     protected $timeout = 3.0;
     
     /**
@@ -29,7 +29,7 @@ class UserService extends SimpleService
     public function getUserList()
     {
         $action = $this->getAction("GET","/api/v1/user")
-            ->setMeaningDataHandler(function(ActionInterface $runtimeAction){
+            ->doneHandler(function(ActionInterface $runtimeAction){
                 $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(),true);
                 $meaningData = $data["data"];
                 return $meaningData;
@@ -47,7 +47,7 @@ class UserService extends SimpleService
     public function getUserData(int $id): ActionInterface
     {
         $action = $this->getAction("GET","/api/v1/user/{$id}")
-            ->setMeaningDataHandler(function(ActionInterface $runtimeAction){
+            ->doneHandler(function(ActionInterface $runtimeAction){
                 $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(),true);
                 $meaningData = $data["data"];
                 return $meaningData;
