@@ -38,12 +38,13 @@ class PaymentController extends BaseController
         $paymentModel  = new PaymentModel();
         $paymentEntity = new PaymentEntity();
 
-        $query = $paymentModel->orderBy("created_at", $isDesc ? "DESC" : "ASC");
+        $query = $paymentModel->orderBy("created_at", $isDesc ? "DESC" : "ASC")
+                              ->where("u_key", $u_key);
         if ($search !== 0) {
             $query->like("o_key", $search);
         }
         $dataCount = $query->countAllResults(false);
-        $payments  = $query->where("u_key", $u_key)->findAll($limit, $offset);
+        $payments  = $query->findAll($limit, $offset);
 
         $data = [
             "list"      => [],
@@ -123,7 +124,7 @@ class PaymentController extends BaseController
         $status = "paymentCreate";
 
         if (is_null($u_key) || is_null($o_key) || is_null($amount) || is_null($price)) {
-            return $this->fail("Incoming data not true", 400);
+            return $this->fail("Incoming data error", 400);
         }
 
         $total = $amount * $price;
@@ -135,7 +136,7 @@ class PaymentController extends BaseController
                                       ->where("o_key", $o_key)
                                       ->first();
         if (!is_null($paymentEntity)) {
-            return $this->fail("This payment information is not exist.", 403);
+            return $this->fail("This payment information is exist.", 403);
         }
 
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
@@ -172,16 +173,16 @@ class PaymentController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
+        $total  = $data["total"] ?? null;
+        $status = $data["status"] ?? "paymentUpdate";
+
         if (is_null($paymentKey)) {
             return $this->fail("The payment key is required.", 404);
         }
 
-        if (is_null($data["total"]) || is_null($paymentKey)) {
-            return $this->fail("Incoming data not true", 400);
+        if (is_null($total) || is_null($paymentKey)) {
+            return $this->fail("Incoming data error", 400);
         }
-
-        $total  = $data["total"];
-        $status = $data["status"] ?? "paymentUpdate";
 
         $paymentModel  = new PaymentModel();
 
