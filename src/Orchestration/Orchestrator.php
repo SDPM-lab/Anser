@@ -16,7 +16,7 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * 儲存被新增的 step 實體
      *
-     * @var array<StepInterface> 
+     * @var array<StepInterface>
      */
     protected $steps = [];
 
@@ -68,11 +68,11 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         return $this->cacheInstance;
     }
-    
+
     public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface
     {
         $this->cacheOrchestratorNumber = $orchestratorNumber;
-        return $this;        
+        return $this;
     }
 
     /**
@@ -104,7 +104,7 @@ abstract class Orchestrator implements OrchestratorInterface
 
     /**
      * 判斷在目前被設定的 Step 之中，傳入的別名從來沒有被使用過。
-     * 
+     *
      * @param string $alias
      * @return boolean
      * @throws OrchestratorException
@@ -120,7 +120,7 @@ abstract class Orchestrator implements OrchestratorInterface
     }
 
     /**
-     * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體  
+     * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體
      *
      * @param string $alias
      * @return ActionInterface
@@ -158,7 +158,7 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * 執行 Orchestrator
      *
-     * @param mixed ...$args 
+     * @param mixed ...$args
      * @return mixed
      */
     final public function build(...$args)
@@ -191,7 +191,6 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         // 若有設定快取實體，則在剛開始將此次的編排器註冊進快取裡。
         if (!is_null($this->cacheInstance)) {
-
             if ($this->cacheOrchestratorNumber === null) {
                 throw OrchestratorException::forCacheOrchestratorNotDefine();
             }
@@ -228,7 +227,7 @@ abstract class Orchestrator implements OrchestratorInterface
                 $this->isSuccess === false &&
                 !is_null($this->sagaInstance)
             ) {
-                if($this->sagaInstance->startCompensation($this->steps)){
+                if ($this->sagaInstance->startCompensation($this->steps)) {
                     break;
                 }
             }

@@ -25,7 +25,7 @@ class UserOrchestrator extends Orchestrator
     protected function definition()
     {
         $this->setCacheInstance(CacheFactory::initCacheDriver('redis', 'tcp://service_redis:6379'));
-        $this->setCacheOrchestratorKey("userOrder");
+        $this->setCacheOrchestratorKey("userOrder_1");
         
         // $this->setStep()
         //     ->addAction("order", $orderAction);
