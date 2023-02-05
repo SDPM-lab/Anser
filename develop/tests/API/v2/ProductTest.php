@@ -6,31 +6,20 @@ use App\Models\v2\ProductModel;
 
 class ProductTest extends DatabaseTestCase
 {
+    protected $NormalProductionData;
+
+    protected $singleProductData;
+
+    protected $productsAssertData;
+
+    protected $notExistPKey;
+
     public function setUp(): void
     {
         parent::setUp();
 
         // Extra code to run before each test
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->db->table('db_product')->emptyTable('db_product');
-        $this->db->query("ALTER TABLE db_product AUTO_INCREMENT = 1");
-    }
-
-    /**
-     * @test
-     *
-     * [SUCCESS CASE] Get all products with parameters
-     *
-     * @return void
-     */
-    public function testIndexProductWithParametersSuccess()
-    {
-        $productionData  = array(
+        $this->NormalProductionData  = array(
             [
                 "name"       => 'T-Shirt',
                 "price"      => 600,
@@ -61,7 +50,35 @@ class ProductTest extends DatabaseTestCase
             ]
         );
 
-        $this->db->table("db_product")->insertBatch($productionData);
+        $this->singleProductData = [
+            "name"       => "iphone 15",
+            "price"      => 32000,
+            "amount"     => 25,
+            "created_at" => date("Y-m-d H:i:s"),
+            "updated_at" => date("Y-m-d H:i:s")
+        ];
+
+        $this->notExistPKey = 999;
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->db->table('db_product')->emptyTable('db_product');
+        $this->db->query("ALTER TABLE db_product AUTO_INCREMENT = 1");
+    }
+
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Get all products with parameters
+     *
+     * @return void
+     */
+    public function testIndexProductWithParametersSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->NormalProductionData);
 
         $limit = 10;
         $search = "Pants";
@@ -128,38 +145,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testIndexProductNotHasParametersSuccess()
     {
-        $productionData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
-
-        $this->db->table("db_product")->insertBatch($productionData);
+        $this->db->table("db_product")->insertBatch($this->NormalProductionData);
 
         $notHasParamResults = $this->get("api/v2/product");
 
@@ -195,7 +181,7 @@ class ProductTest extends DatabaseTestCase
 
         $decodeResult = json_decode($results->getJSON());
 
-        $resultStdGetErrMsg   = $decodeResult->messages->error;
+        $resultStdGetErrMsg = $decodeResult->messages->error;
 
         $this->assertEquals($resultStdGetErrMsg, "Product data not found");
     }
@@ -209,38 +195,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testShowProductUseNotExistPKeyFail()
     {
-        $productionData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
-
-        $this->db->table("db_product")->insertBatch($productionData);
+        $this->db->table("db_product")->insertBatch($this->NormalProductionData);
 
         //product key isn't exist , define p_key to 999
         $keyExistResults = $this->get('api/v2/product/999');
@@ -256,38 +211,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testShowProductUseExistPKeySuccess()
     {
-        $productionData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
-
-        $this->db->table("db_product")->insertBatch($productionData);
+        $this->db->table("db_product")->insertBatch($this->NormalProductionData);
 
         $results = $this->get('api/v2/product/1');
 
@@ -335,16 +259,8 @@ class ProductTest extends DatabaseTestCase
      */
     public function testCreateProductDataCompleteSuccess()
     {
-        $data = [
-            "name"       => "iphone 15",
-            "price"      => 32000,
-            "amount"     => 25,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
         $results = $this->withBodyFormat('json')
-                        ->post('api/v2/product', $data);
+                        ->post('api/v2/product', $this->singleProductData);
 
         if (!$results->isOK()) {
             $results->assertStatus(400);
@@ -353,9 +269,9 @@ class ProductTest extends DatabaseTestCase
         $results->assertStatus(200);
 
         $productsAssertData = [
-            "name"   => "iphone 15",
-            "amount" => 25,
-            "price"  => 32000,
+            "name"   => $this->singleProductData["name"],
+            "amount" => $this->singleProductData["amount"],
+            "price"  => $this->singleProductData["price"],
         ];
 
         $this->seeInDatabase("db_product", $productsAssertData);
@@ -370,24 +286,16 @@ class ProductTest extends DatabaseTestCase
      */
     public function testUpdateProductPKeyNotExistFail()
     {
-        $productionData = [
-            "name"       => "iphone 21",
-            "amount"     => 10,
-            "price"      => 30000,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         // p_key isn't exist
-        $keyNotHasData = [
-            "name"  => "iphone 15",
-            "price" => 30
+        $keyNotExistData = [
+            "name"  => $this->singleProductData["name"],
+            "price" => $this->singleProductData["price"]
         ];
 
         $keyNotHasResults = $this->withBodyFormat('json')
-                                 ->put('api/v2/product/999', $keyNotHasData);
+                                 ->put("api/v2/product/{$this->notExistPKey}", $keyNotExistData);
 
         $keyNotHasResults->assertStatus(404);
 
@@ -407,15 +315,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testUpdateProductDataMissingFail()
     {
-        $productionData = [
-             "name"       => "iphone 21",
-             "amount"     => 10,
-             "price"      => 30000,
-             "created_at" => date("Y-m-d H:i:s"),
-             "updated_at" => date("Y-m-d H:i:s")
-         ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -425,7 +325,7 @@ class ProductTest extends DatabaseTestCase
         ];
 
         $otherDataExistResults = $this->withBodyFormat('json')
-                                      ->put('api/v2/product/'.$insertID, $otherDataExistData);
+                                      ->put("api/v2/product/{$insertID}", $otherDataExistData);
 
         $otherDataExistResults->assertStatus(404);
 
@@ -445,15 +345,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testUpdateProductDataCompleteSuccess()
     {
-        $productionData = [
-            "name"       => "iphone 21",
-            "amount"     => 10,
-            "price"      => 30000,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -486,17 +378,9 @@ class ProductTest extends DatabaseTestCase
      */
     public function testDeleteProductPKeyNotExistFail()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
+        $this->db->table("db_product")->insert($this->singleProductData);
 
-        $this->db->table("db_product")->insert($productionData);
-
-        $keyNotExistResults = $this->delete('api/v2/product/9999');
+        $keyNotExistResults = $this->delete("api/v2/product/{$this->notExistPKey}");
 
         $keyNotExistResults->assertStatus(404);
 
@@ -516,15 +400,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testDeleteProductDataCompleteSuccess()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -545,15 +421,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testAddInventoryIncomeDataMissingFail()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -582,18 +450,10 @@ class ProductTest extends DatabaseTestCase
      */
     public function testAddInventoryUsePKeyNotFoundDataFail()
     {
-        $productionData = [
-           "name"       => "iPad Air",
-           "amount"     => 10,
-           "price"      => 30,
-           "created_at" => date("Y-m-d H:i:s"),
-           "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $pKeyNotExistData = [
-            "p_key"     => 5,
+            "p_key"     => $this->notExistPKey,
             "addAmount" => 10
         ];
 
@@ -618,15 +478,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testAddInventoryDataCompleteSuccess()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -652,10 +504,11 @@ class ProductTest extends DatabaseTestCase
 
         $checkData = [
             "p_key"  => $insertID,
-            "amount" => $productionData["amount"] + 10,
-            "price"  => $productionData["price"],
-            "name"   => $productionData["name"],
+            "amount" => $this->singleProductData["amount"] + 10,
+            "price"  => $this->singleProductData["price"],
+            "name"   => $this->singleProductData["name"],
         ];
+
         $this->seeInDatabase("db_product", $checkData);
     }
 
@@ -668,15 +521,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testReduceInventoryIncomeDataMissingFail()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -705,20 +550,10 @@ class ProductTest extends DatabaseTestCase
      */
     public function testReduceInventoryUsePKeyNotFoundDataFail()
     {
-        $productionData = [
-           "name"       => "iPad Air",
-           "amount"     => 10,
-           "price"      => 30,
-           "created_at" => date("Y-m-d H:i:s"),
-           "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
-
-        $insertID = $this->db->insertID();
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $pKeyNotExistData = [
-            "p_key"        => 5,
+            "p_key"        => $this->notExistPKey,
             "reduceAmount" => 10
         ];
 
@@ -743,21 +578,13 @@ class ProductTest extends DatabaseTestCase
      */
     public function testReduceInventoryAmountNotEnoughFail()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
         $amountNotEnoughData = [
             "p_key"        => $insertID,
-            "reduceAmount" => $productionData["amount"]+10
+            "reduceAmount" => $this->singleProductData["amount"]+10
         ];
 
         $amountNotEnoughResults = $this->withBodyFormat('json')
@@ -781,15 +608,7 @@ class ProductTest extends DatabaseTestCase
      */
     public function testReduceInventoryDataCompleteSuccess()
     {
-        $productionData = [
-            "name"       => "iPad Air",
-            "amount"     => 10,
-            "price"      => 30,
-            "created_at" => date("Y-m-d H:i:s"),
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-
-        $this->db->table("db_product")->insert($productionData);
+        $this->db->table("db_product")->insert($this->singleProductData);
 
         $insertID = $this->db->insertID();
 
@@ -815,9 +634,9 @@ class ProductTest extends DatabaseTestCase
 
         $checkData = [
             "p_key"  => $insertID,
-            "amount" => $productionData["amount"]-10,
-            "price"  => $productionData["price"],
-            "name"   => $productionData["name"],
+            "amount" => $this->singleProductData["amount"] - 10,
+            "price"  => $this->singleProductData["price"],
+            "name"   => $this->singleProductData["name"],
         ];
 
         $this->seeInDatabase("db_product", $checkData);
