@@ -13,7 +13,8 @@
     "predis/predis": "^2.0",
     "friendsofphp/php-cs-fixer": "^3.13",
     "zumba/json-serializer": "^3.0",
-    "mbezhanov/faker-provider-collection": "^2.0"
+    "mbezhanov/faker-provider-collection": "^2.0",
+    "pingyi/json-serializer": "^0.1.2"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9",

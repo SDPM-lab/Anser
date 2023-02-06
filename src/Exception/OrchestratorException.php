@@ -27,5 +27,8 @@ class OrchestratorException extends AnserException
         return new self("別名「{$alias}」的 Action 並不存在於任何的 Step 中。");
     }
 
-
+    public static function forCacheOrchestratorNotDefine(): OrchestratorException
+    {
+        return new self("快取編排器索引尚未被定義，請先使用 setCacheOrchestratorKey() 方法定義編排器索引。");
+    }
 }

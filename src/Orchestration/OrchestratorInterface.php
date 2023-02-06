@@ -5,8 +5,9 @@ namespace SDPMlab\Anser\Orchestration;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Service\ActionInterface;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 
-Interface OrchestratorInterface
+interface OrchestratorInterface
 {
     /**
      * 設定一個新的 Step
@@ -14,6 +15,29 @@ Interface OrchestratorInterface
      * @return StepInterface
      */
     public function setStep(): StepInterface;
+
+    /**
+     * 設定此編排器快取之實體
+     *
+     * @param CacheHandlerInterface $cacheInstance
+     * @return OrchestratorInterface
+     */
+    public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface;
+
+    /**
+     * 取得此次編排器快取之實體
+     *
+     * @return CacheHandlerInterface
+     */
+    public function getCacheInstance(): CacheHandlerInterface;
+
+    /**
+     * 設定快取編排器之索引
+     *
+     * @param string $orchestratorNumber
+     * @return OrchestratorInterface
+     */
+    public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface;
 
     /**
      * 標註交易開始，由此之後發生的 Step 失敗或任何程式例外將觸發 Rollback
@@ -32,7 +56,7 @@ Interface OrchestratorInterface
 
     /**
      * 判斷在目前被設定的 Step 之中，傳入的別名從來沒有被使用過。
-     * 
+     *
      * @param string $alias
      * @return boolean
      * @throws OrchestratorException
@@ -41,7 +65,7 @@ Interface OrchestratorInterface
 
 
     /**
-     * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體  
+     * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體
      *
      * @param string $alias
      * @return ActionInterface
@@ -55,12 +79,12 @@ Interface OrchestratorInterface
      *
      * @return array<string,\SDPMlab\Anser\Service\ActionInterface>
      */
-    public function getFailActions():array;
+    public function getFailActions(): array;
 
     /**
      * 執行 Orchestrator
      *
-     * @param mixed ...$args 
+     * @param mixed ...$args
      * @return void
      */
     public function build(...$args);
@@ -71,5 +95,4 @@ Interface OrchestratorInterface
      * @return boolean
      */
     public function isSuccess();
-
 }
