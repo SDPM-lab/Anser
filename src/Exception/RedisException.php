@@ -35,4 +35,9 @@ class RedisException extends AnserException
     {
         return new self("Redis 內找不到此編排器編號- {$alias} ，請重新輸入。");
     }
+
+    public static function forCacheInstanceNotFound(): RedisException
+    {
+        return new self("Redis 尚未被初始化，請先使用 initCacheDriver 方法初始化 Cache 實體。");
+    }
 }

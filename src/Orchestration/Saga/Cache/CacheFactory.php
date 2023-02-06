@@ -20,9 +20,16 @@ class CacheFactory
     /**
      * The paramter of driver.
      *
-     * @var string
+     * @var string|null
      */
-    protected static $driver = '';
+    protected static $driver = null;
+
+    /**
+     * The cache instance.
+     *
+     * @var CacheHandlerInterface|null
+     */
+    protected static $cacheInstance = null;
 
     /**
      * Initial the cache driver.
@@ -37,10 +44,25 @@ class CacheFactory
         $cacheDriver = ucfirst(strtolower($driver));
 
         if (isset(self::$cacheMapping[$cacheDriver])) {
-            self::$driver = new self::$cacheMapping[$cacheDriver]($config, $option);
-            return self::$driver;
+            self::$driver        = $driver;
+            self::$cacheInstance = new self::$cacheMapping[$cacheDriver]($config, $option);
+            return self::$cacheInstance;
         } else {
             throw RedisException::forCacheDriverNotFound($driver);
+        }
+    }
+
+    /**
+     * Get the constructed cache instance.
+     *
+     * @return CacheHandlerInterface
+     */
+    public static function getCacheInstance(): CacheHandlerInterface
+    {
+        if (is_null(self::$driver) || is_null(self::$cacheInstance)) {
+            throw RedisException::forCacheInstanceNotFound();
+        } else {
+            return self::$cacheInstance;
         }
     }
 }
