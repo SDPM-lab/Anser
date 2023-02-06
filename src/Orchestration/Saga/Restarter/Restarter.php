@@ -39,10 +39,7 @@ class Restarter implements RestarterInterface
     }
 
     /**
-     * Get the cache instance.
-     *
-     * @param CacheHandlerInterface $cacheInstance
-     * @return CacheHandlerInterface
+     * {@inheritDoc}
      */
     public function setRestarterCacheInstance(CacheHandlerInterface $cacheInstance): RestarterInterface
     {
@@ -58,7 +55,7 @@ class Restarter implements RestarterInterface
     {
         if (is_null($orchestratorNumber) && is_null($this->orchestratorNumber)) {
             throw RestarterException::forOrchestratorNumberNotFound();
-        } elseif (!is_null($orchestratorNumber) && is_null($orchestratorNumber)) {
+        } elseif (!is_null($this->orchestratorNumber) && is_null($orchestratorNumber)) {
             $orchestratorNumber = $this->orchestratorNumber;
         }
 
