@@ -64,6 +64,8 @@ $routes->group(
         $routes->get('serialize', 'Serialize::testJsonSerializer');
 
         $routes->get('userOrder', 'UserOrder::userOrder');
+
+        $routes->get('userOrderRestart', 'UserOrderRestarter::restartUserOrchestrator');
     }
 );
 
