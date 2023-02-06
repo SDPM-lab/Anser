@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Anser\Services;
+namespace App\Anser\Services\V1;
 
 use SDPMlab\Anser\Service\SimpleService;
 use SDPMlab\Anser\Service\ActionInterface;

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Anser\Orchestrators;
+namespace App\Anser\Orchestrators\V1;
 
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use SDPMlab\Anser\Service\Action;
-use App\Anser\Services\UserService;
+use App\Anser\Services\V1\UserService;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 
 class UserOrchestrator extends Orchestrator
@@ -26,10 +26,10 @@ class UserOrchestrator extends Orchestrator
 
     protected function definition()
     {
-        $this->cache = CacheFactory::initCacheDriver('redis', 'tcp://service_redis:6379');
+        $this->cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
 
         $this->setCacheInstance($this->cache);
-        $this->setCacheOrchestratorKey(random_int(0,10000000000000));
+        $this->setCacheOrchestratorKey('userOrder_2');
 
         $userService   = new UserService();
 
