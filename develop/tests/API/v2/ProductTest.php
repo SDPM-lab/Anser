@@ -131,7 +131,7 @@ class ProductTest extends DatabaseTestCase
 
         $decodeResult = json_decode($results->getJSON());
 
-        $resultStdGetErrMsg   = $decodeResult->messages->error;
+        $resultStdGetErrMsg = $decodeResult->messages->error;
 
         $this->assertEquals($resultStdGetErrMsg, "Product data not found");
     }
