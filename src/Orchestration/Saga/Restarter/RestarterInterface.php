@@ -20,5 +20,5 @@ interface RestarterInterface
      * @param string|null $orchestratorNumber
      * @return void
      */
-    public function reStartOrchestrator(?string $orchestratorNumber);
+    public function reStartOrchestrator(?string $orchestratorNumber = null);
 }
