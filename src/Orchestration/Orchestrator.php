@@ -47,6 +47,13 @@ abstract class Orchestrator implements OrchestratorInterface
     protected ?string $cacheOrchestratorNumber = null;
 
     /**
+     * The parameter of build funcion.
+     *
+     * @var array|null
+     */
+    protected ?array $argsArray = null;
+
+    /**
      * 設定一個新的 Step
      *
      * @return StepInterface
@@ -58,17 +65,26 @@ abstract class Orchestrator implements OrchestratorInterface
         return $step;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface
     {
         $this->cacheInstance = $cacheInstance;
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getCacheInstance(): CacheHandlerInterface
     {
         return $this->cacheInstance;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface
     {
         $this->cacheOrchestratorNumber = $orchestratorNumber;
@@ -85,6 +101,9 @@ abstract class Orchestrator implements OrchestratorInterface
         return $this->sagaInstance;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function transStart(string $transactionClass): OrchestratorInterface
     {
         $startStepNumber = count($this->steps) > 0 ? count($this->steps)-1 : 0;
@@ -96,6 +115,9 @@ abstract class Orchestrator implements OrchestratorInterface
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function transEnd(): OrchestratorInterface
     {
         $this->sagaInstance->setEndStep(end($this->steps));
@@ -163,22 +185,14 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     final public function build(...$args)
     {
-        $this->definition(...$args);
+        $this->argsArray = func_get_args();
+
+        call_user_func_array(array($this, "definition"), $this->argsArray);
 
         $this->startAllStep();
 
-        // try {
-        //     $this->startAllStep();
-        // } catch (\Exception $e) {
-        //     if (
-        //         $this->isSuccess === false &&
-        //         !is_null($this->sagaInstance)
-        //     ) {
-        //         $this->sagaInstance->startCompensation($this->steps);
-        //     }
-        // }
-
         $result = $this->defineResult();
+
         return $result;
     }
 
