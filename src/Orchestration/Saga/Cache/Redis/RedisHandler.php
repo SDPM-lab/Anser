@@ -76,7 +76,7 @@ class RedisHandler extends BaseCacheHandler
             throw new ClientException($e->getMessage());
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -135,7 +135,7 @@ class RedisHandler extends BaseCacheHandler
         if (!is_null($orchestratorNumber)) {
             $this->orchestratorNumber = $orchestratorNumber;
         }
-        
+
         if ($this->client->exists($this->orchestratorNumber) === 0) {
             throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
         }
