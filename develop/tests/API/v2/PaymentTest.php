@@ -5,11 +5,122 @@ use Tests\Support\DatabaseTestCase;
 
 class PaymentTest extends DatabaseTestCase
 {
+    protected $productData;
+
+    protected $walletData;
+
+    protected $orderData;
+
+    protected $paymentData;
+
+    protected $singlePaymentData;
+    
+    protected $headers;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        // Extra code to run before each test
+        $this->productData  = array(
+            [
+                "name"       => 'T-Shirt',
+                "price"      => 600,
+                "amount"     => 100,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "name"       => 'Pants',
+                "price"      => 400,
+                "amount"     => 50,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "name"       => 'Pants-XL',
+                "price"      => 500,
+                "amount"     => 60,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "name"       => 'Jacket',
+                "price"      => 5000,
+                "amount"     => 100,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ]
+        );
+
+        $this->walletData = [
+            [
+                "u_key"      => 1,
+                "balance"    => 0,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "u_key"      => 2,
+                "balance"    => 5000,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "u_key"      => 3,
+                "balance"    => 5000000,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+        ];
+
+        $this->orderData = [
+            [
+                "o_key"      => sha1($this->walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
+                "u_key"      => $this->walletData[0]["u_key"],
+                "p_key"      => 1,
+                "amount"     => 10,
+                "price"      => $this->productData[0]["price"],
+                "status"     => "orderCreate",
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ],
+            [
+                "o_key"      => sha1($this->walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
+                "u_key"      => $this->walletData[1]["u_key"],
+                "p_key"      => 2,
+                "amount"     => 10,
+                "price"      => $this->productData[1]["price"],
+                "status"     => "orderCreate",
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ]
+        ];
+
+        $this->paymentData = [
+            [
+                "o_key"  => $this->orderData[0]["o_key"],
+                "u_key"  => $this->walletData[0]["u_key"],
+                "total"  => $this->orderData[0]["amount"] * $this->orderData[0]["price"],
+                "status" => "paymentCreate"
+            ],
+            [
+                "o_key"  => $this->orderData[1]["o_key"],
+                "u_key"  => $this->walletData[1]["u_key"],
+                "total"  => $this->orderData[1]["amount"] * $this->orderData[1]["price"],
+                "status" => "paymentCreate"
+            ]
+        ];
+
+        $this->singlePaymentData = [
+            "o_key"  => $this->orderData[0]["o_key"],
+            "u_key"  => $this->walletData[0]["u_key"],
+            "total"  => $this->orderData[0]["amount"] * $this->orderData[0]["price"],
+            "status" => "paymentCreate"
+        ];
+
+        $this->headers = [
+            'X-User-Key' => $this->walletData[0]["u_key"]
+        ];
     }
 
     public function tearDown(): void
@@ -24,124 +135,28 @@ class PaymentTest extends DatabaseTestCase
         $this->db->query("ALTER TABLE db_payment AUTO_INCREMENT = 1");
     }
 
-    public function testIndex()
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Get all payment with parameters
+     *
+     * @return void
+     */
+    public function testIndexPaymentWithParametersSuccess()
     {
-        $productData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insertBatch($this->paymentData);
 
-        $this->db->table("db_product")->insertBatch($productData);
-
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
-
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        $orderData = [
-            [
-                "o_key"      => sha1($walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[0]["u_key"],
-                "p_key"      => 1,
-                "amount"     => 10,
-                "price"      => $productData[0]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "o_key"      => sha1($walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[1]["u_key"],
-                "p_key"      => 2,
-                "amount"     => 10,
-                "price"      => $productData[1]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        ];
-
-        $this->db->table('db_order')->insertBatch($orderData);
-
-        $paymentData = [
-            [
-                "o_key"  => $orderData[0]["o_key"],
-                "u_key"  => $walletData[0]["u_key"],
-                "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
-                "status" => "paymentCreate"
-            ],
-            [
-                "o_key"  => $orderData[1]["o_key"],
-                "u_key"  => $walletData[1]["u_key"],
-                "total"  => $orderData[1]["amount"] * $orderData[1]["price"],
-                "status" => "paymentCreate"
-            ]
-        ];
-
-        $this->db->table('db_payment')->insertBatch($paymentData);
-
-        $headers = [
-            'X-User-Key' => $walletData[0]["u_key"]
-        ];
-
-
-        // params test
         $data = [
             "limit"  => 3,
             'offset' => 0,
             'isDesc' => 'ASC',
         ];
 
-        $results = $this->withHeaders($headers)
+        $results = $this->withHeaders($this->headers)
                         ->get("api/v2/payment?limit={$data['limit']}&offset={$data['offset']}&isDesc={$data['isDesc']}");
-
-        if (!$results->isOK()) {
-            $results->assertStatus(404);
-        }
 
         $results->assertStatus(200);
 
@@ -154,7 +169,7 @@ class PaymentTest extends DatabaseTestCase
         $paymentModel = new PaymentModel();
 
         $testQuery = $paymentModel->select('pm_key,o_key,u_key,status,total')
-                                  ->where('u_key', $walletData[0]["u_key"])
+                                  ->where('u_key', $this->walletData[0]["u_key"])
                                   ->orderBy("created_at", $data['isDesc']);
 
         $testResultAmount = $testQuery->countAllResults(false);
@@ -167,14 +182,56 @@ class PaymentTest extends DatabaseTestCase
         $this->assertEquals($resultStdGetAmount, $testResultAmount);
 
         $this->assertEquals($resultStdGetMsg, "Payment index method successful");
+    }
 
-        // no params test
-        $notHasParamResults = $this->withHeaders($headers)
+    /**
+     * @test
+     *
+     * [FAIL CASE] Get all payment with parameters
+     *
+     * @return void
+     */
+    public function testIndexPaymentWithParametersFail()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+
+        $data = [
+            "limit"  => 3,
+            'offset' => 0,
+            'isDesc' => 'ASC',
+        ];
+
+        $results = $this->withHeaders($this->headers)
+                        ->get("api/v2/payment?limit={$data['limit']}&offset={$data['offset']}&isDesc={$data['isDesc']}");
+
+        $results->assertStatus(404);
+
+        $decodeResult = json_decode($results->getJSON());
+
+        $resultStdGetErrMsg = $decodeResult->messages->error;
+
+        $this->assertEquals($resultStdGetErrMsg, "Payment data not found");
+    }
+
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Get all payment without parameters
+     *
+     * @return void
+     */
+    public function testIndexPaymentWithoutParametersSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insertBatch($this->paymentData);
+
+        $notHasParamResults = $this->withHeaders($this->headers)
                                    ->get('api/v2/payment');
 
-        if (!$notHasParamResults->isOK()) {
-            $notHasParamResults->assertStatus(404);
-        }
         $notHasParamResults->assertStatus(200);
 
         $decodeNotHasParamResults = json_decode($notHasParamResults->getJSON());
@@ -183,9 +240,11 @@ class PaymentTest extends DatabaseTestCase
         $notHasParamResultsStdGetAmount = $decodeNotHasParamResults->data->dataCount;
         $notHasParamResultsStdGetMsg    = $decodeNotHasParamResults->msg;
 
+        $paymentModel = new PaymentModel();
+
         $testNotHasParamQuery = $paymentModel->select('pm_key,o_key,u_key,status,total')
-                                             ->orderBy("created_at", $data['isDesc'])
-                                             ->where('u_key', $walletData[0]["u_key"]);
+                                             ->orderBy("created_at", "desc")
+                                             ->where('u_key', $this->walletData[0]["u_key"]);
 
         $testNotHasParamAmount = $testNotHasParamQuery->countAllResults(false);
         $testNotHasParamResult = $testNotHasParamQuery->get()->getResult();
@@ -195,8 +254,41 @@ class PaymentTest extends DatabaseTestCase
         $this->assertEquals($notHasParamResultsStdGetAmount, $testNotHasParamAmount);
 
         $this->assertEquals($notHasParamResultsStdGetMsg, "Payment index method successful");
+    }
 
-        // filter test
+    /**
+     * @test
+     *
+     * [FAIL CASE] Get all payment without parameters
+     *
+     * @return void
+     */
+    public function testIndexPaymentWithoutParametersFail()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+
+        $notHasParamResults = $this->withHeaders($this->headers)
+                                   ->get('api/v2/payment');
+
+        $notHasParamResults->assertStatus(404);
+
+        $decodeNotHasParamResults = json_decode($notHasParamResults->getJSON());
+        $notHasParamResultsErrMsg = $decodeNotHasParamResults->messages->error;
+
+        $this->assertEquals($notHasParamResultsErrMsg, "Payment data not found");
+    }
+
+    /**
+     * @test
+     *
+     * [FAIL CASE] Get all payment but user isn't exist
+     *
+     * @return void
+     */
+    public function testIndexUserNotExistFail()
+    {
         $notExistUserHeaders = [
             "X-User-Key" =>'4'
         ];
@@ -211,134 +303,52 @@ class PaymentTest extends DatabaseTestCase
         $failReturnResponseDataErrorMsg = $failReturnResponseData->message->error;
 
         $this->assertEquals($failReturnResponseDataErrorMsg, "This User is not exist!");
-
-        // data not found test
-        $notDataUserHeaders = [
-            "X-User-Key" => '3'
-        ];
-
-        $notDataResults = $this->withHeaders($notDataUserHeaders)
-                               ->get('api/v2/payment');
-
-        $notDataResults->assertStatus(404);
-
-        $decodeNotDataResults = json_decode($notDataResults->getJSON());
-        $ResponseDataErrorMsg = $decodeNotDataResults->messages->error;
-
-        $this->assertEquals($ResponseDataErrorMsg, "Payment data not found");
     }
 
-    public function testShow()
+    /**
+     * @test
+     *
+     * [FAIL CASE] Use non-existent payment key to get payment
+     *
+     * @return void
+     */
+    public function testShowNotExistPMKeyFail()
     {
-        $productData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
-
-        $this->db->table("db_product")->insertBatch($productData);
-
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
-
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        $orderData = [
-            [
-                "o_key"      => sha1($walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[0]["u_key"],
-                "p_key"      => 1,
-                "amount"     => 10,
-                "price"      => $productData[0]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "o_key"      => sha1($walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[1]["u_key"],
-                "p_key"      => 2,
-                "amount"     => 10,
-                "price"      => $productData[1]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        ];
-
-        $this->db->table('db_order')->insertBatch($orderData);
-
-        $paymentData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "u_key"  => $walletData[0]["u_key"],
-            "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
-            "status" => "paymentCreate"
-        ];
-
-        $this->db->table('db_payment')->insert($paymentData);
-        $insertID = $this->db->insertID();
-
-        $headers = [
-            'X-User-Key' => $walletData[0]["u_key"]
-        ];
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
 
         //payment not found test
-        $existProductResults = $this->withHeaders($headers)
+        $existProductResults = $this->withHeaders($this->headers)
                                     ->get("api/v2/payment/3");
 
         $existProductResults->assertStatus(404);
 
         $existProductResponseData = json_decode($existProductResults->getJSON());
 
-        $existProductResponseDataErrorMsg  = $existProductResponseData->messages->error;
+        $existProductResponseDataErrorMsg = $existProductResponseData->messages->error;
 
         $this->assertEquals($existProductResponseDataErrorMsg, "This payment information is not exist or cannot found.");
+    }
 
-        // success test
-        $result = $this->withHeaders($headers)
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Use exist payment key to get payment
+     *
+     * @return void
+     */
+    public function testShowPaymentDataCompleteSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
+        $insertID = $this->db->insertID();
+
+        $result = $this->withHeaders($this->headers)
                        ->get("api/v2/payment/{$insertID}");
 
         $decodeResult = json_decode($result->getJSON());
@@ -348,7 +358,7 @@ class PaymentTest extends DatabaseTestCase
         $paymentModel = new PaymentModel();
 
         $getDBdata = $paymentModel->select('pm_key,o_key,u_key,status,total')
-                                  ->where('u_key', $walletData[0]["u_key"])
+                                  ->where('u_key', $this->walletData[0]["u_key"])
                                   ->where('pm_key', $insertID)
                                   ->get()
                                   ->getResult();
@@ -356,8 +366,17 @@ class PaymentTest extends DatabaseTestCase
         $result->assertStatus(200);
 
         $this->assertEquals($resultData, $getDBdata[0]);
+    }
 
-        // filter test
+    /**
+     * @test
+     *
+     * [FAIL CASE] Get payment but user isn't exist
+     *
+     * @return void
+     */
+    public function testShowUserNotExistFail()
+    {
         $notExistUserHeaders = [
             "X-User-Key" =>'4'
         ];
@@ -374,110 +393,27 @@ class PaymentTest extends DatabaseTestCase
         $this->assertEquals($failReturnResponseDataErrorMsg, "This User is not exist!");
     }
 
-    public function testCreate()
+    /**
+     * @test
+     *
+     * [FAIL CASE] Create payment data but the data is missing
+     *
+     * @return void
+     */
+    public function testCreatePaymentDataMissingFail()
     {
-        $productData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
 
-        $this->db->table("db_product")->insertBatch($productData);
-
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
-
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        $orderData = [
-            [
-                "o_key"      => sha1($walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[0]["u_key"],
-                "p_key"      => 1,
-                "amount"     => 10,
-                "price"      => $productData[0]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "o_key"      => sha1($walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[1]["u_key"],
-                "p_key"      => 2,
-                "amount"     => 10,
-                "price"      => $productData[1]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        ];
-
-        $this->db->table('db_order')->insertBatch($orderData);
-
-        $paymentData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "u_key"  => $walletData[0]["u_key"],
-            "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
-            "status" => "paymentCreate"
-        ];
-
-        $this->db->table('db_payment')->insert($paymentData);
-
-        $headers = [
-            'X-User-Key' => $walletData[0]["u_key"]
-        ];
-
-        // data missing
         $missingData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "amount" => $orderData[0]["amount"],
+            "o_key"  => $this->orderData[0]["o_key"],
+            "amount" => $this->orderData[0]["amount"],
         ];
 
         $dataMissResults = $this->withBodyFormat('json')
-                                ->withHeaders($headers)
+                                ->withHeaders($this->headers)
                                 ->post('api/v2/payment', $missingData);
 
         $dataMissResults->assertStatus(400);
@@ -487,16 +423,30 @@ class PaymentTest extends DatabaseTestCase
         $dataMissResultsErrMsg = $decodeDataMissResults->messages->error;
 
         $this->assertEquals($dataMissResultsErrMsg, "Incoming data error");
+    }
 
-        // payment not exist test
+    /**
+     * @test
+     *
+     * [FAIL CASE] Create payment data but the payment is exist
+     *
+     * @return void
+     */
+    public function testCreatePaymentExistFail()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
         $notExistData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "amount" => $orderData[0]["amount"],
-            "price"  => $orderData[0]["price"],
+            "o_key"  => $this->orderData[0]["o_key"],
+            "amount" => $this->orderData[0]["amount"],
+            "price"  => $this->orderData[0]["price"],
         ];
 
         $notExistResults = $this->withBodyFormat('json')
-                                ->withHeaders($headers)
+                                ->withHeaders($this->headers)
                                 ->post('api/v2/payment', $notExistData);
 
         $notExistResults->assertStatus(403);
@@ -506,16 +456,30 @@ class PaymentTest extends DatabaseTestCase
         $notExistResultsErrMsg = $decodeNotExistResults->messages->error;
 
         $this->assertEquals($notExistResultsErrMsg, "This payment information is exist.");
+    }
 
-        // Insufficient balance test
+    /**
+     * @test
+     *
+     * [FAIL CASE] Create payment data but the balance is insufficient
+     *
+     * @return void
+     */
+    public function testCreatePaymentInsufficientBalance()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
         $insufficientData = [
-            "o_key"  => $orderData[1]["o_key"],
-            "amount" => $orderData[1]["amount"],
-            "price"  => $orderData[1]["price"],
+            "o_key"  => $this->orderData[1]["o_key"],
+            "amount" => $this->orderData[1]["amount"],
+            "price"  => $this->orderData[1]["price"],
         ];
 
         $insufficientResults = $this->withBodyFormat('json')
-                                    ->withHeaders($headers)
+                                    ->withHeaders($this->headers)
                                     ->post('api/v2/payment', $insufficientData);
 
         $insufficientResults->assertStatus(400);
@@ -525,25 +489,35 @@ class PaymentTest extends DatabaseTestCase
         $insufficientResultsErrMsg = $decodeInsufficientResults->messages->error;
 
         $this->assertEquals($insufficientResultsErrMsg, "Insufficient balance");
+    }
 
-        // success test
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Create payment and data complete
+     *
+     * @return void
+     */
+    public function testCreatePaymentDataCompleteSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+
         $successHeader = [
-            'X-User-Key' => $walletData[2]["u_key"]
+            'X-User-Key' => $this->walletData[2]["u_key"]
         ];
 
         $successData = [
-            "o_key"  => $orderData[1]["o_key"],
-            "amount" => $orderData[1]["amount"],
-            "price"  => $orderData[1]["price"],
+            "o_key"  => $this->orderData[1]["o_key"],
+            "amount" => $this->orderData[1]["amount"],
+            "price"  => $this->orderData[1]["price"],
         ];
 
         $results = $this->withBodyFormat('json')
                         ->withHeaders($successHeader)
                         ->post('api/v2/payment', $successData);
 
-        if (!$results->isOK()) {
-            $results->assertStatus(400);
-        }
         $results->assertStatus(200);
 
         $decodeResult = json_decode($results->getJSON());
@@ -562,127 +536,26 @@ class PaymentTest extends DatabaseTestCase
         $this->seeInDatabase('db_payment', $checkData);
     }
 
-    public function testUpdate()
+    /**
+     * @test
+     *
+     * [FAIL CASE] Use non-existent payment key to update payment
+     *
+     * @return void
+     */
+    public function testUpdatePaymentNotExistPMKeyFail()
     {
-        $productData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
 
-        $this->db->table("db_product")->insertBatch($productData);
-
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
-
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        $orderData = [
-            [
-                "o_key"      => sha1($walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[0]["u_key"],
-                "p_key"      => 1,
-                "amount"     => 10,
-                "price"      => $productData[0]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "o_key"      => sha1($walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[1]["u_key"],
-                "p_key"      => 2,
-                "amount"     => 10,
-                "price"      => $productData[1]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        ];
-
-        $this->db->table('db_order')->insertBatch($orderData);
-
-        $paymentData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "u_key"  => $walletData[0]["u_key"],
-            "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
-            "status" => "paymentCreate"
-        ];
-
-        $this->db->table('db_payment')->insert($paymentData);
-
-        $insertID = $this->db->insertID();
-
-        $headers = [
-            'X-User-Key' => $walletData[0]["u_key"]
-        ];
-
-        // Incoming data error test
-        $missingData = [
-            "status" => "test"
-        ];
-        $dataMissingResults = $this->withBodyFormat('json')
-                                   ->withHeaders($headers)
-                                   ->put("api/v2/payment/{$insertID}", $missingData);
-
-        $dataMissingResults->assertStatus(400);
-
-        $decodeDataMissingResult = json_decode($dataMissingResults->getJSON());
-
-        $dataMissingResultErrMsg = $decodeDataMissingResult->messages->error;
-
-        $this->assertEquals($dataMissingResultErrMsg, "Incoming data error");
-
-        //payment not exist
         $notExistData = [
             "total" => 5000,
         ];
 
         $notExistResults = $this->withBodyFormat('json')
-                                ->withHeaders($headers)
+                                ->withHeaders($this->headers)
                                 ->put("api/v2/payment/9999", $notExistData);
 
         $notExistResults->assertStatus(404);
@@ -692,19 +565,49 @@ class PaymentTest extends DatabaseTestCase
         $notExistResultsErrMsg = $decodeNotExistResults->messages->error;
 
         $this->assertEquals($notExistResultsErrMsg, "This payment information is not exist");
+    }
 
-        // success test
+    public function testUpdatePaymentDataMissingFail()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
+        $insertID = $this->db->insertID();
+
+        $missingData = [
+            "status" => "test"
+        ];
+        $dataMissingResults = $this->withBodyFormat('json')
+                                   ->withHeaders($this->headers)
+                                   ->put("api/v2/payment/{$insertID}", $missingData);
+
+        $dataMissingResults->assertStatus(400);
+
+        $decodeDataMissingResult = json_decode($dataMissingResults->getJSON());
+
+        $dataMissingResultErrMsg = $decodeDataMissingResult->messages->error;
+
+        $this->assertEquals($dataMissingResultErrMsg, "Incoming data error");
+    }
+
+    public function testUpdatePaymentDataCompleteSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
+        $insertID = $this->db->insertID();
+
         $successData = [
             "total" => 5000,
         ];
 
         $results = $this->withBodyFormat('json')
-                        ->withHeaders($headers)
+                        ->withHeaders($this->headers)
                         ->put("api/v2/payment/{$insertID}", $successData);
-
-        if (!$results->isOK()) {
-            $results->assertStatus(400);
-        }
 
         $results->assertStatus(200);
 
@@ -715,8 +618,8 @@ class PaymentTest extends DatabaseTestCase
         $this->assertEquals($resultsMsg, "Payment update method successful.");
 
         $checkData = [
-            "o_key"   => $orderData[0]["o_key"],
-            "u_key"   => $headers['X-User-Key'],
+            "o_key"   => $this->orderData[0]["o_key"],
+            "u_key"   => $this->headers['X-User-Key'],
             "total"   => 5000,
             "status"  => "paymentUpdate",
         ];
@@ -724,107 +627,15 @@ class PaymentTest extends DatabaseTestCase
         $this->seeInDatabase('db_payment', $checkData);
     }
 
-    public function testDelete()
+    public function testDeletePaymentPMKeyNotExist()
     {
-        $productData  = array(
-            [
-                "name"       => 'T-Shirt',
-                "price"      => 600,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants',
-                "price"      => 400,
-                "amount"     => 50,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Pants-XL',
-                "price"      => 500,
-                "amount"     => 60,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "name"       => 'Jacket',
-                "price"      => 5000,
-                "amount"     => 100,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        );
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
 
-        $this->db->table("db_product")->insertBatch($productData);
-
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
-
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        $orderData = [
-            [
-                "o_key"      => sha1($walletData[0]["u_key"] . 1 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[0]["u_key"],
-                "p_key"      => 1,
-                "amount"     => 10,
-                "price"      => $productData[0]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "o_key"      => sha1($walletData[1]["u_key"] . 2 . date("Y-m-d H:i:s")),
-                "u_key"      => $walletData[1]["u_key"],
-                "p_key"      => 2,
-                "amount"     => 10,
-                "price"      => $productData[1]["price"],
-                "status"     => "orderCreate",
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ]
-        ];
-
-        $this->db->table('db_order')->insertBatch($orderData);
-
-        $paymentData = [
-            "o_key"  => $orderData[0]["o_key"],
-            "u_key"  => $walletData[0]["u_key"],
-            "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
-            "status" => "paymentCreate"
-        ];
-
-        $this->db->table('db_payment')->insert($paymentData);
-
-        $insertID = $this->db->insertID();
-
-        $headers = [
-            'X-User-Key' => $walletData[0]["u_key"]
-        ];
-
-        //payment not exist
         $notExistResults = $this->withBodyFormat('json')
-                                ->withHeaders($headers)
+                                ->withHeaders($this->headers)
                                 ->delete("api/v2/payment/9999");
 
         $notExistResults->assertStatus(404);
@@ -834,10 +645,19 @@ class PaymentTest extends DatabaseTestCase
         $notExistResultsErrMsg = $decodeNotExistResults->messages->error;
 
         $this->assertEquals($notExistResultsErrMsg, "This payment information is not exist.");
+    }
 
-        // success test
+    public function testDeletePaymentDataCompleteSuccess()
+    {
+        $this->db->table("db_product")->insertBatch($this->productData);
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+        $this->db->table('db_order')->insertBatch($this->orderData);
+        $this->db->table('db_payment')->insert($this->singlePaymentData);
+
+        $insertID = $this->db->insertID();
+
         $result = $this->withBodyFormat('json')
-                       ->withHeaders($headers)
+                       ->withHeaders($this->headers)
                        ->delete("api/v2/payment/{$insertID}");
 
         $decodeResult = json_decode($result->getJSON());
@@ -858,9 +678,9 @@ class PaymentTest extends DatabaseTestCase
 
         $checkData = [
             "pm_key" => $insertID,
-            "o_key"  => $orderData[0]["o_key"],
-            "u_key"  => $walletData[0]["u_key"],
-            "total"  => $orderData[0]["amount"] * $orderData[0]["price"],
+            "o_key"  => $this->orderData[0]["o_key"],
+            "u_key"  => $this->walletData[0]["u_key"],
+            "total"  => $this->orderData[0]["amount"] * $this->orderData[0]["price"],
             "status" => "paymentDelete"
         ];
 
