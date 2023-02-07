@@ -10,7 +10,7 @@ class UserOrderRestarter extends BaseController
 {
     public function restartUserOrchestrator()
     {
-        $userOrchRestarter = new Restarter('userOrder_2');
+        $userOrchRestarter = new Restarter('userOrder_8');
         $userOrchRestarter->setRestarterCacheInstance(CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379'))
                           ->reStartOrchestrator();
     }
