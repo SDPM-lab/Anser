@@ -143,7 +143,7 @@ class ProductTest extends DatabaseTestCase
      *
      * @return void
      */
-    public function testIndexProductNotHasParametersSuccess()
+    public function testIndexProductWithoutParametersSuccess()
     {
         $this->db->table("db_product")->insertBatch($this->NormalProductionData);
 
@@ -173,7 +173,7 @@ class ProductTest extends DatabaseTestCase
      *
      * @return void
      */
-    public function testIndexProductNotHasParametersFail()
+    public function testIndexProductWithoutParametersFail()
     {
         $results = $this->get("api/v2/product");
 
