@@ -29,6 +29,8 @@ abstract class Orchestrator implements OrchestratorInterface
 
     /**
      * SAGA 實體
+     *
+     * @var SagaInterface|null
      */
     protected ?SagaInterface $sagaInstance = null;
 
@@ -94,9 +96,9 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * 取得 Saga 實體
      *
-     * @return SagaInterface
+     * @return SagaInterface|null
      */
-    public function getSagaInstance(): SagaInterface
+    public function getSagaInstance(): ?SagaInterface
     {
         return $this->sagaInstance;
     }
@@ -197,6 +199,38 @@ abstract class Orchestrator implements OrchestratorInterface
     }
 
     /**
+     * Handle the single step of steps array.
+     *
+     * @param StepInterface $step
+     * @return void
+     */
+    protected function handleSingleStep(StepInterface $step)
+    {
+        // 將當前 Step 紀錄於 Saga
+        if (!is_null($this->sagaInstance)) {
+            $this->sagaInstance->startStep($step);
+        }
+
+        if (!is_null($this->cacheInstance)) {
+            $this->cacheInstance->setOrchestrator($this);
+        }
+
+        try {
+            $step->start();
+        } catch (\SDPMlab\Anser\Exception\ActionException $e) {
+            //僅捕獲 Action 例外
+            $this->isSuccess = false;
+        }
+
+        $actions = $step->getStepActionList();
+        foreach ($actions as $action) {
+            if (!$action->isSuccess()) {
+                $this->isSuccess = false;
+            }
+        }
+    }
+
+    /**
      * 執行所有已設定的 Step
      *
      * @return void
@@ -213,28 +247,7 @@ abstract class Orchestrator implements OrchestratorInterface
         }
 
         foreach ($this->steps as $step) {
-            // 將當前 Step 紀錄於 Saga
-            if (!is_null($this->sagaInstance)) {
-                $this->sagaInstance->startStep($step);
-            }
-
-            if (!is_null($this->cacheInstance)) {
-                $this->cacheInstance->setOrchestrator($this);
-            }
-
-            try {
-                $step->start();
-            } catch (\SDPMlab\Anser\Exception\ActionException $e) {
-                //僅捕獲 Action 例外
-                $this->isSuccess = false;
-            }
-
-            $actions = $step->getStepActionList();
-            foreach ($actions as $action) {
-                if (!$action->isSuccess()) {
-                    $this->isSuccess = false;
-                }
-            }
+            $this->handleSingleStep($step);
 
             //若有執行交易，中止 Step 的執行，並開始補償
             if (
@@ -249,7 +262,35 @@ abstract class Orchestrator implements OrchestratorInterface
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
-        if ($this->isSuccess() === true && !is_null($this->cacheInstance)) {
+        if (!is_null($this->cacheInstance)) {
+            $this->cacheInstance->clearOrchestrator();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reStartRuntimeOrchestrator()
+    {
+        foreach ($this->steps as $step) {
+            if ($step->isSuccess() === true) {
+                continue;
+            }
+
+            $this->handleSingleStep($step);
+
+            //若有執行交易，中止 Step 的執行，並開始補償
+            if (
+                $this->isSuccess === false &&
+                !is_null($this->sagaInstance)
+            ) {
+                if ($this->sagaInstance->startCompensation($this->steps)) {
+                    break;
+                }
+            }
+        }
+
+        if (!is_null($this->cacheInstance)) {
             $this->cacheInstance->clearOrchestrator();
         }
     }
