@@ -200,7 +200,7 @@ class OrderTest extends DatabaseTestCase
      *
      * @return void
      */
-    public function testIndexOrderNotHasParametersSuccess()
+    public function testIndexOrderWithoutParametersSuccess()
     {
         $this->db->table("db_product")->insertBatch($this->productData);
         $this->db->table('db_wallet')->insertBatch($this->walletData);
@@ -240,7 +240,7 @@ class OrderTest extends DatabaseTestCase
      *
      * @return void
      */
-    public function testIndexOrderNotHasParametersFail()
+    public function testIndexOrderWithoutParametersFail()
     {
         $this->db->table('db_wallet')->insertBatch($this->walletData);
 
