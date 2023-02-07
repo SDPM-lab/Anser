@@ -64,6 +64,7 @@ class Restarter implements RestarterInterface
         }
 
         $this->runtimeOrchestrator = $this->cacheInstance->getOrchestrator($orchestratorNumber);
-        dd($this->runtimeOrchestrator);
+
+        $this->runtimeOrchestrator->reStartRuntimeOrchestrator();
     }
 }
