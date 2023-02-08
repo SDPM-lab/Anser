@@ -5,23 +5,15 @@ use App\Models\v2\WalletModel;
 
 class WalletTest extends DatabaseTestCase
 {
+    protected $walletData;
+
+    protected $headers;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        // Extra code to run before each test
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->db->table('db_wallet')->emptyTable('db_wallet');
-    }
-
-    public function testShow()
-    {
-        $walletData = [
+        $this->walletData = [
             [
                 "u_key"      => 1,
                 "balance"    => 0,
@@ -42,9 +34,29 @@ class WalletTest extends DatabaseTestCase
             ],
         ];
 
-        $this->db->table('db_wallet')->insertBatch($walletData);
+        $this->headers = [
+            'X-User-Key' => 2
+        ];
+    }
 
-        //user not exist test
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->db->table('db_wallet')->emptyTable('db_wallet');
+    }
+
+    /**
+     * @test
+     *
+     * [FAIL CASE] Use non-existent user key to get wallet
+     *
+     * @return void
+     */
+    public function testShowWalletUKeyNotExistFail()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+
         $notExistUserHeaders = [
             'X-User-Key' => 999
         ];
@@ -57,13 +69,20 @@ class WalletTest extends DatabaseTestCase
         $decodeFailDataResults = json_decode($failDataResults->getJSON());
 
         $this->assertEquals($decodeFailDataResults->message->error, "This User is not exist!");
+    }
 
-        // user exist test
-        $headers = [
-            'X-User-Key' => 2
-        ];
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Use exist user key to get all wallet
+     *
+     * @return void
+     */
+    public function testShowWalletDataCompleteSuccess()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
 
-        $successDataResults = $this->withHeaders($headers)
+        $successDataResults = $this->withHeaders($this->headers)
                                    ->get('api/v2/wallet');
 
         $successDataResults->assertStatus(200);
@@ -78,32 +97,17 @@ class WalletTest extends DatabaseTestCase
         ]);
     }
 
-    public function testCreate()
+    /**
+     * @test
+     *
+     * [FAIL CASE] Create wallet data but the data is missing
+     *
+     * @return void
+     */
+    public function testCreateWalletDataMissingFail()
     {
-        $walletData = [
-            [
-                "u_key"      => 1,
-                "balance"    => 0,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 2,
-                "balance"    => 5000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-            [
-                "u_key"      => 3,
-                "balance"    => 5000000,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ],
-        ];
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
 
-        $this->db->table('db_wallet')->insertBatch($walletData);
-
-        //data miss test
         $dataExistResults = $this->post('api/v2/wallet', []);
 
         $dataExistResults->assertStatus(400);
@@ -113,8 +117,19 @@ class WalletTest extends DatabaseTestCase
         $decodeDataExistResultsErrMsg = $decodeDataExistResults->messages->error;
 
         $this->assertEquals($decodeDataExistResultsErrMsg, "Incoming data error");
+    }
 
-        //user not exist test
+    /**
+     * @test
+     *
+     * [FAIL CASE] Use non-existent user key to create wallet
+     *
+     * @return void
+     */
+    public function testCreateWalletUKeyNotExist()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+
         $notExistUserHeaders= [
             'X-User-Key'=> 999
         ];
@@ -132,46 +147,46 @@ class WalletTest extends DatabaseTestCase
         $decodeFailDataResults = json_decode($failDataResults->getJSON());
 
         $this->assertEquals($decodeFailDataResults->message->error, "This User is not exist!");
+    }
 
-        //success case test
-
-        $headers = [
-            'X-User-Key'=> 2
-        ];
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] Add wallet balance or compensate. data complete test.
+     *
+     * @return void
+     */
+    public function testCreateWalletDataCompleteSuccess()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
 
         $successData = [
             "addAmount" => 500
         ];
 
         $results = $this->withBodyFormat('json')
-                        ->withHeaders($headers)
+                        ->withHeaders($this->headers)
                         ->post('api/v2/wallet', $successData);
 
-        if ($results->getStatus() == 400) {
-            $successDataResultsGetMsgError = json_decode($results->getJSON())->messages->error;
+        $successDataResultsGetMsg = json_decode($results->getJSON())->msg;
 
-            $this->assertEquals($successDataResultsGetMsgError, "Wallet create method fail");
-        } else {
-            $successDataResultsGetMsgError = json_decode($results->getJSON())->msg;
+        $this->assertEquals($successDataResultsGetMsg, "Wallet create method successful");
 
-            $this->assertEquals($successDataResultsGetMsgError, "Wallet create method successful");
+        $results->assertStatus(200);
 
-            $results->assertStatus(200);
+        $wallet = new WalletModel();
 
-            $wallet = new WalletModel();
+        $transactionAfterData = $wallet->where("u_key", $this->headers['X-User-Key'])->first();
 
-            $transationAfterData = $wallet->where("u_key", $headers['X-User-Key'])->first();
+        $balanceChange = $transactionAfterData->balance - $this->walletData[1]["balance"];
 
-            $balanceChange = $transationAfterData->balance - $walletData[1]["balance"];
+        $this->assertTrue($balanceChange == $successData['addAmount']);
 
-            $this->assertTrue($balanceChange == $successData['addAmount']);
+        $checkData = [
+            "u_key"   => $this->headers['X-User-Key'],
+            "balance" => $successData['addAmount'] + $this->walletData[1]["balance"],
+        ];
 
-            $checkData = [
-                "u_key"   => $headers['X-User-Key'],
-                "balance" => $successData['addAmount'] + $walletData[1]["balance"],
-            ];
-
-            $this->seeInDatabase('db_wallet', $checkData);
-        }
+        $this->seeInDatabase('db_wallet', $checkData);
     }
 }
