@@ -51,8 +51,12 @@ Events::on('pre_system', function () {
 		Events::on('DBQuery', 'CodeIgniter\Debug\Toolbar\Collectors\Database::collect');
 		Services::toolbar()->respond();
 	}
+
+	// Load the service config of Anser.
+	require_once APPPATH . 'Anser/ServiceConfig.php';
 });
 /**
  * 判斷目前的執行環境，切換預設連線的 db 群組
  */
 defined('USE_DB_GROUP') || define('USE_DB_GROUP', ENVIRONMENT == 'testing' ? "tests" : "default");
+

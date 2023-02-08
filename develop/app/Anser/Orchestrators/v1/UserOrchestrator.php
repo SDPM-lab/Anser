@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Anser\Orchestrators;
+namespace App\Anser\Orchestrators\V1;
 
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use SDPMlab\Anser\Service\Action;
-use App\Anser\Services\UserService;
+use App\Anser\Services\V1\UserService;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 
 class UserOrchestrator extends Orchestrator
@@ -17,6 +17,8 @@ class UserOrchestrator extends Orchestrator
      */
     protected UserService $userService;
 
+    protected $cache;
+
     public function __construct()
     {
         $this->userService = new UserService();
@@ -24,20 +26,20 @@ class UserOrchestrator extends Orchestrator
 
     protected function definition()
     {
-        $this->setCacheInstance(CacheFactory::initCacheDriver('redis', 'tcp://service_redis:6379'));
-        $this->setCacheOrchestratorKey("userOrder_1");
-        
-        // $this->setStep()
-        //     ->addAction("order", $orderAction);
-        // $this->setStep()
-        //     ->addAction("payment", $paymentAction);
-        // $this->setStep()
-        //     ->addAction("user", $userAction);
+        $this->cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
 
-        // After fixed.
+        $this->setCacheInstance($this->cache);
+        $this->setCacheOrchestratorKey('userOrder_2');
 
         $userService   = new UserService();
 
         $this->setStep()->addAction("user_service", $userService->getUserData("1"));
+    }
+
+    protected function defineResult()
+    {
+        // $this->cache->clearOrchestrator("userOrder_15");
+
+        return $this->isSuccess;
     }
 }

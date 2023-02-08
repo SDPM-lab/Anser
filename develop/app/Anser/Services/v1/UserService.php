@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Anser\Services;
+namespace App\Anser\Services\V1;
 
 use SDPMlab\Anser\Service\SimpleService;
 use SDPMlab\Anser\Service\ActionInterface;
+use SDPMlab\Anser\Exception\ActionException;
 use App\Anser\Filters\UserAuthFilters;
 
 class UserService extends SimpleService
@@ -51,8 +52,13 @@ class UserService extends SimpleService
                 $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(),true);
                 $meaningData = $data["data"];
                 return $meaningData;
-            }
-        );
+            })
+            ->failHandler(function (
+                ActionException $e
+            ) {
+                log_message("critical", $e->getMessage());
+                $e->getAction()->setMeaningData([]);
+            });
         return $action;
     }
 

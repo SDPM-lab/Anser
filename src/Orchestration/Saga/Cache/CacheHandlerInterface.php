@@ -27,16 +27,18 @@ interface CacheHandlerInterface
      * When the steps of orchestrator already finished,
      * release the store resource of redis.
      *
+     * @param string $orchestratorNumber
      * @return boolean
      */
-    public function clearOrchestrator(): bool;
+    public function clearOrchestrator(?string $orchestratorNumber = null): bool;
 
     /**
      * Get the runtime orchestor into redis by using orchestratorNumber.
      *
+     * @param string $orchestratorNumber
      * @return OrchestratorInterface
      */
-    public function getOrchestrator(): OrchestratorInterface;
+    public function getOrchestrator(?string $orchestratorNumber = null): OrchestratorInterface;
 
     /**
      * Serialize the meta data of orchestrator,

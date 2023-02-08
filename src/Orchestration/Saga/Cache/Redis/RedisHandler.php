@@ -77,6 +77,9 @@ class RedisHandler extends BaseCacheHandler
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function initOrchestrator(string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
         $this->orchestratorNumber = $orchestratorNumber;
@@ -92,6 +95,9 @@ class RedisHandler extends BaseCacheHandler
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setOrchestrator(OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
         if ($this->client->exists($this->orchestratorNumber) === 0) {
@@ -103,8 +109,15 @@ class RedisHandler extends BaseCacheHandler
         return $this;
     }
 
-    public function getOrchestrator(): OrchestratorInterface
+    /**
+     * {@inheritDoc}
+     */
+    public function getOrchestrator(?string $orchestratorNumber = null): OrchestratorInterface
     {
+        if (!is_null($orchestratorNumber)) {
+            $this->orchestratorNumber = $orchestratorNumber;
+        }
+
         if ($this->client->exists($this->orchestratorNumber) === 0) {
             throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
         }
@@ -114,8 +127,15 @@ class RedisHandler extends BaseCacheHandler
         return $runtimeOrchestrator;
     }
 
-    public function clearOrchestrator(): bool
+    /**
+     * {@inheritDoc}
+     */
+    public function clearOrchestrator(?string $orchestratorNumber = null): bool
     {
+        if (!is_null($orchestratorNumber)) {
+            $this->orchestratorNumber = $orchestratorNumber;
+        }
+
         if ($this->client->exists($this->orchestratorNumber) === 0) {
             throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
         }

@@ -90,6 +90,13 @@ interface OrchestratorInterface
     public function build(...$args);
 
     /**
+     * Re-start the runtime orchestrator.
+     *
+     * @return void
+     */
+    public function reStartRuntimeOrchestrator();
+
+    /**
      * 回傳 Orchestrator 是否成功
      *
      * @return boolean

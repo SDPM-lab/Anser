@@ -64,6 +64,8 @@ $routes->group(
         $routes->get('serialize', 'Serialize::testJsonSerializer');
 
         $routes->get('userOrder', 'UserOrder::userOrder');
+
+        $routes->get('userOrderRestart', 'UserOrderRestarter::restartUserOrchestrator');
     }
 );
 
@@ -103,6 +105,9 @@ $routes->group(
         //PRODUCT AMOUNT API
         $routes->post('inventory/addInventory', 'ProductController::addInventory');
         $routes->post('inventory/reduceInventory', 'ProductController::reduceInventory');
+
+        $routes->get('createOrder', 'CreateOrder::createOrder');
+
     }
 );
 

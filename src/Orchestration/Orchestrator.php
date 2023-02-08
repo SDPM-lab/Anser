@@ -29,6 +29,8 @@ abstract class Orchestrator implements OrchestratorInterface
 
     /**
      * SAGA 實體
+     *
+     * @var SagaInterface|null
      */
     protected ?SagaInterface $sagaInstance = null;
 
@@ -47,6 +49,13 @@ abstract class Orchestrator implements OrchestratorInterface
     protected ?string $cacheOrchestratorNumber = null;
 
     /**
+     * The parameter of build funcion.
+     *
+     * @var array|null
+     */
+    protected ?array $argsArray = null;
+
+    /**
      * 設定一個新的 Step
      *
      * @return StepInterface
@@ -58,17 +67,26 @@ abstract class Orchestrator implements OrchestratorInterface
         return $step;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface
     {
         $this->cacheInstance = $cacheInstance;
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getCacheInstance(): CacheHandlerInterface
     {
         return $this->cacheInstance;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface
     {
         $this->cacheOrchestratorNumber = $orchestratorNumber;
@@ -78,13 +96,16 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * 取得 Saga 實體
      *
-     * @return SagaInterface
+     * @return SagaInterface|null
      */
-    public function getSagaInstance(): SagaInterface
+    public function getSagaInstance(): ?SagaInterface
     {
         return $this->sagaInstance;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function transStart(string $transactionClass): OrchestratorInterface
     {
         $startStepNumber = count($this->steps) > 0 ? count($this->steps)-1 : 0;
@@ -96,6 +117,9 @@ abstract class Orchestrator implements OrchestratorInterface
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function transEnd(): OrchestratorInterface
     {
         $this->sagaInstance->setEndStep(end($this->steps));
@@ -163,23 +187,47 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     final public function build(...$args)
     {
-        $this->definition(...$args);
+        $this->argsArray = func_get_args();
+
+        call_user_func_array(array($this, "definition"), $this->argsArray);
 
         $this->startAllStep();
 
-        // try {
-        //     $this->startAllStep();
-        // } catch (\Exception $e) {
-        //     if (
-        //         $this->isSuccess === false &&
-        //         !is_null($this->sagaInstance)
-        //     ) {
-        //         $this->sagaInstance->startCompensation($this->steps);
-        //     }
-        // }
-
         $result = $this->defineResult();
+
         return $result;
+    }
+
+    /**
+     * Handle the single step of steps array.
+     *
+     * @param StepInterface $step
+     * @return void
+     */
+    protected function handleSingleStep(StepInterface $step)
+    {
+        // 將當前 Step 紀錄於 Saga
+        if (!is_null($this->sagaInstance)) {
+            $this->sagaInstance->startStep($step);
+        }
+
+        if (!is_null($this->cacheInstance)) {
+            $this->cacheInstance->setOrchestrator($this);
+        }
+
+        try {
+            $step->start();
+        } catch (\SDPMlab\Anser\Exception\ActionException $e) {
+            //僅捕獲 Action 例外
+            $this->isSuccess = false;
+        }
+
+        $actions = $step->getStepActionList();
+        foreach ($actions as $action) {
+            if (!$action->isSuccess()) {
+                $this->isSuccess = false;
+            }
+        }
     }
 
     /**
@@ -199,28 +247,7 @@ abstract class Orchestrator implements OrchestratorInterface
         }
 
         foreach ($this->steps as $step) {
-            // 將當前 Step 紀錄於 Saga
-            if (!is_null($this->sagaInstance)) {
-                $this->sagaInstance->startStep($step);
-            }
-
-            if (!is_null($this->cacheInstance)) {
-                $this->cacheInstance->setOrchestrator($this);
-            }
-
-            try {
-                $step->start();
-            } catch (\SDPMlab\Anser\Exception\ActionException $e) {
-                //僅捕獲 Action 例外
-                $this->isSuccess = false;
-            }
-
-            $actions = $step->getStepActionList();
-            foreach ($actions as $action) {
-                if (!$action->isSuccess()) {
-                    $this->isSuccess = false;
-                }
-            }
+            $this->handleSingleStep($step);
 
             //若有執行交易，中止 Step 的執行，並開始補償
             if (
@@ -235,7 +262,35 @@ abstract class Orchestrator implements OrchestratorInterface
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
-        if ($this->isSuccess() === true && !is_null($this->cacheInstance)) {
+        if (!is_null($this->cacheInstance)) {
+            $this->cacheInstance->clearOrchestrator();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reStartRuntimeOrchestrator()
+    {
+        foreach ($this->steps as $step) {
+            if ($step->isSuccess() === true) {
+                continue;
+            }
+
+            $this->handleSingleStep($step);
+
+            //若有執行交易，中止 Step 的執行，並開始補償
+            if (
+                $this->isSuccess === false &&
+                !is_null($this->sagaInstance)
+            ) {
+                if ($this->sagaInstance->startCompensation($this->steps)) {
+                    break;
+                }
+            }
+        }
+
+        if (!is_null($this->cacheInstance)) {
             $this->cacheInstance->clearOrchestrator();
         }
     }
