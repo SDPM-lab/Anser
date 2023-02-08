@@ -56,7 +56,6 @@ class Order extends Migration
             ]
         ]);
         $this->forge->addKey('o_key', true);
-        $this->forge->addForeignKey('p_key', 'product', 'p_key', 'RESTRICT', 'CASCADE');
         $this->forge->createTable('order');
     }
 
