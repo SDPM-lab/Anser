@@ -18,7 +18,7 @@ class Product extends Seeder
 
         for ($i = 0; $i < 20; $i++) {
             $data = [
-                'name'       => $faker->productName,
+                'name'       => $faker->productName(),
                 'price'      => $faker->numberBetween(500, 1000),
                 'amount'     => $faker->numberBetween(10, 500),
                 'created_at' => $faker->dateTimeBetween('-2 month', '-1 days')->format('Y-m-d H:i:s'),

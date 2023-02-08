@@ -49,7 +49,6 @@ class Payment extends Migration
             ]
         ]);
         $this->forge->addKey('pm_key', true);
-        $this->forge->addForeignKey('o_key', 'order', 'o_key', 'RESTRICT', 'CASCADE');
         $this->forge->createTable('payment');
     }
 
