@@ -105,6 +105,9 @@ $routes->group(
         //PRODUCT AMOUNT API
         $routes->post('inventory/addInventory', 'ProductController::addInventory');
         $routes->post('inventory/reduceInventory', 'ProductController::reduceInventory');
+
+        $routes->get('createOrder', 'CreateOrder::createOrder');
+
     }
 );
 
