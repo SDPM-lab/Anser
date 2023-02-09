@@ -4,13 +4,19 @@ info:
   version: 0.1.0
 servers:
   -
-    url: 'http://localhost:8080'
-    description: local
+    url: 'http://localhost:8081'
+    description: Order Service
+  -
+    url: 'http://localhost:8082'
+    description: Product Service
+  -
+    url: 'http://localhost:8083'
+    description: Payment Service
 paths:
   /api/v2/product:
     get:
       tags:
-        - Product
+        - Product Service
       description: 'Get list of product'
       operationId: 71a054629031f7bd8cbbdb76b578642a
       parameters:
@@ -65,7 +71,7 @@ paths:
                 type: object
     post:
       tags:
-        - Product
+        - Product Service
       description: 'Create product.'
       operationId: 757ae20086110042c9741b094ce89999
       requestBody:
@@ -119,7 +125,7 @@ paths:
   '/api/v2/product/{p_key}':
     get:
       tags:
-        - Product
+        - Product Service
       description: 'Get list of product'
       operationId: 10c17f1852203ea7ddf1615860d0b2d8
       parameters:
@@ -162,7 +168,7 @@ paths:
                 type: object
     put:
       tags:
-        - Product
+        - Product Service
       description: 'Update someone product by p_key.'
       operationId: de7d654602766011bb2a4c22ef147f97
       parameters:
@@ -223,7 +229,7 @@ paths:
                   value: { status: '400', error: '400', messages: { error: 'update method fail.' } }
     delete:
       tags:
-        - Product
+        - Product Service
       description: 'Update someone product by p_key.'
       operationId: 8862bc4537e0e11051d212ae07f16d45
       parameters:
@@ -259,7 +265,7 @@ paths:
   /api/v2/inventory/addInventory:
     post:
       tags:
-        - Inventory
+        - Product Service
       description: 'Add product amount.'
       operationId: d3d01a5767c0ab4f927438badf23f9a6
       requestBody:
@@ -278,13 +284,13 @@ paths:
               type: object
       responses:
         '200':
-          description: 'Product delete method successful.'
+          description: 'Product amount add method successful.'
           content:
             application/json:
               schema:
                 properties:
                   status: { type: string, example: 'true' }
-                  msg: { type: string, example: 'Product delete method successful.' }
+                  msg: { type: string, example: 'Product amount add method successful.' }
                 type: object
         '404':
           description: 'Add Inventory 404 error'
@@ -311,7 +317,7 @@ paths:
   /api/v2/inventory/reduceInventory:
     post:
       tags:
-        - Inventory
+        - Product Service
       description: 'Reduce product amount.'
       operationId: 3fd5d2b84cf21fb19c8531706c48f1c0
       requestBody:
@@ -330,13 +336,13 @@ paths:
               type: object
       responses:
         '200':
-          description: 'Product delete method successful.'
+          description: 'Product amount reduce method successful.'
           content:
             application/json:
               schema:
                 properties:
                   status: { type: string, example: 'true' }
-                  msg: { type: string, example: 'Product delete method successful.' }
+                  msg: { type: string, example: 'Product amount reduce method successful.' }
                 type: object
         '404':
           description: 'Reduce Inventory 404 error'
@@ -365,7 +371,7 @@ paths:
   /api/v2/order:
     get:
       tags:
-        - Order
+        - Order Service
       description: 'Get list of order'
       parameters:
         -
@@ -419,7 +425,7 @@ paths:
                 type: object
     post:
       tags:
-        - Order
+        - Order Service
       description: 'Create Order.'
       parameters:
         -
@@ -490,7 +496,7 @@ paths:
   '/api/v2/order/{o_key}':
     get:
       tags:
-        - Order
+        - Order Service
       description: 'Get someone order by order key.'
       parameters:
         -
@@ -531,7 +537,7 @@ paths:
                   value: { status: '404', error: '404', messages: { error: 'This order not found' } }
     put:
       tags:
-        - Order
+        - Order Service
       description: 'Update order by order key.'
       parameters:
         -
@@ -604,7 +610,7 @@ paths:
                   value: { status: '400', error: '400', messages: { error: 'Order update method fail.' } }
     delete:
       tags:
-        - Order
+        - Order Service
       description: 'Delete order by order key.'
       parameters:
         -
@@ -659,7 +665,7 @@ paths:
   /api/v2/payment:
     get:
       tags:
-        - Payment
+        - Payment Service
       description: 'Get list of payment'
       parameters:
         -
@@ -720,7 +726,7 @@ paths:
                 type: object
     post:
       tags:
-        - Payment
+        - Payment Service
       description: 'Create Payment.'
       parameters:
         -
@@ -789,7 +795,7 @@ paths:
   '/api/v2/payment/{pm_key}':
     get:
       tags:
-        - Payment
+        - Payment Service
       description: 'Get payment data by payment key.'
       parameters:
         -
@@ -830,7 +836,7 @@ paths:
                   value: { status: '404', error: '404', messages: { error: 'This payment information is not exist or cannot found.' } }
     put:
       tags:
-        - Payment
+        - Payment Service
       description: 'Update payment by payment key.'
       parameters:
         -
@@ -900,7 +906,7 @@ paths:
                   value: { status: '400', error: '400', messages: { error: 'Payment update method fail' } }
     delete:
       tags:
-        - Payment
+        - Payment Service
       description: 'Delete payment by payment key.'
       parameters:
         -
@@ -954,7 +960,7 @@ paths:
   /api/v2/wallet:
     get:
       tags:
-        - Wallet
+        - Payment Service
       description: 'Get user wallet'
       parameters:
         -
@@ -987,7 +993,7 @@ paths:
                 type: object
     post:
       tags:
-        - Wallet
+        - Payment Service
       description: 'Add wallet balance or compensate.'
       parameters:
         -
