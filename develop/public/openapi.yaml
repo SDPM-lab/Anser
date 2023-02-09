@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: 'Product Service API'
+  title: 'Anser Demo Service API'
   version: 0.1.0
 servers:
   -
