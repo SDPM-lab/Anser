@@ -6,18 +6,7 @@ use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\v2\ProductModel;
 use App\Entities\v2\ProductEntity;
-use OpenApi\Annotations as OA;
 
-/**
- * @OA\Info(
- *     title="Product Service API",
- *     version="0.1.0"
- * )
- * @OA\Server(
- *       url = "http://localhost:8080",
- *       description="local"
- * )
- */
 class ProductController extends BaseController
 {
     use ResponseTrait;
