@@ -6,7 +6,18 @@ use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\v2\ProductModel;
 use App\Entities\v2\ProductEntity;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Info(
+ *     title="Product Service API",
+ *     version="0.1.0"
+ * )
+ * @OA\Server(
+ *       url = "http://localhost:8080",
+ *       description="local"
+ * )
+ */
 class ProductController extends BaseController
 {
     use ResponseTrait;
@@ -16,6 +27,81 @@ class ProductController extends BaseController
      * Get all product.
      *
      * @return void
+     */
+    /**
+     * @OA\Get(
+     *     path="/api/v2/product",
+     *     tags={"Product"},
+     *     description="Get list of product",
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="limit",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="offset",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         required=false,
+     *         description="search",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="isDesc",
+     *         in="query",
+     *         required=false,
+     *         description="isDesc",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product index method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="bool"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="list", type="array",
+     *                      @OA\Items(type="object",
+     *                          @OA\Property(property="p_key", type="integer",example="1"),
+     *                          @OA\Property(property="name", type="string",example="Awesome Wool Knife"),
+     *                          @OA\Property(property="price", type="integer",example="846"),
+     *                          @OA\Property(property="amount", type="integer",example="190"),
+     *                          @OA\Property(property="createdAt", type="string",example="2023-02-06 05:52:20"),
+     *                          @OA\Property(property="updatedAt", type="string",example="2023-02-08 09:37:44"),
+     *                      ),
+     *                  ),
+     *                  @OA\Property(property="dataCount", type="integer",example="20")
+     *              ),
+     *              @OA\Property(property="msg", type="string",example="Product index method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Product data not found",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="404",example="404"),
+     *              @OA\Property(property="error", type="string",description="404",example="404"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="Product data not found",example="Product data not found"),
+     *              ),
+     *          ),  
+     *     ),
+     * )
      */
     public function index()
     {
@@ -70,6 +156,59 @@ class ProductController extends BaseController
      * @param integer $p_key
      * @return void
      */
+    /**
+     * @OA\Get(
+     *     path="/api/v2/product/{p_key}",
+     *     tags={"Product"},
+     *     description="Get list of product",
+     *     @OA\Parameter(
+     *         name="p_key",
+     *         in="path",
+     *         required=true,
+     *         description="p_key",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product show method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="p_key", type="integer",example="2"),
+     *                  @OA\Property(property="name", type="string",example="Mediocre Silk Shoes"),
+     *                  @OA\Property(property="price", type="integer",example="617"),
+     *                  @OA\Property(property="amount", type="integer",example="266"),
+     *                  @OA\Property(property="createdAt", type="integer",example="2023-01-26 10:31:50"),
+     *                  @OA\Property(property="updatedAt", type="integer",example="2023-02-08 09:37:44"),
+     *              ),
+     *              @OA\Property(property="msg", type="string",example="Product show method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="The Product key is required",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="400",example="400"),
+     *              @OA\Property(property="error", type="string",description="400",example="400"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="The Product key is required",example="The Product key is required"),
+     *              ),
+     *          ),  
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Product data not found",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="404",example="404"),
+     *              @OA\Property(property="error", type="string",description="404",example="404"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="Product data not found",example="Product data not found"),
+     *              ),
+     *          ),  
+     *     ),
+     * )
+     */
     public function show($p_key = null)
     {
         if (is_null($p_key)) {
@@ -106,6 +245,53 @@ class ProductController extends BaseController
      *
      * @return void
      */
+    /**
+     * @OA\POST(
+     *     path="/api/v2/product",
+     *     tags={"Product"},
+     *     description="Create product.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body",
+     *         @OA\JsonContent(type="object",
+     *                  @OA\Property(property="name", type="string",example="Mediocre Silk Shoes"),
+     *                  @OA\Property(property="price", type="integer",example="617"),
+     *                  @OA\Property(property="amount", type="integer",example="266"),
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product show method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",example="true"),
+     *              @OA\Property(property="data", type="integer",example="22"),
+     *              @OA\Property(property="msg", type="string",example="Product show method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Incoming data error",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="400",example="404"),
+     *              @OA\Property(property="error", type="string",description="400",example="404"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="Incoming data error",example="Incoming data error"),
+     *              ),
+     *          ),  
+     *     ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="The product create failed, please try again.",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="404",example="400"),
+     *              @OA\Property(property="error", type="string",description="404",example="400"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="The product create failed, please try again.",example="The product create failed, please try again."),
+     *              ),
+     *          ),  
+     *     ),
+     * )
+     */
     public function create()
     {
         $data   = $this->request->getJSON(true);
@@ -115,7 +301,7 @@ class ProductController extends BaseController
         $amount = $data["amount"] ?? null;
 
         if (is_null($name) || is_null($price) || is_null($amount)) {
-            return $this->fail("Incoming data error", 400);
+            return $this->fail("Incoming data error", 404);
         }
 
         $productModel = new ProductModel();
@@ -147,6 +333,94 @@ class ProductController extends BaseController
      *
      * @param integer $p_key
      * @return void
+     */
+    /**
+     * @OA\PUT(
+     *     path="/api/v2/product/{p_key}",
+     *     tags={"Product"},
+     *     description="Update someone product by p_key.",
+     *     @OA\Parameter(
+     *         name="p_key",
+     *         in="path",
+     *         required=true,
+     *         description="p_key",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="name", type="string",example="Mediocre Silk Shoes"),
+     *              @OA\Property(property="price", type="integer",example="617"),
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product show method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",example="true"),
+     *              @OA\Property(property="msg", type="string",example="update method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Incoming data error",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "Incoming data error"
+     *                      }
+     *                  },
+     *                  summary="Incoming data error"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "This product not found"
+     *                      }
+     *                  },
+     *                  summary="This product not found"
+     *              ),
+     *          ), 
+     *     ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="The product create failed, please try again.",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "400",
+     *                      "error" : "400",
+     *                      "messages": {
+     *                          "error": "The Product key is required"
+     *                      }
+     *                  },
+     *                  summary="The Product key is required"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "400",
+     *                      "error" : "400",
+     *                      "messages": {
+     *                          "error": "update method fail."
+     *                      }
+     *                  },
+     *                  summary="update method fail."
+     *              ),
+     *          ),   
+     *     ),
+     * )
      */
     public function update($p_key = null)
     {
@@ -199,6 +473,58 @@ class ProductController extends BaseController
      * @param integer $p_key
      * @return void
      */
+    /**
+     * @OA\DELETE(
+     *     path="/api/v2/product/{p_key}",
+     *     tags={"Product"},
+     *     description="Update someone product by p_key.",
+     *     @OA\Parameter(
+     *         name="p_key",
+     *         in="path",
+     *         required=true,
+     *         description="p_key",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product delete method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",example="true"),
+     *              @OA\Property(property="msg", type="string",example="Product delete method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Delete product 404 error",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "The Product key is required"
+     *                      }
+     *                  },
+     *                  summary="The Product key is required"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "This product not found"
+     *                      }
+     *                  },
+     *                  summary="This product not found"
+     *              ),
+     *          ), 
+     *     ),
+     * )
+     */
     public function delete($p_key = null)
     {
         if (is_null($p_key)) {
@@ -226,6 +552,68 @@ class ProductController extends BaseController
      * Add product amount.
      *
      * @return void
+     */
+    /**
+     * @OA\POST(
+     *     path="/api/v2/inventory/addInventory",
+     *     tags={"Inventory"},
+     *     description="Add product amount.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="p_key", type="integer",example="22"),
+     *              @OA\Property(property="addAmount", type="integer",example="10"),
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product delete method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",example="true"),
+     *              @OA\Property(property="msg", type="string",example="Product delete method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Add Inventory 404 error",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "Incoming data not found"
+     *                      }
+     *                  },
+     *                  summary="Incoming data not found"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "This product not found"
+     *                      }
+     *                  },
+     *                  summary="This product not found"
+     *              ),
+     *          ),   
+     *     ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="This product amount add fail",
+     *          @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",description="400",example="400"),
+     *              @OA\Property(property="error", type="string",description="400",example="400"),
+     *              @OA\Property(property="messages", type="object",
+     *                  @OA\Property(property="error", type="string",description="This product amount add fail",example="This product amount add fail"),
+     *              ),
+     *          ),  
+     *     ),
+     * )
      */
     public function addInventory()
     {
@@ -271,7 +659,85 @@ class ProductController extends BaseController
      *
      * @return void
      */
-
+    /**
+     * @OA\POST(
+     *     path="/api/v2/inventory/reduceInventory",
+     *     tags={"Inventory"},
+     *     description="Reduce product amount.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="p_key", type="integer",example="22"),
+     *              @OA\Property(property="reduceAmount", type="integer",example="10"),
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Product delete method successful.",
+     *         @OA\JsonContent(type="object",
+     *              @OA\Property(property="status", type="string",example="true"),
+     *              @OA\Property(property="msg", type="string",example="Product delete method successful."),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Reduce Inventory 404 error",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "Incoming data not found"
+     *                      }
+     *                  },
+     *                  summary="Incoming data not found"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "404",
+     *                      "error" : "404",
+     *                      "messages": {
+     *                          "error": "This product not found"
+     *                      }
+     *                  },
+     *                  summary="This product not found"
+     *              ),
+     *          ),  
+     *     ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="Reduce Inventory 400 error",
+     *          @OA\JsonContent(
+     *              @OA\Examples(
+     *                  example="string",
+     *                  value = {
+     *                      "status": "400",
+     *                      "error" : "400",
+     *                      "messages": {
+     *                          "error": "This product amount not enough"
+     *                      }
+     *                  },
+     *                  summary="This product amount not enough"
+     *              ),
+     *              @OA\Examples(
+     *                  example="string2",
+     *                  value = {
+     *                      "status": "400",
+     *                      "error" : "400",
+     *                      "messages": {
+     *                          "error": "This product amount reduce fail"
+     *                      }
+     *                  },
+     *                  summary="This product amount reduce fail"
+     *              ),
+     *          ),  
+     *     ),
+     * )
+     */
     public function reduceInventory()
     {
         $data = $this->request->getJSON(true);
