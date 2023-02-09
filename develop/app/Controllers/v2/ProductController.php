@@ -115,7 +115,7 @@ class ProductController extends BaseController
         $amount = $data["amount"] ?? null;
 
         if (is_null($name) || is_null($price) || is_null($amount)) {
-            return $this->fail("Incoming data error", 400);
+            return $this->fail("Incoming data error", 404);
         }
 
         $productModel = new ProductModel();
@@ -271,7 +271,6 @@ class ProductController extends BaseController
      *
      * @return void
      */
-
     public function reduceInventory()
     {
         $data = $this->request->getJSON(true);
