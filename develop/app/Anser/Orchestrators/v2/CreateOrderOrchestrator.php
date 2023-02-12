@@ -29,7 +29,8 @@ class CreateOrderOrchestrator extends Orchestrator
 
         // $this->setCacheInstance($this->cache);
         // $this->setCacheOrchestratorKey('createOrder_1');
-        $this->setStep()->addAction("product_service", $this->productService->getAllProduct());
+        $this->setStep()->addAction("product_service", $this->productService->deleteProduct(22));
+        
     }
 
     protected function defineResult()
