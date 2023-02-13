@@ -17,6 +17,14 @@ interface OrchestratorInterface
     public function setStep(): StepInterface;
 
     /**
+     * Get the step instance from orchestrator Step array.
+     *
+     * @param integer $index
+     * @return StepInterface
+     */
+    public function getStep(int $index): StepInterface;
+
+    /**
      * 設定此編排器快取之實體
      *
      * @param CacheHandlerInterface $cacheInstance
