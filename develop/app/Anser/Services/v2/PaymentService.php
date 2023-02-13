@@ -226,7 +226,7 @@ class PaymentService extends SimpleService
      * @param integer $u_key
      * @return ActionInterface
      */
-    public function showWallet(int $u_key): ActionInterface
+    public function getWallet(int $u_key): ActionInterface
     {
         $action = $this->getAction("GET", "/api/v2/wallet")
             ->addOption("headers", [
