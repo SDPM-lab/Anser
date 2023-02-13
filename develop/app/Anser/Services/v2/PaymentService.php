@@ -219,4 +219,74 @@ class PaymentService extends SimpleService
             );
         return $action;
     }
+
+    /**
+     * show user wallet
+     *
+     * @param integer $u_key
+     * @return ActionInterface
+     */
+    public function showWallet(int $u_key): ActionInterface
+    {
+        $action = $this->getAction("GET", "/api/v2/wallet")
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Add user wallet balance
+     *
+     * @param integer $u_key
+     * @param integer|null $addAmount
+     * @return void
+     */
+    public function createWallet(int $u_key, int $addAmount = null)
+    {
+        $action = $this->getAction("POST", "/api/v2/wallet")
+            ->addOption("json", [
+                "addAmount" => $addAmount
+            ])
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
 }
