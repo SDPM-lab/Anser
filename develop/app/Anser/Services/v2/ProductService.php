@@ -24,7 +24,7 @@ class ProductService extends SimpleService
      * @param string|null $isDesc
      * @return ActionInterface
      */
-    public function getAllProduct(?int $limit, ?int $offset, ?string $isDesc): ActionInterface
+    public function getAllProduct(?int $limit = null, ?int $offset = null, ?string $isDesc = null): ActionInterface
     {
         $action = $this->getAction("GET", "/api/v2/product");
 
