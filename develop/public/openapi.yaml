@@ -93,14 +93,14 @@ paths:
               type: object
       responses:
         '200':
-          description: 'Product show method successful.'
+          description: 'Product create method successful.'
           content:
             application/json:
               schema:
                 properties:
                   status: { type: string, example: 'true' }
                   data: { type: integer, example: '22' }
-                  msg: { type: string, example: 'Product show method successful.' }
+                  msg: { type: string, example: 'Product create method successful.' }
                 type: object
         '404':
           description: 'Incoming data error'
@@ -823,7 +823,7 @@ paths:
                   msg: { type: string, example: 'Payment show method successful' }
                 type: object
         '404':
-          description: 'Show order 404 error'
+          description: 'Show payment 404 error'
           content:
             application/json:
               schema: {  }
@@ -832,7 +832,7 @@ paths:
                   summary: 'The payment key is required.'
                   value: { status: '404', error: '404', messages: { error: 'The payment key is required.' } }
                 string2:
-                  summary: 'This order not found'
+                  summary: 'This payment information is not exist or cannot found.'
                   value: { status: '404', error: '404', messages: { error: 'This payment information is not exist or cannot found.' } }
     put:
       tags:
@@ -878,7 +878,7 @@ paths:
                   msg: { type: string, example: 'Payment update method successful.' }
                 type: object
         '404':
-          description: 'Order update method 404 error'
+          description: 'Payment update method 404 error'
           content:
             application/json:
               schema: {  }
@@ -889,17 +889,14 @@ paths:
                 string2:
                   summary: 'This payment information is not exist'
                   value: { status: '404', error: '404', messages: { error: 'This payment information is not exist' } }
-                string3:
-                  summary: 'The Order key is required'
-                  value: { status: '404', error: '404', messages: { error: 'The Order key is required' } }
         '400':
-          description: 'Order update method 400 error'
+          description: 'Payment update method 400 error'
           content:
             application/json:
               schema: {  }
               examples:
                 string:
-                  summary: 'Order update method fail.'
+                  summary: 'Incoming data error'
                   value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
                 string1:
                   summary: 'Payment update method fail'
@@ -934,7 +931,7 @@ paths:
                   msg: { type: string, example: 'Payment delete method successful.' }
                 type: object
         '404':
-          description: 'Delete order 404 error'
+          description: 'Delete payment 404 error'
           content:
             application/json:
               schema: {  }
@@ -946,7 +943,7 @@ paths:
                   summary: "This payment information is not exist."
                   value: { status: '404', error: '404', messages: { error: "This payment information is not exist." } }
         '400':
-          description: 'Update order 400 error'
+          description: 'Update payment 400 error'
           content:
             application/json:
               schema: {  }
@@ -982,7 +979,7 @@ paths:
                   msg: { type: string, example: 'Wallet show method successful' }
                 type: object
         '404':
-          description: 'Payment data not found'
+          description: 'This user wallet not exist'
           content:
             application/json:
               schema:
@@ -1025,7 +1022,7 @@ paths:
                   msg: { type: string, example: 'Wallet create method successful' }
                 type: object
         '404':
-          description: 'This user wallet not exist'
+          description: 'Create wallet 404 error'
           content:
             application/json:
               schema:
@@ -1035,7 +1032,7 @@ paths:
                   messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
                 type: object
         '400':
-          description: 'Create payment 400 error'
+          description: 'Create wallet 400 error'
           content:
             application/json:
               schema: {  }
