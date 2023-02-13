@@ -70,6 +70,18 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * {@inheritDoc}
      */
+    public function getStep(int $index): StepInterface
+    {
+        if (is_null($this->steps[$index])) {
+            throw OrchestratorException::forStepNotFoundInSteps($index);
+        }
+
+        return $this->steps[$index];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface
     {
         $this->cacheInstance = $cacheInstance;
