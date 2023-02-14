@@ -100,11 +100,11 @@ class WalletTest extends DatabaseTestCase
     /**
      * @test
      *
-     * [FAIL CASE] Create wallet data but the data is missing
+     * [FAIL CASE] Increase wallet data but the data is missing
      *
      * @return void
      */
-    public function testCreateWalletDataMissingFail()
+    public function testIncreaseWalletDataMissingFail()
     {
         $this->db->table('db_wallet')->insertBatch($this->walletData);
 
@@ -122,11 +122,11 @@ class WalletTest extends DatabaseTestCase
     /**
      * @test
      *
-     * [FAIL CASE] Use non-existent user key to create wallet
+     * [FAIL CASE] Use non-existent user key to increase wallet
      *
      * @return void
      */
-    public function testCreateWalletUKeyNotExist()
+    public function testIncreaseWalletUKeyNotExist()
     {
         $this->db->table('db_wallet')->insertBatch($this->walletData);
 
@@ -152,11 +152,11 @@ class WalletTest extends DatabaseTestCase
     /**
      * @test
      *
-     * [SUCCESS CASE] Add wallet balance or compensate. data complete test.
+     * [SUCCESS CASE] increase wallet balance or compensate. data complete test.
      *
      * @return void
      */
-    public function testCreateWalletDataCompleteSuccess()
+    public function testIncreaseWalletDataCompleteSuccess()
     {
         $this->db->table('db_wallet')->insertBatch($this->walletData);
 
@@ -170,7 +170,7 @@ class WalletTest extends DatabaseTestCase
 
         $successDataResultsGetMsg = json_decode($results->getJSON())->msg;
 
-        $this->assertEquals($successDataResultsGetMsg, "Wallet create method successful");
+        $this->assertEquals($successDataResultsGetMsg, "Wallet increase balance successful");
 
         $results->assertStatus(200);
 

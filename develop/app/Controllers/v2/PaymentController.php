@@ -130,7 +130,6 @@ class PaymentController extends BaseController
         $total = $amount * $price;
 
         $paymentModel  = new PaymentModel();
-        $walletModel   = new WalletModel();
 
         $paymentEntity = $paymentModel->where("u_key", $u_key)
                                       ->where("o_key", $o_key)
@@ -150,7 +149,17 @@ class PaymentController extends BaseController
             return $this->fail("Insufficient balance", 400);
         }
 
-        $paymentCreatedIDOrNull = $paymentModel->createPaymentTransaction($u_key, $o_key, $total, $userBalance, $status);
+        $paymentData = [
+                "u_key"      => $u_key,
+                "o_key"      => $o_key,
+                "total"      => $total,
+                "status"     => $status,
+                "created_at" => date("Y-m-d H:i:s"),
+                "updated_at" => date("Y-m-d H:i:s")
+            ];
+
+        $paymentCreatedIDOrNull = $paymentModel->insert($paymentData);
+
         if (is_null($paymentCreatedIDOrNull)) {
             return $this->fail("Payment created failed.", 400);
         }

@@ -93,14 +93,11 @@ $routes->group(
             'only' => ['index', 'show', 'create', 'update', 'delete'],
             'filter' => 'user'
         ]);
-
-        //PAYMENT APIs
-        $routes->resource("wallet", [
-            'controller' => 'WalletController',
-            'only' => ['create'],
-            'filter' => 'user'
-        ]);
+        
+        //WALLET APIs
         $routes->get('wallet', 'WalletController::show',['filter' => 'user']);
+        $routes->post('wallet/increaseWalletBalance', 'WalletController::increaseWalletBalance',['filter' => 'user']);
+        $routes->post('wallet/reduceWalletBalance', 'WalletController::reduceWalletBalance',['filter' => 'user']);
 
         //PRODUCT AMOUNT API
         $routes->post('inventory/addInventory', 'ProductController::addInventory');

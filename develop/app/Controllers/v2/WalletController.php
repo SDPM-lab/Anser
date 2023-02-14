@@ -45,12 +45,12 @@ class WalletController extends BaseController
     }
 
     /**
-     * [POST] /api/v2/wallet
-     * Add wallet balance or compensate.
+     * [POST] /api/v2/wallet/increaseWalletBalance
+     * Increase wallet balance.
      *
      * @return void
      */
-    public function create()
+    public function increaseWalletBalance()
     {
         $data = $this->request->getJSON(true);
 
@@ -79,10 +79,52 @@ class WalletController extends BaseController
         if ($result) {
             return $this->respond([
                 "status" => true,
-                "msg"    => "Wallet create method successful"
+                "msg"    => "Wallet increase balance successful"
             ]);
         } else {
-            return $this->fail("Wallet create method fail", 400);
+            return $this->fail("Wallet increase balance fail", 400);
+        }
+    }
+
+    /**
+     * [POST] /api/v2/wallet/reduceWalletBalance
+     * Reduce wallet balance.
+     *
+     * @return void
+     */
+    public function reduceWalletBalance()
+    {
+        $data = $this->request->getJSON(true);
+
+        $reduceAmount = $data["reduceAmount"] ?? null;
+        $u_key        = $this->u_key;
+
+        if (is_null($u_key) || is_null($reduceAmount)) {
+            return $this->fail("Incoming data error", 400);
+        }
+
+        $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+        if (is_null($walletEntity)) {
+            return $this->fail("This user wallet not exist", 404);
+        }
+
+        $nowBalance = $walletEntity->balance;
+
+        $walletModel = new WalletModel();
+
+        $balance = $nowBalance - $reduceAmount;
+
+        $result = $walletModel->where("u_key", $u_key)
+                              ->set("balance", $balance)
+                              ->update();
+
+        if ($result) {
+            return $this->respond([
+                "status" => true,
+                "msg"    => "Wallet reduce balance successful"
+            ]);
+        } else {
+            return $this->fail("Wallet reduce balance fail", 400);
         }
     }
 }
