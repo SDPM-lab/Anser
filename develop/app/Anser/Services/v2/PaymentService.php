@@ -257,14 +257,14 @@ class PaymentService extends SimpleService
      * Add user wallet balance
      *
      * @param integer $u_key
-     * @param integer|null $addAmount
-     * @return void
+     * @param integer $increaseBalance
+     * @return ActionInterface
      */
-    public function createWallet(int $u_key, int $addAmount = null)
+    public function increaseWalletBalance(int $u_key, int $increaseBalance): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/wallet")
             ->addOption("json", [
-                "addAmount" => $addAmount
+                "addAmount" => $increaseBalance
             ])
             ->addOption("headers", [
                 "X-User-Key" => $u_key
