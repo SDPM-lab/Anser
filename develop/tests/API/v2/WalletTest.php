@@ -108,7 +108,7 @@ class WalletTest extends DatabaseTestCase
     {
         $this->db->table('db_wallet')->insertBatch($this->walletData);
 
-        $dataExistResults = $this->post('api/v2/wallet', []);
+        $dataExistResults = $this->post('api/v2/wallet/increaseWalletBalance', []);
 
         $dataExistResults->assertStatus(400);
 
@@ -140,7 +140,7 @@ class WalletTest extends DatabaseTestCase
 
         $failDataResults = $this->withBodyFormat('json')
                                 ->withHeaders($notExistUserHeaders)
-                                ->post('api/v2/wallet', $data);
+                                ->post('api/v2/wallet/increaseWalletBalance', $data);
 
         $failDataResults->assertStatus(404);
 
@@ -166,7 +166,7 @@ class WalletTest extends DatabaseTestCase
 
         $results = $this->withBodyFormat('json')
                         ->withHeaders($this->headers)
-                        ->post('api/v2/wallet', $successData);
+                        ->post('api/v2/wallet/increaseWalletBalance', $successData);
 
         $successDataResultsGetMsg = json_decode($results->getJSON())->msg;
 
@@ -185,6 +185,99 @@ class WalletTest extends DatabaseTestCase
         $checkData = [
             "u_key"   => $this->headers['X-User-Key'],
             "balance" => $successData['addAmount'] + $this->walletData[1]["balance"],
+        ];
+
+        $this->seeInDatabase('db_wallet', $checkData);
+    }
+
+    /**
+     * @test
+     *
+     * [FAIL CASE] Reduce wallet data but the data is missing
+     *
+     * @return void
+     */
+    public function testReduceWalletDataMissingFail()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+
+        $dataExistResults = $this->post('api/v2/wallet/reduceWalletBalance', []);
+
+        $dataExistResults->assertStatus(400);
+
+        $decodeDataExistResults = json_decode($dataExistResults->getJSON());
+
+        $decodeDataExistResultsErrMsg = $decodeDataExistResults->messages->error;
+
+        $this->assertEquals($decodeDataExistResultsErrMsg, "Incoming data error");
+    }
+
+    /**
+     * @test
+     *
+     * [FAIL CASE] Use non-existent user key to increase wallet
+     *
+     * @return void
+     */
+    public function testReduceWalletUKeyNotExist()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+
+        $notExistUserHeaders= [
+            'X-User-Key'=> 999
+        ];
+
+        $data = [
+            "reduceAmount" => 500
+        ];
+
+        $failDataResults = $this->withBodyFormat('json')
+                                ->withHeaders($notExistUserHeaders)
+                                ->post('api/v2/wallet/reduceWalletBalance', $data);
+
+        $failDataResults->assertStatus(404);
+
+        $decodeFailDataResults = json_decode($failDataResults->getJSON());
+
+        $this->assertEquals($decodeFailDataResults->message->error, "This User is not exist!");
+    }
+
+    /**
+     * @test
+     *
+     * [SUCCESS CASE] increase wallet balance or compensate. data complete test.
+     *
+     * @return void
+     */
+    public function testReduceWalletDataCompleteSuccess()
+    {
+        $this->db->table('db_wallet')->insertBatch($this->walletData);
+
+        $successData = [
+            "reduceAmount" => 500
+        ];
+
+        $results = $this->withBodyFormat('json')
+                        ->withHeaders($this->headers)
+                        ->post('api/v2/wallet/reduceWalletBalance', $successData);
+
+        $successDataResultsGetMsg = json_decode($results->getJSON())->msg;
+
+        $this->assertEquals($successDataResultsGetMsg, "Wallet reduce balance successful");
+
+        $results->assertStatus(200);
+
+        $wallet = new WalletModel();
+
+        $transactionAfterData = $wallet->where("u_key", $this->headers['X-User-Key'])->first();
+
+        $balanceChange = $this->walletData[1]["balance"] - $transactionAfterData->balance;
+
+        $this->assertTrue($balanceChange == $successData['reduceAmount']);
+
+        $checkData = [
+            "u_key"   => $this->headers['X-User-Key'],
+            "balance" => $this->walletData[1]["balance"] - $successData['reduceAmount'],
         ];
 
         $this->seeInDatabase('db_wallet', $checkData);
