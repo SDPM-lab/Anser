@@ -10,11 +10,11 @@ use SDPMlab\Anser\Service\Action;
 
 class OrderService extends SimpleService
 {
-    protected $serviceName = "order_Service";
+    protected $serviceName = "order_service";
 
-    protected $retry = 1;
+    protected $retry      = 1;
     protected $retryDelay = 1;
-    protected $timeout = 3.0;
+    protected $timeout    = 10.0;
 
     /**
      * Get all order

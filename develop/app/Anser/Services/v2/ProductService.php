@@ -14,7 +14,7 @@ class ProductService extends SimpleService
 
     protected $retry      = 1;
     protected $retryDelay = 1;
-    protected $timeout    = 5.0;
+    protected $timeout    = 10.0;
 
     /**
      * Get all product
@@ -286,7 +286,7 @@ class ProductService extends SimpleService
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
 
-                    $action->setSuccess($data["data"]["amount"] > $requestAmount);
+                    $action->setSuccess($data["data"]["amount"] >= $requestAmount);
                 }
             )
             ->failHandler(

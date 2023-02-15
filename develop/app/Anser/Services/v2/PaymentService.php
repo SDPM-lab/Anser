@@ -10,11 +10,11 @@ use SDPMlab\Anser\Service\Action;
 
 class PaymentService extends SimpleService
 {
-    protected $serviceName = "payment_Service";
+    protected $serviceName = "payment_service";
 
-    protected $retry = 1;
+    protected $retry      = 1;
     protected $retryDelay = 1;
-    protected $timeout = 3.0;
+    protected $timeout    = 10.0;
 
     /**
      * Get all payment
@@ -114,12 +114,12 @@ class PaymentService extends SimpleService
      * Create payment
      *
      * @param integer $u_key
-     * @param integer $o_key
+     * @param string $o_key
      * @param integer $amount
      * @param integer $price
      * @return ActionInterface
      */
-    public function createPayment(int $u_key, int $o_key, int $amount, int $price): ActionInterface
+    public function createPayment(int $u_key, string $o_key, int $amount, int $price): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/payment")
             ->addOption("json", [
@@ -274,7 +274,7 @@ class PaymentService extends SimpleService
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
 
-                    $action->setSuccess($data["data"]["balance"] < $cost);
+                    $action->setSuccess($data["data"]["balance"] >= $cost);
                 }
             )
             ->failHandler(
