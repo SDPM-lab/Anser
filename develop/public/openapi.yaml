@@ -988,10 +988,11 @@ paths:
                   error: { description: '404', type: string, example: '404' }
                   messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
                 type: object
+  /api/v2/wallet/increaseWalletBalance:
     post:
       tags:
         - Payment Service
-      description: 'Add wallet balance or compensate.'
+      description: 'Increase wallet balance or compensate.'
       parameters:
         -
           name: X-User-Key
@@ -1013,13 +1014,69 @@ paths:
               type: object
       responses:
         '200':
-          description: 'Wallet create method successful'
+          description: 'Wallet increase balance successful'
           content:
             application/json:
               schema:
                 properties:
                   status: { type: string, example: 'true' }
-                  msg: { type: string, example: 'Wallet create method successful' }
+                  msg: { type: string, example: 'Wallet increase balance successful' }
+                type: object
+        '404':
+          description: 'Increase wallet 404 error'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
+                type: object
+        '400':
+          description: 'Increase wallet 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                  string:
+                    summary: 'Incoming data error'
+                    value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
+                  string2:
+                    summary: "Wallet increase balance fail"
+                    value: { status: '400', error: '400', messages: { error: "Wallet increase balance fail" } }
+  /api/v2/wallet/reduceWalletBalance:
+    post:
+      tags:
+        - Payment Service
+      description: 'Reduce wallet balance or compensate.'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                reduceAmount:
+                  type: integer
+                  example: '5000'
+              type: object
+      responses:
+        '200':
+          description: 'Wallet reduce balance successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Wallet reduce balance successful' }
                 type: object
         '404':
           description: 'Create wallet 404 error'
@@ -1041,5 +1098,5 @@ paths:
                     summary: 'Incoming data error'
                     value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
                   string2:
-                    summary: "Wallet create method fail"
-                    value: { status: '400', error: '400', messages: { error: "Wallet create method fail" } }
+                    summary: "Wallet reduce balance fail"
+                    value: { status: '400', error: '400', messages: { error: "Wallet reduce balance fail" } }

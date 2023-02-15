@@ -197,4 +197,112 @@ class ProductService extends SimpleService
             );
         return $action;
     }
+
+    /**
+     * Add inventory
+     *
+     * @param integer|null $p_key
+     * @param integer|null $addAmount
+     * @return ActionInterface
+     */
+    public function addInventory(int $p_key, int $addAmount): ActionInterface
+    {
+        $action = $this->getAction("POST", "/api/v2/inventory/addInventory")
+            ->addOption("json", [
+                "p_key"     => $p_key,
+                "addAmount" => $addAmount,
+            ])
+           ->doneHandler(
+               function (
+                   ResponseInterface $response,
+                   Action $action
+               ) {
+                   $resBody = $response->getBody()->getContents();
+                   $data    = json_decode($resBody, true);
+                   $action->setMeaningData($data["status"]);
+               }
+           )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Reduce inventory
+     *
+     * @param integer|null $p_key
+     * @param integer|null $reduceAmount
+     * @return ActionInterface
+     */
+    public function reduceInventory(int $p_key, int $reduceAmount): ActionInterface
+    {
+        $action = $this->getAction("POST", "/api/v2/inventory/reduceInventory")
+            ->addOption("json", [
+                "p_key"        => $p_key,
+                "reduceAmount" => $reduceAmount,
+            ])
+           ->doneHandler(
+               function (
+                   ResponseInterface $response,
+                   Action $action
+               ) {
+                   $resBody = $response->getBody()->getContents();
+                   $data    = json_decode($resBody, true);
+                   $action->setMeaningData($data["status"]);
+               }
+           )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Check if the product inventory is sufficient.
+     *
+     * @param integer $product_key
+     * @param integer $RequestAmount
+     * @return boolean
+     */
+    public function checkProductInventory(int $product_key, int $requestAmount): bool
+    {
+        $action = $this->getAction("GET", "/api/v2/product/{$product_key}")
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+
+        $product = $action->do()->getMeaningData();
+
+        if ($product["amount"] > $requestAmount) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

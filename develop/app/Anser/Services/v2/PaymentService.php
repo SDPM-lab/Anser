@@ -219,4 +219,111 @@ class PaymentService extends SimpleService
             );
         return $action;
     }
+
+    /**
+     * show user wallet
+     *
+     * @param integer $u_key
+     * @return ActionInterface
+     */
+    public function getWallet(int $u_key): ActionInterface
+    {
+        $action = $this->getAction("GET", "/api/v2/wallet")
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * increase user wallet balance
+     *
+     * @param integer $u_key
+     * @param integer $increaseBalance
+     * @return ActionInterface
+     */
+    public function increaseWalletBalance(int $u_key, int $increaseBalance): ActionInterface
+    {
+        $action = $this->getAction("POST", "/api/v2/wallet/increaseWalletBalance")
+            ->addOption("json", [
+                "addAmount" => $increaseBalance
+            ])
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * reduce user wallet balance
+     *
+     * @param integer $u_key
+     * @param integer $reduceBalance
+     * @return ActionInterface
+     */
+    public function reduceWalletBalance(int $u_key, int $reduceBalance): ActionInterface
+    {
+        $action = $this->getAction("POST", "/api/v2/wallet/reduceWalletBalance")
+            ->addOption("json", [
+                "reduceAmount" => $reduceBalance
+            ])
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
 }
