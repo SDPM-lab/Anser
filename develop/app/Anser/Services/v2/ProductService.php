@@ -201,8 +201,8 @@ class ProductService extends SimpleService
     /**
      * Add inventory
      *
-     * @param integer|null $p_key
-     * @param integer|null $addAmount
+     * @param integer $p_key
+     * @param integer $addAmount
      * @return ActionInterface
      */
     public function addInventory(int $p_key, int $addAmount): ActionInterface
@@ -236,8 +236,8 @@ class ProductService extends SimpleService
     /**
      * Reduce inventory
      *
-     * @param integer|null $p_key
-     * @param integer|null $reduceAmount
+     * @param integer $p_key
+     * @param integer $reduceAmount
      * @return ActionInterface
      */
     public function reduceInventory(int $p_key, int $reduceAmount): ActionInterface
@@ -275,17 +275,18 @@ class ProductService extends SimpleService
      * @param integer $RequestAmount
      * @return boolean
      */
-    public function checkProductInventory(int $product_key, int $requestAmount): bool
+    public function checkProductInventory(int $product_key, int $requestAmount): ActionInterface
     {
         $action = $this->getAction("GET", "/api/v2/product/{$product_key}")
             ->doneHandler(
                 function (
                     ResponseInterface $response,
                     Action $action
-                ) {
+                ) use ($requestAmount) {
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
-                    $action->setMeaningData($data["data"]);
+
+                    $action->setSuccess($data["data"]["amount"] > $requestAmount);
                 }
             )
             ->failHandler(
@@ -297,12 +298,6 @@ class ProductService extends SimpleService
                 }
             );
 
-        $product = $action->do()->getMeaningData();
-
-        if ($product["amount"] > $requestAmount) {
-            return true;
-        } else {
-            return false;
-        }
+            return $action;
     }
 }

@@ -254,6 +254,41 @@ class PaymentService extends SimpleService
     }
 
     /**
+     * Check user wallet balance logic.
+     *
+     * @param integer $u_key
+     * @param integer $cost
+     * @return ActionInterface
+     */
+    public function checkWalletBalance(int $u_key, int $cost): ActionInterface
+    {
+        $action = $this->getAction("GET", "/api/v2/wallet")
+        ->addOption("headers", [
+            "X-User-Key" => $u_key
+        ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) use ($cost) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+
+                    $action->setSuccess($data["data"]["balance"] < $cost);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
      * increase user wallet balance
      *
      * @param integer $u_key
