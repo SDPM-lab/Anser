@@ -104,6 +104,7 @@ $routes->group(
         $routes->post('inventory/reduceInventory', 'ProductController::reduceInventory');
 
         $routes->get('createOrder', 'CreateOrder::createOrder');
+        $routes->get('createOrderRestart', 'CreateOrderRestarter::restartcreateOrderOrchestrator');
     }
 );
 
