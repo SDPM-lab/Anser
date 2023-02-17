@@ -2,13 +2,12 @@
 
 namespace SDPMlab\Anser\Orchestration;
 
-use PhpParser\Node\Stmt\TryCatch;
 use SDPMlab\Anser\Orchestration\Step;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 use SDPMlab\Anser\Orchestration\Saga\Saga;
-use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 use SDPMlab\Anser\Service\ActionInterface;
 
 abstract class Orchestrator implements OrchestratorInterface
@@ -33,13 +32,6 @@ abstract class Orchestrator implements OrchestratorInterface
      * @var SagaInterface|null
      */
     protected ?SagaInterface $sagaInstance = null;
-
-    /**
-     * 快取實體
-     *
-     * @var CacheHandlerInterface|null
-     */
-    protected ?CacheHandlerInterface $cacheInstance = null;
 
     /**
      * 編排器快取 key
@@ -77,23 +69,6 @@ abstract class Orchestrator implements OrchestratorInterface
         }
 
         return $this->steps[$index];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface
-    {
-        $this->cacheInstance = $cacheInstance;
-        return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getCacheInstance(): CacheHandlerInterface
-    {
-        return $this->cacheInstance;
     }
 
     /**
@@ -218,13 +193,15 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     protected function handleSingleStep(StepInterface $step)
     {
+        $cacheInstance = CacheFactory::getCacheInstance();
+
         // 將當前 Step 紀錄於 Saga
         if (!is_null($this->sagaInstance)) {
             $this->sagaInstance->startStep($step);
         }
 
-        if (!is_null($this->cacheInstance)) {
-            $this->cacheInstance->setOrchestrator($this);
+        if (!is_null($cacheInstance)) {
+            $cacheInstance->setOrchestrator($this);
         }
 
         try {
@@ -240,6 +217,8 @@ abstract class Orchestrator implements OrchestratorInterface
                 $this->isSuccess = false;
             }
         }
+
+        dd($this);
     }
 
     /**
@@ -249,13 +228,15 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     protected function startAllStep()
     {
+        $cacheInstance = CacheFactory::getCacheInstance();
+
         // 若有設定快取實體，則在剛開始將此次的編排器註冊進快取裡。
-        if (!is_null($this->cacheInstance)) {
+        if (!is_null($cacheInstance)) {
             if ($this->cacheOrchestratorNumber === null) {
                 throw OrchestratorException::forCacheOrchestratorNotDefine();
             }
 
-            $this->cacheInstance->initOrchestrator($this->cacheOrchestratorNumber, $this);
+            $cacheInstance->initOrchestrator($this->cacheOrchestratorNumber, $this);
         }
 
         foreach ($this->steps as $step) {
@@ -274,8 +255,8 @@ abstract class Orchestrator implements OrchestratorInterface
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
-        if (!is_null($this->cacheInstance)) {
-            $this->cacheInstance->clearOrchestrator();
+        if (!is_null($cacheInstance)) {
+            $cacheInstance->clearOrchestrator();
         }
     }
 
@@ -284,6 +265,8 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     public function reStartRuntimeOrchestrator()
     {
+        $cacheInstance = CacheFactory::getCacheInstance();
+
         foreach ($this->steps as $step) {
             if ($step->isSuccess() === true) {
                 continue;
@@ -302,9 +285,13 @@ abstract class Orchestrator implements OrchestratorInterface
             }
         }
 
-        if (!is_null($this->cacheInstance)) {
-            $this->cacheInstance->clearOrchestrator();
+        if (!is_null($cacheInstance)) {
+            $cacheInstance->clearOrchestrator();
         }
+
+        $result = $this->defineResult();
+
+        return $result;
     }
 
     /**

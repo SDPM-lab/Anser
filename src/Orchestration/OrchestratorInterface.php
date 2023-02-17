@@ -25,21 +25,6 @@ interface OrchestratorInterface
     public function getStep(int $index): StepInterface;
 
     /**
-     * 設定此編排器快取之實體
-     *
-     * @param CacheHandlerInterface $cacheInstance
-     * @return OrchestratorInterface
-     */
-    public function setCacheInstance(CacheHandlerInterface $cacheInstance): OrchestratorInterface;
-
-    /**
-     * 取得此次編排器快取之實體
-     *
-     * @return CacheHandlerInterface
-     */
-    public function getCacheInstance(): CacheHandlerInterface;
-
-    /**
      * 設定快取編排器之索引
      *
      * @param string $orchestratorNumber
