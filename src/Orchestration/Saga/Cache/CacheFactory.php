@@ -55,14 +55,10 @@ class CacheFactory
     /**
      * Get the constructed cache instance.
      *
-     * @return CacheHandlerInterface
+     * @return CacheHandlerInterface|null
      */
-    public static function getCacheInstance(): CacheHandlerInterface
+    public static function getCacheInstance(): ?CacheHandlerInterface
     {
-        if (is_null(self::$driver) || is_null(self::$cacheInstance)) {
-            throw RedisException::forCacheInstanceNotFound();
-        } else {
-            return self::$cacheInstance;
-        }
+        return self::$cacheInstance;
     }
 }
