@@ -70,6 +70,17 @@ class Saga implements SagaInterface
     /**
      * {@inheritDoc}
      */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): SagaInterface
+    {
+        $this->stateInstance->setRuntimeOrchestrator($runtimeOrch);
+        $this->simpleSagaInstance->setRuntimeOrchestrator($runtimeOrch);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function startStep(StepInterface $step)
     {
         if (

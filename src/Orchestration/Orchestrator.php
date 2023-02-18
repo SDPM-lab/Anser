@@ -60,6 +60,20 @@ abstract class Orchestrator implements OrchestratorInterface
     }
 
     /**
+     * Set the runtime orch to the class need to store after de-serialize.
+     */
+    public function __wakeup()
+    {
+        foreach ($this->steps as $step) {
+            $step->setRuntimeOrchestrator($this);
+        }
+
+        if (!is_null($this->sagaInstance)) {
+            $this->sagaInstance->setRuntimeOrchestrator($this);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getStep(int $index): StepInterface

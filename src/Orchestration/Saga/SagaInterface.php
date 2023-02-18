@@ -62,4 +62,12 @@ interface SagaInterface
      * @return void
      */
     public function bindCompensationMethod(string $methodName, int $stepNumber);
+
+    /**
+     * Set the runtime orchestrator to state and simpleSaga class after de-serialize.
+     *
+     * @param OrchestratorInterface $runtimeOrch
+     * @return SagaInterface
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): SagaInterface;
 }
