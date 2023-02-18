@@ -2,23 +2,22 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga\Restarter;
 
-use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
-
 interface RestarterInterface
 {
-    /**
-     * Get the cache instance.
-     *
-     * @param CacheHandlerInterface $cacheInstance
-     * @return RestarterInterface
-     */
-    public function setRestarterCacheInstance(CacheHandlerInterface $cacheInstance): RestarterInterface;
 
     /**
-     * Re-start the interrupted runtime orchestrator.
+     * Re-start all pass in class name runtime orchestrators in Redis.
+     * If there is serverName list pass in, then Anser will restart all runtime orchestrator in Redis.
+     * Otherwise, Anser will restart the all runtime orchestrators of this restarter setting server name.
      *
-     * @param string|null $orchestratorNumber
-     * @return void
+     * @param string $className
+     * @param array|null $serverNameList
+     * @param string|null $time
+     * @return bool $isSuccess Return whether re-start successfully.
      */
-    public function reStartOrchestrator(?string $orchestratorNumber = null);
+    public function reStartOrchestrator(
+        string $className = null,
+        ?array $serverNameList = [],
+        ?string $time = null
+    ): bool;
 }
