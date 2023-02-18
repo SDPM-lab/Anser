@@ -88,10 +88,9 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * {@inheritDoc}
      */
-    public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface
+    public function getCacheOrchestratorKey(): ?string
     {
-        $this->cacheOrchestratorNumber = $orchestratorNumber;
-        return $this;
+        return $this->cacheOrchestratorNumber;
     }
 
     /**
