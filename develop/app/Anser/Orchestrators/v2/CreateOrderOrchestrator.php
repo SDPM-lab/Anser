@@ -74,6 +74,9 @@ class CreateOrderOrchestrator extends Orchestrator
             throw new Exception("The parameters of product or user_key fail.");
         }
 
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+        $this->setCacheOrchestratorKey('ServerName:' . $this::class . ':'. md5(json_encode(func_get_args())).'/'.date("Y-m-d H:i:s"));
+
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
             "product_check",

@@ -28,7 +28,6 @@ class UserOrchestrator extends Orchestrator
     {
         $this->cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
 
-        $this->setCacheInstance($this->cache);
         $this->setCacheOrchestratorKey('userOrder_2');
 
         $userService   = new UserService();
