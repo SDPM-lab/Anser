@@ -44,6 +44,14 @@ interface StepInterface
     public function setCompensationMethod(string $methodName): StepInterface;
 
     /**
+     * After de-serialize, re-setup the runtime orchestrator.
+     *
+     * @param OrchestratorInterface $runtimeOrch
+     * @return StepInterface
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): StepInterface;
+
+    /**
      * 開始執行 Step 內被設定的 Action
      *
      * @return StepInterface
