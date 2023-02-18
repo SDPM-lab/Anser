@@ -74,21 +74,21 @@ class PaymentController extends BaseController
     }
 
     /**
-     * [GET] /api/v1/payment/{paymentKey}
+     * [GET] /api/v1/payment/{payment_key}
      * Get payment data by payment key.
      *
-     * @param int $paymentKey
+     * @param int $payment_key
      * @return void
      */
-    public function show($paymentKey = null)
+    public function show($payment_key = null)
     {
-        if ($paymentKey === null) {
+        if ($payment_key === null) {
             return $this->fail("The payment key is required.", 404);
         }
 
         $paymentModel = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntity($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($payment_key);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist or cannot found.", 404);
         }
@@ -175,32 +175,32 @@ class PaymentController extends BaseController
      * [PUT] /api/v1/payment
      * Update payment price.
      *
-     * @param int $paymentKey
+     * @param int $payment_key
      * @return void
      */
-    public function update($paymentKey = null)
+    public function update($payment_key = null)
     {
         $data = $this->request->getJSON(true);
 
         $total  = $data["total"] ?? null;
         $status = $data["status"] ?? "paymentUpdate";
 
-        if (is_null($paymentKey)) {
+        if (is_null($payment_key)) {
             return $this->fail("The payment key is required.", 404);
         }
 
-        if (is_null($total) || is_null($paymentKey)) {
+        if (is_null($total) || is_null($payment_key)) {
             return $this->fail("Incoming data error", 400);
         }
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntity($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($payment_key);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist", 404);
         }
 
-        $result = $paymentModel->where('pm_key', $paymentKey)
+        $result = $paymentModel->where('pm_key', $payment_key)
                                ->set('total', $total)
                                ->set('status', $status)
                                ->update();
@@ -216,33 +216,33 @@ class PaymentController extends BaseController
     }
 
     /**
-     * [DELETE] /api/v1/payment/{paymentKey}
+     * [DELETE] /api/v1/payment/{payment_key}
      * Delete payment.
      *
-     * @param int $paymentKey
+     * @param int $payment_key
      * @return void
      */
-    public function delete($paymentKey = null)
+    public function delete($payment_key = null)
     {
-        if (is_null($paymentKey)) {
+        if (is_null($payment_key)) {
             return $this->fail("The payment key is required.", 404);
         }
 
         $paymentModel  = new PaymentModel();
 
-        $paymentEntity = $this->getPaymentEntity($paymentKey);
+        $paymentEntity = $this->getPaymentEntity($payment_key);
         if (is_null($paymentEntity)) {
             return $this->fail("This payment information is not exist.", 404);
         }
 
-        $setDeleteStatus = $paymentModel->where('pm_key', $paymentKey)
+        $setDeleteStatus = $paymentModel->where('pm_key', $payment_key)
                                         ->set("status", "PaymentDelete")
                                         ->update();
         if (!$setDeleteStatus) {
             return $this->fail("This payment status change to 'DELETE' fail.", 400);
         }
 
-        $result = $paymentModel->delete($paymentKey);
+        $result = $paymentModel->delete($payment_key);
 
         if ($result) {
             return $this->respond([

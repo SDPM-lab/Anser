@@ -68,22 +68,22 @@ class OrderController extends BaseController
 
 
     /**
-     * [GET] api/v2/order/{orderKey}
+     * [GET] api/v2/order/{order_key}
      * Get someone order by order key.
      *
      * @param string $orderKey
      * @return void
      */
-    public function show($orderKey = null)
+    public function show($order_key = null)
     {
-        if (is_null($orderKey)) {
+        if (is_null($order_key)) {
             return $this->fail("The Order key is required", 404);
         }
 
         $orderModel  = new OrderModel();
         $orderEntity = new OrderEntity();
 
-        $orderEntity = $orderModel->where("u_key", $this->u_key)->find($orderKey);
+        $orderEntity = $orderModel->where("u_key", $this->u_key)->find($order_key);
 
         if ($orderEntity) {
             $data = [
@@ -124,18 +124,18 @@ class OrderController extends BaseController
             return $this->fail("Incoming data error", 404);
         }
 
-        $now      = date("Y-m-d H:i:s");
-        $orderKey = sha1($u_key . $p_key . $now);
+        $now       = date("Y-m-d H:i:s");
+        $order_key = sha1($u_key . $p_key . $now);
 
         $orderModel = new OrderModel();
 
-        $orderEntity = $orderModel->find($orderKey);
+        $orderEntity = $orderModel->find($order_key);
         if ($orderEntity) {
             return $this->fail("Order key repeated input, Please try it later!", 403);
         }
 
         $orderData  = [
-            "o_key"        => $orderKey,
+            "o_key"        => $order_key,
             "u_key"        => $u_key,
             "p_key"        => $p_key,
             "amount"       => $amount,
@@ -165,9 +165,9 @@ class OrderController extends BaseController
      * @param string $orderKey
      * @return void
      */
-    public function update($orderKey = null)
+    public function update($order_key = null)
     {
-        if (is_null($orderKey)) {
+        if (is_null($order_key)) {
             return $this->fail("The Order key is required", 404);
         }
 
@@ -182,7 +182,7 @@ class OrderController extends BaseController
         $orderModel    = new OrderModel();
         $orderEntity   = new OrderEntity();
 
-        $orderEntity = $orderModel->find($orderKey);
+        $orderEntity = $orderModel->find($order_key);
 
         if (is_null($orderEntity)) {
             return $this->fail("This order not found", 404);
@@ -201,7 +201,7 @@ class OrderController extends BaseController
             $orderEntity->amount = $amount;
         }
 
-        $result = $orderModel->where('o_key', $orderKey)
+        $result = $orderModel->where('o_key', $order_key)
                              ->save($orderEntity);
 
         if ($result) {
@@ -221,28 +221,28 @@ class OrderController extends BaseController
      * @param string $orderKey
      * @return void
      */
-    public function delete($orderKey = null)
+    public function delete($order_key = null)
     {
-        if (is_null($orderKey)) {
+        if (is_null($order_key)) {
             return $this->fail("The Order key is required", 400);
         }
 
         $orderModel  = new OrderModel();
 
-        $orderEntity = $orderModel->find($orderKey);
+        $orderEntity = $orderModel->find($order_key);
 
         if (is_null($orderEntity)) {
             return $this->fail("This order not found", 404);
         }
 
-        $setDeleteStatus = $orderModel->where('o_key', $orderKey)
+        $setDeleteStatus = $orderModel->where('o_key', $order_key)
                                       ->set("status", "orderDelete")
                                       ->update();
         if (!$setDeleteStatus) {
             return $this->fail("This order status change to 'DELETE' fail.", 400);
         }
 
-        $result = $orderModel->delete($orderKey);
+        $result = $orderModel->delete($order_key);
 
         if ($result) {
             return $this->respond([

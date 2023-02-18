@@ -241,7 +241,7 @@ class ProductTest extends DatabaseTestCase
     {
         $dataExistResults = $this->post('api/v2/product', []);
 
-        $dataExistResults->assertStatus(400);
+        $dataExistResults->assertStatus(404);
 
         $decodeDataExistResults = json_decode($dataExistResults->getJSON());
 

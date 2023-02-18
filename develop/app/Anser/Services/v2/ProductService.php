@@ -205,12 +205,12 @@ class ProductService extends SimpleService
      * @param integer $addAmount
      * @return ActionInterface
      */
-    public function addInventory(int $p_key, int $addAmount): ActionInterface
+    public function addInventory(int $p_key, int $add_amount): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/inventory/addInventory")
             ->addOption("json", [
                 "p_key"     => $p_key,
-                "addAmount" => $addAmount,
+                "addAmount" => $add_amount,
             ])
            ->doneHandler(
                function (
@@ -240,12 +240,12 @@ class ProductService extends SimpleService
      * @param integer $reduceAmount
      * @return ActionInterface
      */
-    public function reduceInventory(int $p_key, int $reduceAmount): ActionInterface
+    public function reduceInventory(int $p_key, int $reduce_amount): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/inventory/reduceInventory")
             ->addOption("json", [
                 "p_key"        => $p_key,
-                "reduceAmount" => $reduceAmount,
+                "reduceAmount" => $reduce_amount,
             ])
            ->doneHandler(
                function (
@@ -275,18 +275,18 @@ class ProductService extends SimpleService
      * @param integer $RequestAmount
      * @return boolean
      */
-    public function checkProductInventory(int $product_key, int $requestAmount): ActionInterface
+    public function checkProductInventory(int $product_key, int $request_amount): ActionInterface
     {
         $action = $this->getAction("GET", "/api/v2/product/{$product_key}")
             ->doneHandler(
                 function (
                     ResponseInterface $response,
                     Action $action
-                ) use ($requestAmount) {
+                ) use ($request_amount) {
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
 
-                    $action->setSuccess($data["data"]["amount"] >= $requestAmount);
+                    $action->setSuccess($data["data"]["amount"] >= $request_amount);
                 }
             )
             ->failHandler(
