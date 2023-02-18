@@ -67,6 +67,9 @@ class Saga implements SagaInterface
         $this->startStep = $startStepNumber;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function startStep(StepInterface $step)
     {
         if (
@@ -77,16 +80,25 @@ class Saga implements SagaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setStartStep(StepInterface $step)
     {
         $this->startStep = $step->getNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setEndStep(StepInterface $step)
     {
         $this->endStep = $step->getNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getState(): StateInterface
     {
         return $this->stateInstance;
@@ -111,10 +123,7 @@ class Saga implements SagaInterface
     }
 
     /**
-     * 開始補償
-     *
-     * @param StepInterface[] $stepList
-     * @return void
+     * {@inheritDoc}
      */
     public function startCompensation(array $stepList): ?bool
     {
@@ -130,6 +139,9 @@ class Saga implements SagaInterface
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function startStepCompensation(StepInterface $step)
     {
         $this->stateInstance->setStepCompensating($step);
@@ -143,6 +155,9 @@ class Saga implements SagaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function bindCompensationMethod(string $methodName, int $stepNumber)
     {
         if (method_exists($this->simpleSagaInstance, $methodName)) {
