@@ -10,11 +10,11 @@ use SDPMlab\Anser\Service\Action;
 
 class PaymentService extends SimpleService
 {
-    protected $serviceName = "payment_Service";
+    protected $serviceName = "payment_service";
 
-    protected $retry = 1;
+    protected $retry      = 1;
     protected $retryDelay = 1;
-    protected $timeout = 3.0;
+    protected $timeout    = 10.0;
 
     /**
      * Get all payment
@@ -114,12 +114,12 @@ class PaymentService extends SimpleService
      * Create payment
      *
      * @param integer $u_key
-     * @param integer $o_key
+     * @param string $o_key
      * @param integer $amount
      * @param integer $price
      * @return ActionInterface
      */
-    public function createPayment(int $u_key, int $o_key, int $amount, int $price): ActionInterface
+    public function createPayment(int $u_key, string $o_key, int $amount, int $price): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/payment")
             ->addOption("json", [
@@ -240,6 +240,41 @@ class PaymentService extends SimpleService
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
                     $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Check user wallet balance logic.
+     *
+     * @param integer $u_key
+     * @param integer $cost
+     * @return ActionInterface
+     */
+    public function checkWalletBalance(int $u_key, int $cost): ActionInterface
+    {
+        $action = $this->getAction("GET", "/api/v2/wallet")
+        ->addOption("headers", [
+            "X-User-Key" => $u_key
+        ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) use ($cost) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+
+                    $action->setSuccess($data["data"]["balance"] >= $cost);
                 }
             )
             ->failHandler(
