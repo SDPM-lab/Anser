@@ -231,8 +231,6 @@ abstract class Orchestrator implements OrchestratorInterface
                 $this->isSuccess = false;
             }
         }
-
-        dd($this);
     }
 
     /**

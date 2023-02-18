@@ -86,50 +86,73 @@ class CreateOrderOrchestrator extends Orchestrator
             $this->productService->getProduct($product_key)
         );
 
-        // Step 3. Check the user wallet balance.
-        $step3 = $this->setStep()->addAction(
-            "wallet_check",
-            function (OrchestratorInterface $runtimeOrch) use ($user_key, $product_amout) {
-                $product_data = $runtimeOrch->getStepAction("get_product_info")->getMeaningData();
-                $this->product_data = &$product_data;
-                $this->total        = $this->product_data["price"] * $product_amout;
+        // Define the closure of step3.
+        $step3Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use (
+            $user_key,
+            $product_amout
+        ) {
+            $product_data = $runtimeOrch->getStepAction("get_product_info")->getMeaningData();
+            $total        = $product_data["price"] * $product_amout;
 
-                $action = $this->paymentService->checkWalletBalance($user_key, $this->total);
-                return $action;
-            }
-        );
+            $runtimeOrch->product_data = &$product_data;
+            $runtimeOrch->total        = $total;
+
+            $action = $runtimeOrch->paymentService->checkWalletBalance($user_key, $runtimeOrch->total);
+            return $action;
+        };
+
+        // Step 3. Check the user wallet balance.
+        $step3 = $this->setStep()->addAction("wallet_check", $step3Closure);
+
+        // Define the closure of step4.
+        $step4Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use (
+            $user_key,
+            $product_amout,
+            $product_key
+        ) {
+            return $runtimeOrch->orderService->createOrder(
+                $user_key,
+                $product_key,
+                $product_amout,
+                $runtimeOrch->product_data["price"]
+            );
+        };
 
         // Step 4. Create order.
         $step4 = $this->setStep()->addAction(
             "create_order",
-            function (OrchestratorInterface $runtimeOrch) use ($user_key, $product_amout, $product_key) {
-                return $this->orderService->createOrder(
-                    $user_key,
-                    $product_key,
-                    $product_amout,
-                    $this->product_data["price"]
-                );
-            }
+            $step4Closure
         );
 
+        // Define the closure of step5.
+        $step5Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use (
+            $user_key,
+            $product_amout
+        ) {
+            $order_key = $runtimeOrch->getStepAction("create_order")->getMeaningData();
+
+            $runtimeOrch->order_key = $order_key;
+
+            $action = $runtimeOrch->paymentService->createPayment(
+                $user_key,
+                $runtimeOrch->order_key,
+                $product_amout,
+                $runtimeOrch->total
+            );
+
+            return $action;
+        };
 
         // Step 5. Create payment.
         $step5 = $this->setStep()->addAction(
             "create_payment",
-            function (OrchestratorInterface $runtimeOrch) use ($user_key, $product_amout) {
-                $order_key = $runtimeOrch->getStepAction("create_order")->getMeaningData();
-
-                $this->order_key = $order_key;
-
-                $action = $this->paymentService->createPayment(
-                    $user_key,
-                    $this->order_key,
-                    $product_amout,
-                    $this->total
-                );
-
-                return $action;
-            }
+            $step5Closure
         );
 
         // Step 6. Reduce the product inventory amount.
@@ -138,15 +161,20 @@ class CreateOrderOrchestrator extends Orchestrator
             $this->productService->reduceInventory($product_key, $product_amout)
         );
 
+        // Define the closure of step7.
+        $step7Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use ($user_key) {
+            return $runtimeOrch->paymentService->reduceWalletBalance(
+                $user_key,
+                $runtimeOrch->total
+            );
+        };
+
         // Step 7. Reduce the user wallet balance.
         $step7 = $this->setStep()->addAction(
             "reduce_wallet_balance",
-            function (OrchestratorInterface $runtimeOrch) use ($user_key) {
-                return $this->paymentService->reduceWalletBalance(
-                    $user_key,
-                    $this->total
-                );
-            }
+            $step7Closure
         );
     }
 
