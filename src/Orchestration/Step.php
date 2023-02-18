@@ -42,6 +42,26 @@ class Step implements StepInterface
         $this->number = $stepNumber;
     }
 
+    public function __sleep()
+    {
+        return [
+            "number",
+            "actionList",
+            "isSuccess",
+            "dynamicAction"
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): StepInterface
+    {
+        $this->orchestrator = &$runtimeOrch;
+        return $this;
+    }
+
     /**
      * 新增 Action 至 Step 中。若新增了大於一個 Action ，這些 Action 會以併行模式執行。
      *
