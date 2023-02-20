@@ -36,4 +36,9 @@ class OrchestratorException extends AnserException
     {
         return new self("第 {$index} 個 Step 並不存在。");
     }
+
+    public static function forSagaInstanceNotFound(): OrchestratorException
+    {
+        return new self("Saga 實體並不存在。");
+    }
 }

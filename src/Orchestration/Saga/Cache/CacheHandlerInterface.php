@@ -27,7 +27,7 @@ interface CacheHandlerInterface
      * When the steps of orchestrator already finished,
      * release the store resource of redis.
      *
-     * @param string $orchestratorNumber
+     * @param string|null $orchestratorNumber
      * @return boolean
      */
     public function clearOrchestrator(?string $orchestratorNumber = null): bool;
@@ -35,7 +35,7 @@ interface CacheHandlerInterface
     /**
      * Get the runtime orchestor into redis by using orchestratorNumber.
      *
-     * @param string $orchestratorNumber
+     * @param string|null $orchestratorNumber
      * @return OrchestratorInterface
      */
     public function getOrchestrator(?string $orchestratorNumber = null): OrchestratorInterface;

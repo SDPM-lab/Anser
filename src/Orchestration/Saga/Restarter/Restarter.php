@@ -2,6 +2,7 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga\Restarter;
 
+use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Orchestration\Saga\Restarter\RestarterInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
@@ -43,7 +44,35 @@ class Restarter implements RestarterInterface
     /**
      * {@inheritDoc}
      */
-    public function reStartOrchestrator(?string $orchestratorNumber = null)
+    public function reStartOrchestrator(?string $className = null, mixed $serverName = null, ?bool $isRestart = false, ?string $time = null): bool
+    {
+        if (is_null($className)) {
+            throw RestarterException::forClassNameIsNull();
+        }
+
+        if (is_null($serverName)) {
+            throw RestarterException::forClassNameIsNull();
+        }
+
+        if (is_null($this->runtimeOrchestrator->sagaInstance)) {
+            throw OrchestratorException::forSagaInstanceNotFound();
+        }
+
+
+        if (is_array($serverName)) {
+            foreach ($serverName as $key => $serverName) {
+                $this->cacheInstance->getOrchestrator($cacheKey);
+            }
+        }
+
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reStartOrchestratorOld(?string $orchestratorNumber = null)
     {
         if (is_null($orchestratorNumber) && is_null($this->orchestratorNumber)) {
             throw RestarterException::forOrchestratorNumberNotFound();
