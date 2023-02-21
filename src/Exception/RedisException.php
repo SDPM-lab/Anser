@@ -40,4 +40,14 @@ class RedisException extends AnserException
     {
         return new self("Redis 尚未被初始化，請先使用 initCacheDriver 方法初始化 Cache 實體。");
     }
+
+    public static function forServerNameNotFound(): RedisException
+    {
+        return new self("ServerName 尚未被設定，請傳入 serverName 參數。");
+    }
+
+    public static function forClassNameNotFound(): RedisException
+    {
+        return new self("ClassName 尚未被設定，請傳入 className 參數。");
+    }
 }

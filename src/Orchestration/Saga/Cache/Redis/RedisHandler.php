@@ -30,18 +30,18 @@ class RedisHandler extends BaseCacheHandler
     protected $client;
 
     /**
-     * The key(number) of serialized orchestrator.
+     * The serverName as the hashmap key.
      *
-     * @var string
+     * @var string|null
      */
-    protected $orchestratorNumber;
+    protected $serverName = null;
 
     /**
-     * The serialized orchestrator.
+     * The key(number) of serialized orchestrator.
      *
-     * @var string
+     * @var string|null
      */
-    protected $serializedOrchestrator;
+    protected $orchestratorNumber = null;
 
     public function __construct($config = null, $option = null)
     {
@@ -80,17 +80,25 @@ class RedisHandler extends BaseCacheHandler
     /**
      * {@inheritDoc}
      */
-    public function initOrchestrator(string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
+    public function initOrchestrator(string $serverName, string $orchestratorNumber, OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
         $this->orchestratorNumber = $orchestratorNumber;
 
-        if ($this->client->exists($orchestratorNumber) === 1) {
+        $this->serverName = $serverName;
+
+        if (!is_null($this->client->hget($serverName, $orchestratorNumber))) {
             throw RedisException::forCacheRepeatOrch($orchestratorNumber);
         }
 
         $serializedOrchestrator = $this->serializeOrchestrator($runtimeOrchestrator);
 
-        $this->client->set($this->orchestratorNumber, $serializedOrchestrator);
+        // If the serverName isn't exist in hashmap, add it to serverNameList set.
+        if (empty($this->client->hgetall($serverName))) {
+            $this->client->sadd("serverNameList", $serverName);
+        }
+
+        // Set orchNumber and serialized runtimeOrch in the serverName hashmap.
+        $this->client->hset($serverName, $orchestratorNumber, $serializedOrchestrator);
 
         return $this;
     }
@@ -100,11 +108,11 @@ class RedisHandler extends BaseCacheHandler
      */
     public function setOrchestrator(OrchestratorInterface $runtimeOrchestrator): CacheHandlerInterface
     {
-        if ($this->client->exists($this->orchestratorNumber) === 0) {
-            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
-        }
-
-        $this->client->set($this->orchestratorNumber, $this->serializeOrchestrator($runtimeOrchestrator));
+        $this->client->hset(
+            $this->serverName,
+            $this->orchestratorNumber,
+            $this->serializeOrchestrator($runtimeOrchestrator)
+        );
 
         return $this;
     }
@@ -112,17 +120,21 @@ class RedisHandler extends BaseCacheHandler
     /**
      * {@inheritDoc}
      */
-    public function getOrchestrator(?string $orchestratorNumber = null): OrchestratorInterface
+    public function getOrchestrator(string $serverName = null, string $orchestratorNumber = null): OrchestratorInterface
     {
-        if (!is_null($orchestratorNumber)) {
-            $this->orchestratorNumber = $orchestratorNumber;
+        if (is_null($orchestratorNumber)) {
+            $orchestratorNumber = $this->orchestratorNumber;
         }
 
-        if ($this->client->exists($this->orchestratorNumber) === 0) {
-            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
+        if (is_null($serverName)) {
+            $serverName = $this->serverName;
         }
 
-        $runtimeOrchestrator = $this->unserializeOrchestrator($this->client->get($this->orchestratorNumber));
+        if (is_null($this->client->hget($serverName, $orchestratorNumber))) {
+            throw RedisException::forCacheOrchestratorNumberNotFound($orchestratorNumber);
+        }
+
+        $runtimeOrchestrator = $this->unserializeOrchestrator($this->client->hget($serverName, $orchestratorNumber));
 
         return $runtimeOrchestrator;
     }
@@ -130,16 +142,80 @@ class RedisHandler extends BaseCacheHandler
     /**
      * {@inheritDoc}
      */
-    public function clearOrchestrator(?string $orchestratorNumber = null): bool
+    public function getOrchestratorsByServerName(string $serverName = null, string $className): ?array
     {
-        if (!is_null($orchestratorNumber)) {
-            $this->orchestratorNumber = $orchestratorNumber;
+        if (is_null($serverName) && is_null($this->serverName)) {
+            throw RedisException::forServerNameNotFound();
         }
 
-        if ($this->client->exists($this->orchestratorNumber) === 0) {
-            throw RedisException::forCacheOrchestratorNumberNotFound($this->orchestratorNumber);
+        // Get all serverName hashmap keys.
+        $keys = $this->client->hkeys($serverName);
+
+        if (empty($keys)) {
+            return null;
         }
 
-        return $this->client->del($this->orchestratorNumber);
+        // Using the regular to filter the className.
+        $pattern = '/^' . preg_quote($className, '/') . '/';
+
+        $filteredData = preg_grep($pattern, $keys);
+
+        $orchestratorData = [];
+
+        // Put the filtered key and it's value in the array.
+        foreach ($filteredData as $key => $value) {
+            $orchestratorData[$value] = $this->client->hget($serverName, $value);    
+        }
+
+        return $orchestratorData;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOrchestratorsByClassName(string $className): ?array
+    {
+        // Get all of serverName in Redis.
+        $serverNameList = $this->client->smembers("serverNameList");
+
+        if (empty($serverNameList)) {
+            return null;
+        }
+
+        $serverOrchestratorData = [];
+
+        foreach ($serverNameList as $key => $serverName) {
+            $serverOrchestratorData[$serverName] = $this->getOrchestratorsByServerName($serverName, $className);
+        }
+
+        return $serverOrchestratorData;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function clearOrchestrator(string $serverName = null, string $orchestratorNumber = null): bool
+    {
+        if (is_null($orchestratorNumber)) {
+            $orchestratorNumber = $this->orchestratorNumber;
+        }
+
+        if (is_null($serverName)) {
+            $serverName = $this->serverName;
+        }
+
+        if (is_null($this->client->hget($serverName, $orchestratorNumber))) {
+            throw RedisException::forCacheOrchestratorNumberNotFound($orchestratorNumber);
+        }
+
+        // Delete the orch number in hashmap.
+        $result = ($this->client->hdel($serverName, $orchestratorNumber)) == 1;
+
+        // If the $serverName hashmap is empty after delete orch, remove the $serverName from serverNameList.
+        if ($result === true && empty($this->client->hgetall($serverName))) {
+            $this->client->srem("serverNameList", $serverName);
+        }
+
+        return $result;
     }
 }
