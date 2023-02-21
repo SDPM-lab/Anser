@@ -25,11 +25,20 @@ interface OrchestratorInterface
     public function getStep(int $index): StepInterface;
 
     /**
+     * Set this orchestrator server name.
+     * (Using in Cache scanerio.)
+     *
+     * @param string $serverName
+     * @return OrchestratorInterface
+     */
+    public function setServerName(string $serverName): OrchestratorInterface;
+
+    /**
      * 設定快取編排器之索引
      *
      * @return string|null
      */
-    public function getCacheOrchestratorKey(): ?string;
+    public function getOrchestratorKey(): ?string;
 
     /**
      * 標註交易開始，由此之後發生的 Step 失敗或任何程式例外將觸發 Rollback

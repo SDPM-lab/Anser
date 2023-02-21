@@ -8,6 +8,7 @@ use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 use SDPMlab\Anser\Orchestration\Saga\Saga;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
+use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Service\ActionInterface;
 
 abstract class Orchestrator implements OrchestratorInterface
@@ -34,13 +35,6 @@ abstract class Orchestrator implements OrchestratorInterface
     protected ?SagaInterface $sagaInstance = null;
 
     /**
-     * 編排器快取 key
-     *
-     * @var string|null
-     */
-    protected ?string $cacheOrchestratorNumber = null;
-
-    /**
      * The parameter of build funcion.
      *
      * @var array|null
@@ -48,16 +42,20 @@ abstract class Orchestrator implements OrchestratorInterface
     protected ?array $argsArray = null;
 
     /**
-     * 設定一個新的 Step
+     * The number of this orchestrator.
+     * (Using in Cache scanerio.)
      *
-     * @return StepInterface
+     * @var string|null
      */
-    public function setStep(): StepInterface
-    {
-        $step = new Step($this, count($this->steps));
-        $this->steps[] = $step;
-        return $step;
-    }
+    protected ?string $orchestratorNumber = null;
+
+    /**
+     * The serverName of this orchestrator.
+     * (Using in Cache scanerio.)
+     *
+     * @var string|null
+     */
+    protected ?string $serverName = null;
 
     /**
      * Set the runtime orch to the class need to store after de-serialize.
@@ -71,6 +69,18 @@ abstract class Orchestrator implements OrchestratorInterface
         if (!is_null($this->sagaInstance)) {
             $this->sagaInstance->setRuntimeOrchestrator($this);
         }
+    }
+
+    /**
+     * 設定一個新的 Step
+     *
+     * @return StepInterface
+     */
+    public function setStep(): StepInterface
+    {
+        $step = new Step($this, count($this->steps));
+        $this->steps[] = $step;
+        return $step;
     }
 
     /**
@@ -88,9 +98,18 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * {@inheritDoc}
      */
-    public function getCacheOrchestratorKey(): ?string
+    public function setServerName(string $serverName): OrchestratorInterface
     {
-        return $this->cacheOrchestratorNumber;
+        $this->serverName = $serverName;
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOrchestratorKey(): ?string
+    {
+        return $this->orchestratorNumber;
     }
 
     /**
@@ -237,17 +256,13 @@ abstract class Orchestrator implements OrchestratorInterface
      *
      * @return void
      */
-    protected function startAllStep()
+    protected function startAllStep(CacheHandlerInterface $cacheInstance = null)
     {
-        $cacheInstance = CacheFactory::getCacheInstance();
+        $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
 
-        // 若有設定快取實體，則在剛開始將此次的編排器註冊進快取裡。
+        // Set up the cache info/variable if developer set the cache instance.
         if (!is_null($cacheInstance)) {
-            if ($this->cacheOrchestratorNumber === null) {
-                throw OrchestratorException::forCacheOrchestratorNotDefine();
-            }
-
-            $cacheInstance->initOrchestrator($this->cacheOrchestratorNumber, $this);
+            $this->cacheInitial($cacheInstance);
         }
 
         foreach ($this->steps as $step) {
@@ -258,17 +273,65 @@ abstract class Orchestrator implements OrchestratorInterface
                 $this->isSuccess === false &&
                 !is_null($this->sagaInstance)
             ) {
-                if ($this->sagaInstance->startCompensation($this->steps)) {
+                if ($this->startOrchCompensation()) {
+                    if (!is_null($cacheInstance)) {
+                        $cacheInstance->clearOrchestrator($this->orchestratorNumber);
+                    }
+
+                    log_message(
+                        "INFO",
+                        "The orchestrator" . $this::class . "compensate completely at ". time("Y-m-d H:i:s")
+                    );
+
                     break;
+                } else {
+                    log_message(
+                        "CRITICAL",
+                        "The orchestrator" . $this::class . "compensate Fail at " . time("Y-m-d H:i:s")
+                    );
                 }
             }
         }
 
+        log_message(
+            "INFO",
+            "The orchestrator" . $this::class . "orchestrator completely at " . time("Y-m-d H:i:s")
+        );
+
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
         if (!is_null($cacheInstance)) {
-            $cacheInstance->clearOrchestrator();
+            $cacheInstance->clearOrchestrator($this->orchestratorNumber);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function startOrchCompensation(): ?bool
+    {
+        return $this->sagaInstance->startCompensation($this->steps);
+    }
+
+    /**
+     * Initial the cache info before orchestrate.
+     *
+     * @param CacheHandlerInterface $cacheInstance
+     * @return void
+     */
+    protected function cacheInitial(CacheHandlerInterface $cacheInstance)
+    {
+        if (getenv("serverName")) {
+            $this->serverName = getenv("serverName");
+        }
+
+        if ($this->serverName === null) {
+            throw OrchestratorException::forServerNameNotFound();
+        }
+
+        $this->orchestratorNumber = $this::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+
+        $cacheInstance->initOrchestrator($this->serverName, $this->orchestratorNumber, $this);
     }
 
     /**
@@ -297,7 +360,7 @@ abstract class Orchestrator implements OrchestratorInterface
         }
 
         if (!is_null($cacheInstance)) {
-            $cacheInstance->clearOrchestrator();
+            $cacheInstance->clearOrchestrator($this->orchestratorNumber);
         }
 
         $result = $this->defineResult();
