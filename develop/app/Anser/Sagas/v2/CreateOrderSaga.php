@@ -10,11 +10,11 @@ use App\Anser\Services\V2\PaymentService;
 class CreateOrderSaga extends SimpleSaga
 {
     /**
-     * Order Compensation
+     * The Compensation function for order creating.
      *
      * @return void
      */
-    public function orderCompensation()
+    public function orderCreateCompensation()
     {
         $orderService = new OrderService();
 
@@ -24,26 +24,29 @@ class CreateOrderSaga extends SimpleSaga
     }
 
     /**
-     * product inventory compensation
+     * The Compensation function for product inventory reducing.
      *
      * @return void
      */
-    public function productInventoryCompensation()
+    public function productInventoryReduceCompensation()
     {
         $productService = new ProductService();
 
         $productKey = $this->getOrchestrator()->productKey;
         $addAmount  = $this->getOrchestrator()->addAmount;
 
+        // It still need the error condition.
+        // It will compensate the product inventory balance Only if the error code is 5XX error.
+
         $productService->addInventory($productKey, $addAmount)->do();
     }
 
     /**
-     * user wallet balance compensation
+     * The Compensation function for user wallet balance reducing.
      *
      * @return void
      */
-    public function walletBalanceCompensation()
+    public function walletBalanceReduceCompensation()
     {
         $paymentService = new PaymentService();
 
@@ -51,15 +54,18 @@ class CreateOrderSaga extends SimpleSaga
 
         $increaseBalance = $this->getOrchestrator()->increaseBalance;
 
+        // It still need the error condition.
+        // It will compensate the wallet balance Only if the error code is 5XX error.
+
         $paymentService->increaseWalletBalance($userKey, $increaseBalance)->do();
     }
 
     /**
-     * payment compensation
+     * The Compensation function for payment creating.
      *
      * @return void
      */
-    public function paymentCompensation()
+    public function paymentCreateCompensation()
     {
         $paymentService = new PaymentService();
 
