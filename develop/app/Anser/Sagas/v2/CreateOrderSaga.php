@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Anser\Sagas;
+namespace App\Anser\Sagas\V2;
 
 use SDPMlab\Anser\Orchestration\Saga\SimpleSaga;
 use App\Anser\Services\V2\OrderService;

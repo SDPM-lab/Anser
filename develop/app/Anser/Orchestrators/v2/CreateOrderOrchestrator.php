@@ -2,7 +2,7 @@
 
 namespace App\Anser\Orchestrators\V2;
 
-use App\Anser\Sagas\CreateOrderSaga;
+use App\Anser\Sagas\V2\CreateOrderSaga;
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use App\Anser\Services\V2\ProductService;
 use App\Anser\Services\V2\PaymentService;
@@ -10,7 +10,6 @@ use App\Anser\Services\V2\OrderService;
 use Exception;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
-use SDPMlab\Anser\Service\Action;
 
 class CreateOrderOrchestrator extends Orchestrator
 {
@@ -129,7 +128,7 @@ class CreateOrderOrchestrator extends Orchestrator
 
         // Step 4. Create order.
         $step4 = $this->setStep()
-            ->setCompensationMethod("orderCompensation")
+            ->setCompensationMethod("orderCreateCompensation")
             ->addAction(
                 "create_order",
                 $step4Closure
