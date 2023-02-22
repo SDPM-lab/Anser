@@ -79,12 +79,18 @@ class Restarter implements RestarterInterface
             foreach ($serverName as $key => $singleServerName) {
                 $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($singleServerName, $className);
 
-                $serverRestartResult[$singleServerName] = $this->handleruntimeOrchArrayCompensate($runtimeOrchArray);
+                $serverRestartResult[$singleServerName] = $this->handleruntimeOrchArrayCompensate(
+                    $runtimeOrchArray,
+                    $singleServerName
+                );
             }
         } elseif (is_string($serverName)) {
             $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($serverName, $className);
 
-            $serverRestartResult[$serverName] = $this->handleruntimeOrchArrayCompensate($runtimeOrchArray);
+            $serverRestartResult[$serverName] = $this->handleruntimeOrchArrayCompensate(
+                $runtimeOrchArray,
+                $serverName
+            );
         }
 
         return $serverRestartResult;
@@ -93,10 +99,11 @@ class Restarter implements RestarterInterface
     /**
      * Handle the runtime orch array from Redis.
      *
-     * @param array $runtimeOrchArray
+     * @param array  $runtimeOrchArray
+     * @param string $serverName
      * @return array
      */
-    protected function handleruntimeOrchArrayCompensate(array $runtimeOrchArray): array
+    protected function handleruntimeOrchArrayCompensate(array $runtimeOrchArray, string $serverName): array
     {
         $compensateResult = [];
 
@@ -108,10 +115,13 @@ class Restarter implements RestarterInterface
             // Compensate
             $compensateResult[$runtimeOrch->getOrchestratorKey()] = $runtimeOrch->startOrchCompensation();
 
-            if ($compensateResult[$runtimeOrch] === false) {
+            if ($compensateResult[$runtimeOrch->getOrchestratorKey()] === false) {
                 $this->isSuccess  = false;
                 $this->failOrchestrator[$runtimeOrch::class] = $runtimeOrch;
             }
+
+
+            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch::class);
         }
 
         return $compensateResult;

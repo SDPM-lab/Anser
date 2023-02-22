@@ -311,7 +311,7 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * {@inheritDoc}
      */
-    protected function startOrchCompensation(): ?bool
+    public function startOrchCompensation(): ?bool
     {
         $this->isCompensationSuccess = $this->sagaInstance->startCompensation($this->steps);
         return $this->isCompensationSuccess;

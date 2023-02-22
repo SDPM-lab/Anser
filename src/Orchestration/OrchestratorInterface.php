@@ -118,4 +118,11 @@ interface OrchestratorInterface
      * @return boolean
      */
     public function isCompensationSuccess();
+
+    /**
+     * Start to saga compensate.
+     *
+     * @return boolean|null
+     */
+    public function startOrchCompensation(): ?bool;
 }
