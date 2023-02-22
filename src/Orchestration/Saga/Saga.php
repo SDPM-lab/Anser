@@ -2,6 +2,7 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga;
 
+use SDPMlab\Anser\Exception\SagaException;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 use SDPMlab\Anser\Orchestration\Saga\StateInterface;
@@ -60,8 +61,9 @@ class Saga implements SagaInterface
         if (class_exists($simpleSagaClassName)) {
             $this->simpleSagaInstance = new $simpleSagaClassName($runtimeOrchestrator);
         } else {
-            //拋出例外
+            throw SagaException::forSimpleSagaNotFound($simpleSagaClassName);
         }
+
         $this->stateInstance = new State($runtimeOrchestrator);
         $this->stateInstance->update(State::start);
         $this->startStep = $startStepNumber;
@@ -162,7 +164,7 @@ class Saga implements SagaInterface
             $method = $this->compensationMethods[$stepNumber];
             return $this->simpleSagaInstance->{$method}();
         } else {
-            //拋出例外
+            throw SagaException::forCompensationMethodNotFoundForStep($this->compensationMethods[$stepNumber]);
         }
     }
 
@@ -174,7 +176,7 @@ class Saga implements SagaInterface
         if (method_exists($this->simpleSagaInstance, $methodName)) {
             $this->compensationMethods[$stepNumber] = $methodName;
         } else {
-            //拋出例外
+            throw SagaException::forCompensationMethodNotFound($methodName);
         }
     }
 }
