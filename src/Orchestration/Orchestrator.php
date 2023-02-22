@@ -28,6 +28,13 @@ abstract class Orchestrator implements OrchestratorInterface
     protected $isSuccess = true;
 
     /**
+     * Check whether the saga compensation run successfully.
+     *
+     * @var boolean
+     */
+    protected $isCompensationSuccess = true;
+
+    /**
      * SAGA 實體
      *
      * @var SagaInterface|null
@@ -306,7 +313,8 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     protected function startOrchCompensation(): ?bool
     {
-        return $this->sagaInstance->startCompensation($this->steps);
+        $this->isCompensationSuccess = $this->sagaInstance->startCompensation($this->steps);
+        return $this->isCompensationSuccess;
     }
 
     /**
@@ -376,6 +384,14 @@ abstract class Orchestrator implements OrchestratorInterface
     public function isSuccess()
     {
         return $this->isSuccess;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isCompensationSuccess()
+    {
+        return $this->isCompensationSuccess;
     }
 
     /**

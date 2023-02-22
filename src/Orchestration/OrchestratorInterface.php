@@ -111,4 +111,11 @@ interface OrchestratorInterface
      * @return boolean
      */
     public function isSuccess();
+
+    /**
+     * Check whether the saga compensation run successfully.
+     *
+     * @return boolean
+     */
+    public function isCompensationSuccess();
 }

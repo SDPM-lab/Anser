@@ -244,7 +244,8 @@ class CreateOrderOrchestrator extends Orchestrator
         ];
 
         if (!$this->isSuccess()) {
-            $data["data"]["getFailAction"] = $this->getFailActions();
+            $data["data"]["getFailAction"]         = $this->getFailActions();
+            $data["data"]["isCompensationSuccess"] = $this->isCompensationSuccess();
         }
 
         return $data;
