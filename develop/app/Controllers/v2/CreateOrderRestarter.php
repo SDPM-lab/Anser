@@ -12,7 +12,7 @@ class CreateOrderRestarter extends BaseController
 {
     use ResponseTrait;
 
-    public function restartcreateOrderOrchestrator()
+    public function restartCreateOrderOrchestrator()
     {
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
         $userOrchRestarter = new Restarter();
