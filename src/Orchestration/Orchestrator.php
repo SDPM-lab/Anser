@@ -321,6 +321,10 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     protected function cacheInitial(CacheHandlerInterface $cacheInstance)
     {
+        if ($this->sagaInstance === null) {
+            throw OrchestratorException::forSagaInstanceNotFoundInCache();
+        }
+
         if (getenv("serverName")) {
             $this->serverName = getenv("serverName");
         }

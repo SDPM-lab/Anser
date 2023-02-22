@@ -51,4 +51,9 @@ class OrchestratorException extends AnserException
     {
         return new self("ServerName 尚未設定，請使用 setServerName() 方法或在 .env 檔案內進行 serverName 設定");
     }
+
+    public static function forSagaInstanceNotFoundInCache(): OrchestratorException
+    {
+        return new self("在重啟邏輯需先設定 Saga 補償邏輯。");
+    }
 }
