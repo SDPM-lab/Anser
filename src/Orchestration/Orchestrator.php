@@ -279,29 +279,29 @@ abstract class Orchestrator implements OrchestratorInterface
                     }
 
                     log_message(
-                        "INFO",
-                        "The orchestrator" . $this::class . "compensate completely at ". time("Y-m-d H:i:s")
+                        "notice",
+                        "The orchestrator" . $this::class . "compensate completely at ". date("Y-m-d H:i:s")
                     );
 
                     break;
                 } else {
                     log_message(
-                        "CRITICAL",
-                        "The orchestrator" . $this::class . "compensate Fail at " . time("Y-m-d H:i:s")
+                        "critical",
+                        "The orchestrator" . $this::class . "compensate Fail at " . date("Y-m-d H:i:s")
                     );
                 }
             }
         }
 
         log_message(
-            "INFO",
-            "The orchestrator" . $this::class . "orchestrator completely at " . time("Y-m-d H:i:s")
+            "notice",
+            "The orchestrator" . $this::class . "orchestrator completely at " . date("Y-m-d H:i:s")
         );
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
         if (!is_null($cacheInstance)) {
-            $cacheInstance->clearOrchestrator($this->orchestratorNumber);
+            $cacheInstance->clearOrchestrator($this->serverName, $this->orchestratorNumber);
         }
     }
 
