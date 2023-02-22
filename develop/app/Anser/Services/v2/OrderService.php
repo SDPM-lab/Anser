@@ -203,11 +203,15 @@ class OrderService extends SimpleService
      * Delete order
      *
      * @param string $order_key
+     * @param string $u_key
      * @return ActionInterface
      */
-    public function deleteOrder(string $order_key): ActionInterface
+    public function deleteOrder(string $order_key, string $u_key): ActionInterface
     {
-        $action = $this->getAction("DELETE", "/api/v2/order/{$order_key}")
+        $action = $this->getAction('DELETE', "/api/v2/order/{$order_key}")
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
            ->doneHandler(
                function (
                    ResponseInterface $response,

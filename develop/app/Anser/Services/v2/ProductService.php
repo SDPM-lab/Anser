@@ -176,7 +176,7 @@ class ProductService extends SimpleService
      */
     public function deleteProduct(int $p_key): ActionInterface
     {
-        $action = $this->getAction("DELETE", "/api/v2/product/{$p_key}")
+        $action = $this->getAction('DELETE', "/api/v2/product/{$p_key}")
            ->doneHandler(
                function (
                    ResponseInterface $response,

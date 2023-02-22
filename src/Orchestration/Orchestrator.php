@@ -274,10 +274,6 @@ abstract class Orchestrator implements OrchestratorInterface
                 !is_null($this->sagaInstance)
             ) {
                 if ($this->startOrchCompensation()) {
-                    if (!is_null($cacheInstance)) {
-                        $cacheInstance->clearOrchestrator($this->orchestratorNumber);
-                    }
-
                     log_message(
                         "notice",
                         "The orchestrator" . $this::class . "compensate completely at ". date("Y-m-d H:i:s")
@@ -339,7 +335,7 @@ abstract class Orchestrator implements OrchestratorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @deprecated
      */
     public function reStartRuntimeOrchestrator()
     {

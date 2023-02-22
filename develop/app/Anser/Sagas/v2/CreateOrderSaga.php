@@ -19,8 +19,9 @@ class CreateOrderSaga extends SimpleSaga
         $orderService = new OrderService();
 
         $order_key = $this->getOrchestrator()->order_key;
+        $user_key  = $this->getOrchestrator()->user_key;
 
-        $orderService->deleteOrder($order_key)->do();
+        $orderService->deleteOrder($order_key, $user_key)->do();
     }
 
     /**
@@ -52,12 +53,12 @@ class CreateOrderSaga extends SimpleSaga
 
         $user_key = $this->getOrchestrator()->user_key;
 
-        $product_amout = $this->getOrchestrator()->product_amout;
+        $total = $this->getOrchestrator()->total;
 
         // It still need the error condition.
         // It will compensate the wallet balance Only if the error code is 5XX error.
 
-        $paymentService->increaseWalletBalance($user_key, $product_amout)->do();
+        $paymentService->increaseWalletBalance($user_key, $total)->do();
     }
 
     /**
@@ -70,7 +71,8 @@ class CreateOrderSaga extends SimpleSaga
         $paymentService = new PaymentService();
 
         $payment_key = $this->getOrchestrator()->payment_key;
+        $user_key    = $this->getOrchestrator()->user_key;
 
-        $paymentService->deletePayment($payment_key)->do();
+        $paymentService->deletePayment($payment_key, $user_key)->do();
     }
 }

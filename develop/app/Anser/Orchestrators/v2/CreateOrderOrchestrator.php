@@ -195,22 +195,28 @@ class CreateOrderOrchestrator extends Orchestrator
                 $step5Closure
             );
 
+        $step6Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use ($product_key, $product_amout) {
+            $payment_key = $runtimeOrch->getStepAction("create_payment")->getMeaningData();
+
+            $runtimeOrch->payment_key = $payment_key;
+
+            return $runtimeOrch->productService->reduceInventory($product_key, $product_amout);
+        };
+
         // Step 6. Reduce the product inventory amount.
         $step6 = $this->setStep()
             ->setCompensationMethod("productInventoryReduceCompensation")
             ->addAction(
                 "reduce_product_amount",
-                $this->productService->reduceInventory($product_key, $product_amout)
+                $step6Closure
             );
 
         // Define the closure of step7.
         $step7Closure = static function (
             OrchestratorInterface $runtimeOrch
         ) use ($user_key) {
-            $payment_key = $runtimeOrch->getStepAction("create_payment")->getMeaningData();
-            
-            $runtimeOrch->payment_key = $payment_key;
-
             return $runtimeOrch->paymentService->reduceWalletBalance(
                 $user_key,
                 $runtimeOrch->total

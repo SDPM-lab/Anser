@@ -164,7 +164,7 @@ class Saga implements SagaInterface
             $method = $this->compensationMethods[$stepNumber];
             return $this->simpleSagaInstance->{$method}();
         } else {
-            throw SagaException::forCompensationMethodNotFoundForStep($this->compensationMethods[$stepNumber]);
+            // The step is not in Saga list.
         }
     }
 
