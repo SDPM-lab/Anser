@@ -35,25 +35,53 @@ class CreateOrderOrchestrator extends Orchestrator
     protected OrderService $orderService;
 
     /**
+     * The user key of this orchestrator.
+     *
+     * @var string
+     */
+    public $user_key = null;
+
+    /**
      * The product information.
      *
      * @var array
      */
-    protected array $product_data = [];
+    public array $product_data = [];
 
     /**
      * The order key.
      *
      * @var integer
      */
-    protected $order_key;
+    public $order_key;
+
+    /**
+     * The product key.
+     *
+     * @var integer
+     */
+    public $product_key;
 
     /**
      * The product price * amount.
      *
      * @var int
      */
-    protected $total = 0;
+    public $total = 0;
+
+    /**
+     * The product amount.
+     *
+     * @var integer
+     */
+    public $product_amout = 0;
+
+    /**
+     * The payment key.
+     *
+     * @var string|null
+     */
+    public $payment_key = null;
 
     /**
      * Cache instance.
@@ -73,6 +101,10 @@ class CreateOrderOrchestrator extends Orchestrator
         if (is_null($product_key) || is_null($user_key) || is_null($product_amout)) {
             throw new Exception("The parameters of product or user_key fail.");
         }
+
+        $this->user_key      = $user_key;
+        $this->product_amout = $product_amout;
+        $this->product_key   = $product_key;
 
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
 
@@ -175,6 +207,10 @@ class CreateOrderOrchestrator extends Orchestrator
         $step7Closure = static function (
             OrchestratorInterface $runtimeOrch
         ) use ($user_key) {
+            $payment_key = $runtimeOrch->getStepAction("create_payment")->getMeaningData();
+            
+            $runtimeOrch->payment_key = $payment_key;
+
             return $runtimeOrch->paymentService->reduceWalletBalance(
                 $user_key,
                 $runtimeOrch->total

@@ -18,9 +18,9 @@ class CreateOrderSaga extends SimpleSaga
     {
         $orderService = new OrderService();
 
-        $orderKey = $this->getOrchestrator()->orderKey;
+        $order_key = $this->getOrchestrator()->order_key;
 
-        $orderService->deleteOrder($orderKey)->do();
+        $orderService->deleteOrder($order_key)->do();
     }
 
     /**
@@ -32,13 +32,13 @@ class CreateOrderSaga extends SimpleSaga
     {
         $productService = new ProductService();
 
-        $productKey = $this->getOrchestrator()->productKey;
-        $addAmount  = $this->getOrchestrator()->addAmount;
+        $product_key    = $this->getOrchestrator()->product_key;
+        $product_amout  = $this->getOrchestrator()->product_amout;
 
         // It still need the error condition.
         // It will compensate the product inventory balance Only if the error code is 5XX error.
 
-        $productService->addInventory($productKey, $addAmount)->do();
+        $productService->addInventory($product_key, $product_amout)->do();
     }
 
     /**
@@ -50,14 +50,14 @@ class CreateOrderSaga extends SimpleSaga
     {
         $paymentService = new PaymentService();
 
-        $userKey = $this->getOrchestrator()->userKey;
+        $user_key = $this->getOrchestrator()->user_key;
 
-        $increaseBalance = $this->getOrchestrator()->increaseBalance;
+        $product_amout = $this->getOrchestrator()->product_amout;
 
         // It still need the error condition.
         // It will compensate the wallet balance Only if the error code is 5XX error.
 
-        $paymentService->increaseWalletBalance($userKey, $increaseBalance)->do();
+        $paymentService->increaseWalletBalance($user_key, $product_amout)->do();
     }
 
     /**
@@ -69,8 +69,8 @@ class CreateOrderSaga extends SimpleSaga
     {
         $paymentService = new PaymentService();
 
-        $paymentKey = $this->getOrchestrator()->paymentKey;
+        $payment_key = $this->getOrchestrator()->payment_key;
 
-        $paymentService->deletePayment($paymentKey)->do();
+        $paymentService->deletePayment($payment_key)->do();
     }
 }
