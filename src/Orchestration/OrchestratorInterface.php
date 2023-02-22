@@ -6,6 +6,7 @@ use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Service\ActionInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
+use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 
 interface OrchestratorInterface
 {
@@ -39,6 +40,13 @@ interface OrchestratorInterface
      * @return string|null
      */
     public function getOrchestratorKey(): ?string;
+
+    /**
+     * Get the saga instance of this orchestrator.
+     *
+     * @return SagaInterface|null
+     */
+    public function getSagaInstance(): ?SagaInterface;
 
     /**
      * 標註交易開始，由此之後發生的 Step 失敗或任何程式例外將觸發 Rollback

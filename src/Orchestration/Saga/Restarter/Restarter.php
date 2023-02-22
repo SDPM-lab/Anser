@@ -64,16 +64,12 @@ class Restarter implements RestarterInterface
             throw RestarterException::forClassNameIsNull();
         }
 
-        if (is_null($serverName) && getenv("serverName")) {
+        if (is_null($serverName) && is_null(getenv("serverName"))) {
             throw RestarterException::forServerNameIsNull();
         }
 
         if ($serverName === null && !is_null(getenv("serverName"))) {
             $serverName = getenv("serverName");
-        }
-
-        if (is_null($this->runtimeOrchestrator->sagaInstance)) {
-            throw OrchestratorException::forSagaInstanceNotFound();
         }
 
         $serverRestartResult = [];
@@ -105,6 +101,10 @@ class Restarter implements RestarterInterface
         $compensateResult = [];
 
         foreach ($runtimeOrchArray as $key => $runtimeOrch) {
+
+            if (is_null($runtimeOrch->getSagaInstance())) {
+                throw OrchestratorException::forSagaInstanceNotFound();
+            }
             // Compensate
             $compensateResult[$runtimeOrch->getOrchestratorKey()] = $runtimeOrch->startOrchCompensation();
 

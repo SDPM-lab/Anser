@@ -163,8 +163,10 @@ class RedisHandler extends BaseCacheHandler
         $orchestratorData = [];
 
         // Put the filtered key and it's value in the array.
-        foreach ($filteredData as $key => $value) {
-            $orchestratorData[$value] = $this->client->hget($serverName, $value);    
+        foreach ($filteredData as $key => $orchestratorNumber) {
+            $orchestratorData[$orchestratorNumber] = $this->unserializeOrchestrator(
+                $this->client->hget($serverName, $orchestratorNumber)
+            );
         }
 
         return $orchestratorData;
