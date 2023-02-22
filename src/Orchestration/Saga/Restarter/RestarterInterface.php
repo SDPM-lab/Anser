@@ -9,7 +9,7 @@ interface RestarterInterface
      * If there is serverName list pass in, then Anser will restart all runtime orchestrator in Redis.
      * Otherwise, Anser will restart the all runtime orchestrators of this restarter setting server name.
      *
-     * @param string $className
+     * @param string|null $className
      * @param array|string $serverName
      * @param bool|null $isRestart If pass in true in this param, the restarter will restart the runtime orchestrator after compensation.
      * Otherwise, The restarter will only run the compensation of this runtime orchestrator.
@@ -21,5 +21,19 @@ interface RestarterInterface
         mixed $serverName = null,
         ?bool $isRestart = false,
         ?string $time = null
-    ): bool;
+    ): array;
+
+    /**
+     * Get this restarter status.
+     *
+     * @return boolean
+     */
+    public function getIsSuccess(): bool;
+
+    /**
+     * Get the run fail Orchestrator.
+     *
+     * @return array
+     */
+    public function getFailOrchestrator(): array;
 }

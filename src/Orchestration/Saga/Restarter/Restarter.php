@@ -32,6 +32,20 @@ class Restarter implements RestarterInterface
      */
     protected $runtimeOrchestrator;
 
+    /**
+     * Check this restarter whether is success.
+     *
+     * @var boolean
+     */
+    protected $isSuccess = false;
+
+    /**
+     * Undocumented variable
+     *
+     * @var array
+     */
+    protected array $failOrchestrator = [];
+
     public function __construct(?string $orchestratorNumber = null)
     {
         if (!is_null($orchestratorNumber)) {
@@ -44,48 +58,78 @@ class Restarter implements RestarterInterface
     /**
      * {@inheritDoc}
      */
-    public function reStartOrchestrator(?string $className = null, mixed $serverName = null, ?bool $isRestart = false, ?string $time = null): bool
+    public function reStartOrchestrator(string $className = null, mixed $serverName = null, ?bool $isRestart = false, ?string $time = null): array
     {
         if (is_null($className)) {
             throw RestarterException::forClassNameIsNull();
         }
 
-        if (is_null($serverName)) {
-            throw RestarterException::forClassNameIsNull();
+        if (is_null($serverName) && getenv("serverName")) {
+            throw RestarterException::forServerNameIsNull();
+        }
+
+        if ($serverName === null && !is_null(getenv("serverName"))) {
+            $serverName = getenv("serverName");
         }
 
         if (is_null($this->runtimeOrchestrator->sagaInstance)) {
             throw OrchestratorException::forSagaInstanceNotFound();
         }
 
+        $serverRestartResult = [];
 
         if (is_array($serverName)) {
-            foreach ($serverName as $key => $serverName) {
-                $this->cacheInstance->getOrchestrator($cacheKey);
+            // Handle each serverName.
+            foreach ($serverName as $key => $singleServerName) {
+                $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($singleServerName, $className);
+
+                $serverRestartResult[$singleServerName] = $this->handleruntimeOrchArrayCompensate($runtimeOrchArray);
+            }
+        } elseif (is_string($serverName)) {
+            $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($serverName, $className);
+
+            $serverRestartResult[$serverName] = $this->handleruntimeOrchArrayCompensate($runtimeOrchArray);
+        }
+
+        return $serverRestartResult;
+    }
+
+    /**
+     * Handle the runtime orch array from Redis.
+     *
+     * @param array $runtimeOrchArray
+     * @return array
+     */
+    protected function handleruntimeOrchArrayCompensate(array $runtimeOrchArray): array
+    {
+        $compensateResult = [];
+
+        foreach ($runtimeOrchArray as $key => $runtimeOrch) {
+            // Compensate
+            $compensateResult[$runtimeOrch->getOrchestratorKey()] = $runtimeOrch->startOrchCompensation();
+
+            if ($compensateResult[$runtimeOrch] === false) {
+                $this->isSuccess  = false;
+                $this->failOrchestrator[$runtimeOrch::class] = $runtimeOrch;
             }
         }
 
-
-        return true;
+        return $compensateResult;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function reStartOrchestratorOld(?string $orchestratorNumber = null)
+    public function getIsSuccess(): bool
     {
-        if (is_null($orchestratorNumber) && is_null($this->orchestratorNumber)) {
-            throw RestarterException::forOrchestratorNumberNotFound();
-        } elseif (!is_null($this->orchestratorNumber) && is_null($orchestratorNumber)) {
-            $orchestratorNumber = $this->orchestratorNumber;
-        }
+        return $this->isSuccess;
+    }
 
-        if (is_null($this->cacheInstance)) {
-            throw RestarterException::forCacheInstanceNotFound();
-        }
-
-        $this->runtimeOrchestrator = $this->cacheInstance->getOrchestrator($orchestratorNumber);
-
-        $this->runtimeOrchestrator->reStartRuntimeOrchestrator();
+    /**
+     * {@inheritDoc}
+     */
+    public function getFailOrchestrator(): array
+    {
+        return $this->failOrchestrator;
     }
 }

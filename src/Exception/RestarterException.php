@@ -33,6 +33,6 @@ class RestarterException extends AnserException
 
     public static function forServerNameIsNull(): RestarterException
     {
-        return new self("未傳入欲重啟的伺服器名稱，請將傳入 serverName 參數。");
+        return new self("未傳入欲重啟的伺服器名稱，請傳入或在 .env 檔案內設定 serverName 參數。");
     }
 }
