@@ -7,6 +7,7 @@ use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\Honeypot;
 use App\Filters\UserFilter;
+use App\Filters\AnserTokenFilter;
 
 class Filters extends BaseConfig
 {
@@ -17,10 +18,11 @@ class Filters extends BaseConfig
      * @var array
      */
     public $aliases = [
-        'csrf'     => CSRF::class,
-        'toolbar'  => DebugToolbar::class,
-        'honeypot' => Honeypot::class,
-        'user'     => UserFilter::class,
+        'csrf'         => CSRF::class,
+        'toolbar'      => DebugToolbar::class,
+        'honeypot'     => Honeypot::class,
+        'user'         => UserFilter::class,
+        'anserAndUser' => AnserTokenFilter::class
     ];
 
     /**
