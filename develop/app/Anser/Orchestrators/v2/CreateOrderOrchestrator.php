@@ -2,6 +2,7 @@
 
 namespace App\Anser\Orchestrators\V2;
 
+use App\Anser\Sagas\V2\CreateOrderSaga;
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use App\Anser\Services\V2\ProductService;
 use App\Anser\Services\V2\PaymentService;
@@ -9,7 +10,6 @@ use App\Anser\Services\V2\OrderService;
 use Exception;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
-use SDPMlab\Anser\Service\Action;
 
 class CreateOrderOrchestrator extends Orchestrator
 {
@@ -35,25 +35,53 @@ class CreateOrderOrchestrator extends Orchestrator
     protected OrderService $orderService;
 
     /**
+     * The user key of this orchestrator.
+     *
+     * @var string
+     */
+    public $user_key = null;
+
+    /**
      * The product information.
      *
      * @var array
      */
-    protected array $product_data = [];
+    public array $product_data = [];
 
     /**
      * The order key.
      *
      * @var integer
      */
-    protected $order_key;
+    public $order_key;
+
+    /**
+     * The product key.
+     *
+     * @var integer
+     */
+    public $product_key;
 
     /**
      * The product price * amount.
      *
      * @var int
      */
-    protected $total = 0;
+    public $total = 0;
+
+    /**
+     * The product amount.
+     *
+     * @var integer
+     */
+    public $product_amout = 0;
+
+    /**
+     * The payment key.
+     *
+     * @var string|null
+     */
+    public $payment_key = null;
 
     /**
      * Cache instance.
@@ -74,8 +102,11 @@ class CreateOrderOrchestrator extends Orchestrator
             throw new Exception("The parameters of product or user_key fail.");
         }
 
+        $this->user_key      = $user_key;
+        $this->product_amout = $product_amout;
+        $this->product_key   = $product_key;
+
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
-        $this->setCacheOrchestratorKey('ServerName:' . $this::class . ':'. md5(json_encode(func_get_args())).'/'.date("Y-m-d H:i:s"));
 
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
@@ -109,6 +140,8 @@ class CreateOrderOrchestrator extends Orchestrator
         // Step 3. Check the user wallet balance.
         $step3 = $this->setStep()->addAction("wallet_check", $step3Closure);
 
+        $this->transStart(CreateOrderSaga::class);
+
         // Define the closure of step4.
         $step4Closure = static function (
             OrchestratorInterface $runtimeOrch
@@ -126,10 +159,12 @@ class CreateOrderOrchestrator extends Orchestrator
         };
 
         // Step 4. Create order.
-        $step4 = $this->setStep()->addAction(
-            "create_order",
-            $step4Closure
-        );
+        $step4 = $this->setStep()
+            ->setCompensationMethod("orderCreateCompensation")
+            ->addAction(
+                "create_order",
+                $step4Closure
+            );
 
         // Define the closure of step5.
         $step5Closure = static function (
@@ -153,16 +188,30 @@ class CreateOrderOrchestrator extends Orchestrator
         };
 
         // Step 5. Create payment.
-        $step5 = $this->setStep()->addAction(
-            "create_payment",
-            $step5Closure
-        );
+        $step5 = $this->setStep()
+            ->setCompensationMethod("paymentCreateCompensation")
+            ->addAction(
+                "create_payment",
+                $step5Closure
+            );
+
+        $step6Closure = static function (
+            OrchestratorInterface $runtimeOrch
+        ) use ($product_key, $product_amout) {
+            $payment_key = $runtimeOrch->getStepAction("create_payment")->getMeaningData();
+
+            $runtimeOrch->payment_key = $payment_key;
+
+            return $runtimeOrch->productService->reduceInventory($product_key, $product_amout);
+        };
 
         // Step 6. Reduce the product inventory amount.
-        $step6 = $this->setStep()->addAction(
-            "reduce_product_amount",
-            $this->productService->reduceInventory($product_key, $product_amout)
-        );
+        $step6 = $this->setStep()
+            ->setCompensationMethod("productInventoryReduceCompensation")
+            ->addAction(
+                "reduce_product_amount",
+                $step6Closure
+            );
 
         // Define the closure of step7.
         $step7Closure = static function (
@@ -175,10 +224,14 @@ class CreateOrderOrchestrator extends Orchestrator
         };
 
         // Step 7. Reduce the user wallet balance.
-        $step7 = $this->setStep()->addAction(
-            "reduce_wallet_balance",
-            $step7Closure
-        );
+        $step7 = $this->setStep()
+            ->setCompensationMethod("walletBalanceReduceCompensation")
+            ->addAction(
+                "reduce_wallet_balance",
+                $step7Closure
+            );
+
+        $this->transEnd();
     }
 
     protected function defineResult()
@@ -191,7 +244,8 @@ class CreateOrderOrchestrator extends Orchestrator
         ];
 
         if (!$this->isSuccess()) {
-            $data["data"]["getFailAction"] = $this->getFailActions();
+            $data["data"]["getFailAction"]         = $this->getFailActions();
+            $data["data"]["isCompensationSuccess"] = $this->isCompensationSuccess();
         }
 
         return $data;

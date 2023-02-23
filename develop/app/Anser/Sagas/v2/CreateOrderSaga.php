@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Anser\Sagas;
+namespace App\Anser\Sagas\V2;
 
 use SDPMlab\Anser\Orchestration\Saga\SimpleSaga;
 use App\Anser\Services\V2\OrderService;
@@ -10,61 +10,69 @@ use App\Anser\Services\V2\PaymentService;
 class CreateOrderSaga extends SimpleSaga
 {
     /**
-     * Order Compensation
+     * The Compensation function for order creating.
      *
      * @return void
      */
-    public function orderCompensation()
+    public function orderCreateCompensation()
     {
         $orderService = new OrderService();
 
-        $orderKey = $this->getOrchestrator()->orderKey;
+        $order_key = $this->getOrchestrator()->order_key;
+        $user_key  = $this->getOrchestrator()->user_key;
 
-        $orderService->deleteOrder($orderKey)->do();
+        $orderService->deleteOrder($order_key, $user_key)->do();
     }
 
     /**
-     * product inventory compensation
+     * The Compensation function for product inventory reducing.
      *
      * @return void
      */
-    public function productInventoryCompensation()
+    public function productInventoryReduceCompensation()
     {
         $productService = new ProductService();
 
-        $productKey = $this->getOrchestrator()->productKey;
-        $addAmount  = $this->getOrchestrator()->addAmount;
+        $product_key    = $this->getOrchestrator()->product_key;
+        $product_amout  = $this->getOrchestrator()->product_amout;
 
-        $productService->addInventory($productKey, $addAmount)->do();
+        // It still need the error condition.
+        // It will compensate the product inventory balance Only if the error code is 5XX error.
+
+        $productService->addInventory($product_key, $product_amout)->do();
     }
 
     /**
-     * user wallet balance compensation
+     * The Compensation function for user wallet balance reducing.
      *
      * @return void
      */
-    public function walletBalanceCompensation()
+    public function walletBalanceReduceCompensation()
     {
         $paymentService = new PaymentService();
 
-        $userKey = $this->getOrchestrator()->userKey;
+        $user_key = $this->getOrchestrator()->user_key;
 
-        $increaseBalance = $this->getOrchestrator()->increaseBalance;
+        $total = $this->getOrchestrator()->total;
 
-        $paymentService->increaseWalletBalance($userKey, $increaseBalance)->do();
+        // It still need the error condition.
+        // It will compensate the wallet balance Only if the error code is 5XX error.
+
+        $paymentService->increaseWalletBalance($user_key, $total)->do();
     }
 
     /**
-     * payment compensation
+     * The Compensation function for payment creating.
      *
      * @return void
      */
-    public function paymentCompensation()
+    public function paymentCreateCompensation()
     {
         $paymentService = new PaymentService();
 
-        $paymentKey = $this->getOrchestrator()->paymentKey;
+        $payment_key = $this->getOrchestrator()->payment_key;
+        $user_key    = $this->getOrchestrator()->user_key;
 
-        $paymentService->deletePayment($paymentKey)->do();
+        $paymentService->deletePayment($payment_key, $user_key)->do();
     }
 }

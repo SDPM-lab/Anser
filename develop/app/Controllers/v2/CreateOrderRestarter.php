@@ -2,6 +2,7 @@
 
 namespace App\Controllers\V2;
 
+use App\Anser\Orchestrators\V2\CreateOrderOrchestrator;
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use SDPMlab\Anser\Orchestration\Saga\Restarter\Restarter;
@@ -11,10 +12,12 @@ class CreateOrderRestarter extends BaseController
 {
     use ResponseTrait;
 
-    public function restartcreateOrderOrchestrator()
+    public function restartCreateOrderOrchestrator()
     {
-        $userOrchRestarter = new Restarter('createOrder_2');
-        $userOrchRestarter->setRestarterCacheInstance(CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379'))
-                            ->reStartOrchestrator();
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+        $userOrchRestarter = new Restarter();
+        $result = $userOrchRestarter->reStartOrchestrator(CreateOrderOrchestrator::class);
+
+        $this->respond($result);
     }
 }

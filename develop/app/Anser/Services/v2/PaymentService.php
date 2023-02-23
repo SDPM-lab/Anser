@@ -194,11 +194,15 @@ class PaymentService extends SimpleService
      * Delete payment
      *
      * @param string $payment_key
+     * @param string $u_key
      * @return ActionInterface
      */
-    public function deletePayment(string $payment_key): ActionInterface
+    public function deletePayment(string $payment_key, string $u_key): ActionInterface
     {
         $action = $this->getAction("DELETE", "/api/v2/payment/{$payment_key}")
+            ->addOption("headers", [
+                "X-User-Key" => $u_key
+            ])
            ->doneHandler(
                function (
                    ResponseInterface $response,

@@ -6,6 +6,7 @@ use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Service\ActionInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
+use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 
 interface OrchestratorInterface
 {
@@ -25,12 +26,27 @@ interface OrchestratorInterface
     public function getStep(int $index): StepInterface;
 
     /**
-     * 設定快取編排器之索引
+     * Set this orchestrator server name.
+     * (Using in Cache scanerio.)
      *
-     * @param string $orchestratorNumber
+     * @param string $serverName
      * @return OrchestratorInterface
      */
-    public function setCacheOrchestratorKey(string $orchestratorNumber): OrchestratorInterface;
+    public function setServerName(string $serverName): OrchestratorInterface;
+
+    /**
+     * 設定快取編排器之索引
+     *
+     * @return string|null
+     */
+    public function getOrchestratorKey(): ?string;
+
+    /**
+     * Get the saga instance of this orchestrator.
+     *
+     * @return SagaInterface|null
+     */
+    public function getSagaInstance(): ?SagaInterface;
 
     /**
      * 標註交易開始，由此之後發生的 Step 失敗或任何程式例外將觸發 Rollback
@@ -95,4 +111,18 @@ interface OrchestratorInterface
      * @return boolean
      */
     public function isSuccess();
+
+    /**
+     * Check whether the saga compensation run successfully.
+     *
+     * @return boolean
+     */
+    public function isCompensationSuccess();
+
+    /**
+     * Start to saga compensate.
+     *
+     * @return boolean|null
+     */
+    public function startOrchCompensation(): ?bool;
 }

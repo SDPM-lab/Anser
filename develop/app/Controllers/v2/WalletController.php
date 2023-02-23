@@ -28,6 +28,7 @@ class WalletController extends BaseController
     public function show()
     {
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);
         }
@@ -62,6 +63,7 @@ class WalletController extends BaseController
         }
 
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);
         }
@@ -104,11 +106,16 @@ class WalletController extends BaseController
         }
 
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+        
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);
         }
 
         $nowBalance = $walletEntity->balance;
+
+        if ($nowBalance < $reduceAmount) {
+            return $this->fail("The user wallet balance is not enough to pay it.", 400);
+        }
 
         $walletModel = new WalletModel();
 
