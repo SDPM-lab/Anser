@@ -15,7 +15,8 @@
     "zumba/json-serializer": "^3.0",
     "mbezhanov/faker-provider-collection": "^2.0",
     "pingyi/json-serializer": "^0.1.2",
-    "zircote/swagger-php": "^4.6"
+    "zircote/swagger-php": "^4.6",
+    "firebase/php-jwt": "^6.4"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9",
