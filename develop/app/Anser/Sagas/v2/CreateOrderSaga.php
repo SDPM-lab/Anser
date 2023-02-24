@@ -34,12 +34,12 @@ class CreateOrderSaga extends SimpleSaga
         $productService = new ProductService();
 
         $product_key    = $this->getOrchestrator()->product_key;
-        $product_amount  = $this->getOrchestrator()->product_amount;
+        $product_amout  = $this->getOrchestrator()->product_amout;
 
         // It still need the error condition.
         // It will compensate the product inventory balance Only if the error code is 5XX error.
 
-        $productService->addInventory($product_key, $product_amount)->do();
+        $productService->addInventory($product_key, $product_amout)->do();
     }
 
     /**
