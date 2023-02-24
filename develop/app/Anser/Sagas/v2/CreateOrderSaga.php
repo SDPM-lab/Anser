@@ -18,10 +18,10 @@ class CreateOrderSaga extends SimpleSaga
     {
         $orderService = new OrderService();
 
-        $order_key = $this->getOrchestrator()->order_key;
+        $orchestratorNumber = $this->getOrchestrator()->getOrchestratorNumber();
         $user_key  = $this->getOrchestrator()->user_key;
 
-        $orderService->deleteOrder($order_key, $user_key)->do();
+        $orderService->deleteOrderByRuntimeOrch($user_key, $orchestratorNumber)->do();
     }
 
     /**
@@ -33,13 +33,13 @@ class CreateOrderSaga extends SimpleSaga
     {
         $productService = new ProductService();
 
-        $product_key    = $this->getOrchestrator()->product_key;
-        $product_amout  = $this->getOrchestrator()->product_amout;
+        $orchestratorNumber = $this->getOrchestrator()->getOrchestratorNumber();
+        $product_amount     = $this->getOrchestrator()->product_amount;
 
         // It still need the error condition.
         // It will compensate the product inventory balance Only if the error code is 5XX error.
 
-        $productService->addInventory($product_key, $product_amout)->do();
+        $productService->addInventoryByRuntimeOrch($product_amount, $orchestratorNumber)->do();
     }
 
     /**
@@ -51,14 +51,14 @@ class CreateOrderSaga extends SimpleSaga
     {
         $paymentService = new PaymentService();
 
+        $orchestratorNumber = $this->getOrchestrator()->getOrchestratorNumber();
         $user_key = $this->getOrchestrator()->user_key;
-
-        $total = $this->getOrchestrator()->total;
+        $total    = $this->getOrchestrator()->total;
 
         // It still need the error condition.
         // It will compensate the wallet balance Only if the error code is 5XX error.
 
-        $paymentService->increaseWalletBalance($user_key, $total)->do();
+        $paymentService->increaseWalletBalance($user_key, $total, $orchestratorNumber)->do();
     }
 
     /**
@@ -70,9 +70,10 @@ class CreateOrderSaga extends SimpleSaga
     {
         $paymentService = new PaymentService();
 
+        $orchestratorNumber = $this->getOrchestrator()->getOrchestratorNumber();
         $payment_key = $this->getOrchestrator()->payment_key;
         $user_key    = $this->getOrchestrator()->user_key;
 
-        $paymentService->deletePayment($payment_key, $user_key)->do();
+        $paymentService->deletePaymentByRuntimeOrch($user_key, $orchestratorNumber)->do();
     }
 }

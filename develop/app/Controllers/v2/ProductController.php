@@ -234,7 +234,7 @@ class ProductController extends BaseController
 
         $p_key     = $data["p_key"] ?? null;
         $addAmount = $data["addAmount"] ?? null;
-        $orch_key  = $this->request->getHeaderLine("Orch-Key")??null;
+        $orch_key  = $this->request->getHeaderLine("Orch-Key") ?? null;
 
         if (is_null($orch_key)) {
             return $this->fail("The orchestrator key is needed.", 404);
@@ -253,6 +253,11 @@ class ProductController extends BaseController
 
             $inventoryHistoryData = $inventoryHistoryModel->where('orch_key', $orch_key)
                                                           ->first();
+            
+            if (is_null($inventoryHistoryData)) {
+                return $this->fail("Cannot find the product key by using orch_key.", 404);
+            }
+
             $p_key = $inventoryHistoryData->p_key;
         }
 

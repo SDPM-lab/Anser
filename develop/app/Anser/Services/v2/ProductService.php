@@ -237,6 +237,34 @@ class ProductService extends SimpleService
         return $action;
     }
 
+    public function addInventoryByRuntimeOrch(int $addAmount, string $orch_key): ActionInterface
+    {
+        $action = $this->getAction("POST", "/api/v2/inventory/addInventory")
+            ->addOption("json", [
+                "addAmount"  => $addAmount,
+                "Orch-Key"   => $orch_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
     /**
      * Reduce inventory
      *
