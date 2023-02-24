@@ -117,9 +117,10 @@ class PaymentService extends SimpleService
      * @param string $o_key
      * @param integer $amount
      * @param integer $price
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function createPayment(int $u_key, string $o_key, int $amount, int $price): ActionInterface
+    public function createPayment(int $u_key, string $o_key, int $amount, int $price, string $orch_key): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/payment")
             ->addOption("json", [
@@ -128,7 +129,8 @@ class PaymentService extends SimpleService
                 "amount" => $amount
             ])
             ->addOption("headers", [
-                "X-User-Key" => $u_key
+                "X-User-Key" => $u_key,
+                "Orch-Key"   => $orch_key
             ])
             ->doneHandler(
                 function (
@@ -162,23 +164,29 @@ class PaymentService extends SimpleService
     public function updatePayment(
         int $payment_key,
         ?int $total = null,
-        ?string $status = null
+        ?string $status = null,
+        int $u_key,
+        string $orch_key
     ): ActionInterface {
         $action = $this->getAction("PUT", "/api/v2/payment/{$payment_key}")
             ->addOption("json", [
                 "total"  => $total,
                 "status" => $status,
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->addOption("headers", [
+                "X-User-Key" => $u_key,
+                "Orch-Key"   => $orch_key
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -195,24 +203,26 @@ class PaymentService extends SimpleService
      *
      * @param string $payment_key
      * @param string $u_key
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function deletePayment(string $payment_key, string $u_key): ActionInterface
+    public function deletePayment(string $payment_key, string $u_key, string $orch_key): ActionInterface
     {
         $action = $this->getAction("DELETE", "/api/v2/payment/{$payment_key}")
             ->addOption("headers", [
-                "X-User-Key" => $u_key
+                "X-User-Key" => $u_key,
+                "Orch-Key"   => $orch_key
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -297,16 +307,18 @@ class PaymentService extends SimpleService
      *
      * @param integer $u_key
      * @param integer $increaseBalance
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function increaseWalletBalance(int $u_key, int $increaseBalance): ActionInterface
+    public function increaseWalletBalance(int $u_key, int $increaseBalance, string $orch_key): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/wallet/increaseWalletBalance")
             ->addOption("json", [
                 "addAmount" => $increaseBalance
             ])
             ->addOption("headers", [
-                "X-User-Key" => $u_key
+                "X-User-Key" => $u_key,
+                "Orch-Key"   => $orch_key
             ])
             ->doneHandler(
                 function (
@@ -334,16 +346,18 @@ class PaymentService extends SimpleService
      *
      * @param integer $u_key
      * @param integer $reduceBalance
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function reduceWalletBalance(int $u_key, int $reduceBalance): ActionInterface
+    public function reduceWalletBalance(int $u_key, int $reduceBalance, string $orch_key): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/wallet/reduceWalletBalance")
             ->addOption("json", [
                 "reduceAmount" => $reduceBalance
             ])
             ->addOption("headers", [
-                "X-User-Key" => $u_key
+                "X-User-Key" => $u_key,
+                "Orch-Key"   => $orch_key
             ])
             ->doneHandler(
                 function (
@@ -353,6 +367,72 @@ class PaymentService extends SimpleService
                     $resBody = $response->getBody()->getContents();
                     $data    = json_decode($resBody, true);
                     $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Get payment history by orch_key.
+     *
+     * @param string $orch_key
+     * @return ActionInterface
+     */
+    public function getPaymentHistory(string $orch_key): ActionInterface
+    {
+        $action = $this->getAction('POST', "/api/v2/history/getPaymentHistory")
+            ->addOption("json", [
+                "orch_key"  => $orch_key,
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Get wallet history by orch_key.
+     *
+     * @param string $orch_key
+     * @return ActionInterface
+     */
+    public function getWalletHistory(string $orch_key): ActionInterface
+    {
+        $action = $this->getAction('POST', "/api/v2/history/getWalletHistory")
+            ->addOption("json", [
+                "orch_key"  => $orch_key,
+            ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
                 }
             )
             ->failHandler(

@@ -8,7 +8,7 @@ use App\Services\UserService;
 use App\Models\v2\OrderModel;
 use App\Entities\v2\OrderEntity;
 
-class OrderController extends BaseController 
+class OrderController extends BaseController
 {
     use ResponseTrait;
 
@@ -115,10 +115,15 @@ class OrderController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        $p_key   = $data["p_key"]  ?? null;
-        $amount  = $data["amount"] ?? null;
-        $price   = $data["price"]  ?? null;
-        $u_key   = $this->u_key;
+        $p_key    = $data["p_key"]  ?? null;
+        $amount   = $data["amount"] ?? null;
+        $price    = $data["price"]  ?? null;
+        $u_key    = $this->u_key;
+        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($p_key)|| is_null($amount)) {
             return $this->fail("Incoming data error", 404);
@@ -134,18 +139,7 @@ class OrderController extends BaseController
             return $this->fail("Order key repeated input, Please try it later!", 403);
         }
 
-        $orderData  = [
-            "o_key"        => $orderKey,
-            "u_key"        => $u_key,
-            "p_key"        => $p_key,
-            "amount"       => $amount,
-            "price"        => $price,
-            "status"       => "orderCreate",
-            "created_at"   => $now,
-            "updated_at"   => $now
-        ];
-
-        $orderCreatedIDOrNull = $orderModel->insert($orderData);
+        $orderCreatedIDOrNull = $orderModel->orderCreateTransaction($orderKey, $u_key, $p_key, $amount, $price, $orch_key);
 
         if ($orderCreatedIDOrNull) {
             return $this->respond([
@@ -173,11 +167,16 @@ class OrderController extends BaseController
 
         $data = $this->request->getJSON(true);
 
-        $u_key   = $this->u_key;
-        $p_key   = $data["p_key"]   ?? null;
-        $amount  = $data["amount"]  ?? null;
-        $price   = $data["price"]   ?? null;
-        $status  = $data["status"]  ?? "orderUpdate";
+        $u_key    = $this->u_key;
+        $p_key    = $data["p_key"]   ?? null;
+        $amount   = $data["amount"]  ?? null;
+        $price    = $data["price"]   ?? null;
+        $status   = $data["status"]  ?? "orderUpdate";
+        $orch_key = $this->request->getHeaderLine("Orch-Key") ?? null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         $orderModel    = new OrderModel();
         $orderEntity   = new OrderEntity();
@@ -201,8 +200,7 @@ class OrderController extends BaseController
             $orderEntity->amount = $amount;
         }
 
-        $result = $orderModel->where('o_key', $orderKey)
-                             ->save($orderEntity);
+        $result = $orderModel->orderUpdateTransaction($orderKey, $u_key, $p_key, $price, $status, $amount, $orch_key);
 
         if ($result) {
             return $this->respond([
@@ -223,6 +221,12 @@ class OrderController extends BaseController
      */
     public function delete($orderKey = null)
     {
+        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
+
         if (is_null($orderKey)) {
             return $this->fail("The Order key is required", 400);
         }
@@ -235,14 +239,7 @@ class OrderController extends BaseController
             return $this->fail("This order not found", 404);
         }
 
-        $setDeleteStatus = $orderModel->where('o_key', $orderKey)
-                                      ->set("status", "orderDelete")
-                                      ->update();
-        if (!$setDeleteStatus) {
-            return $this->fail("This order status change to 'DELETE' fail.", 400);
-        }
-
-        $result = $orderModel->delete($orderKey);
+        $result = $orderModel->orderDeleteTransaction($orderKey, $orch_key);
 
         if ($result) {
             return $this->respond([

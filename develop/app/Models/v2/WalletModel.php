@@ -55,4 +55,87 @@ class WalletModel extends Model
 
         return $walletEntity;
     }
+
+    /**
+     * Increase user wallet balance Transaction.
+     *
+     * @param integer $u_key
+     * @param integer $balance
+     * @param string $orch_key
+     * @return boolean
+     */
+    public function increaseBalanceTransaction(int $u_key, int $nowBalance, int $addAmount, string $orch_key): bool
+    {
+        $now = date("Y-m-d H:i:s");
+
+        $wallet_history = [
+            "type"       => "increaseWalletBalance",
+            "u_key"      => $u_key,
+            "balance"    => $addAmount,
+            "orch_key"   => $orch_key,
+            "created_at" => $now,
+            "updated_at" => $now,
+        ];
+
+        try {
+            $this->db->transStart();
+
+            $this->db->table("wallet")
+                     ->where("u_key", $u_key)
+                     ->set("balance", $nowBalance + $addAmount)
+                     ->update();
+
+            $this->db->table("wallet_history")
+                     ->insert($wallet_history);
+
+            $result = $this->db->transComplete();
+
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return false;
+        }
+    }
+
+    /**
+     * Reduce user wallet balance Transaction.
+     *
+     * @param integer $u_key
+     * @param integer $nowBalance
+     * @param integer $reduceAmount
+     * @param string $orch_key
+     * @return void
+     */
+    public function reduceBalanceTransaction(int $u_key, int $nowBalance, int $reduceAmount, string $orch_key)
+    {
+        $now = date("Y-m-d H:i:s");
+
+        $wallet_history = [
+            "type"       => "reduceWalletBalance",
+            "u_key"      => $u_key,
+            "balance"    => $reduceAmount,
+            "orch_key"   => $orch_key,
+            "created_at" => $now,
+            "updated_at" => $now,
+        ];
+
+        try {
+            $this->db->transStart();
+
+            $this->db->table("wallet")
+                     ->where("u_key", $u_key)
+                     ->set("balance", $nowBalance - $reduceAmount)
+                     ->update();
+
+            $this->db->table("wallet_history")
+                     ->insert($wallet_history);
+
+            $result = $this->db->transComplete();
+
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return false;
+        }
+    }
 }

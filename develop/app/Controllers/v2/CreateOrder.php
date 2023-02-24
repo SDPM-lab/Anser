@@ -11,7 +11,7 @@ use App\Services\UserService;
 class CreateOrder extends BaseController
 {
     use ResponseTrait;
-    
+
     public function createOrder()
     {
         $data = $this->request->getJSON(true);
@@ -19,11 +19,11 @@ class CreateOrder extends BaseController
         $product_key    = $data["product_key"];
         $product_amout  = $data["product_amout"];
         $user_key       = $this->request->getHeaderLine("X-User-Key");
-        
+
         $userOrch = new CreateOrderOrchestrator();
 
         $result   = $userOrch->build($product_key, $product_amout, $user_key);
-        
+
         return $this->respond($result);
     }
 }

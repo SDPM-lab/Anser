@@ -105,6 +105,12 @@ $routes->group(
 
         $routes->get('createOrder', 'CreateOrder::createOrder');
         $routes->get('createOrderRestart', 'CreateOrderRestarter::restartCreateOrderOrchestrator');
+
+        //HISTORY
+        $routes->post('history/getInventoryHistory', 'HistoryController::getInventoryHistory');
+        $routes->post('history/getOrderHistory', 'HistoryController::getOrderHistory');
+        $routes->post('history/getPaymentHistory', 'HistoryController::getPaymentHistory');
+        $routes->post('history/getWalletHistory', 'HistoryController::getWalletHistory');
     }
 );
 

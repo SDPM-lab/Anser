@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\v2\ProductModel;
 use App\Entities\v2\ProductEntity;
+use App\Models\v2\InventoryHistoryModel;
 
 class ProductController extends BaseController
 {
@@ -233,6 +234,11 @@ class ProductController extends BaseController
 
         $p_key     = $data["p_key"] ?? null;
         $addAmount = $data["addAmount"] ?? null;
+        $orch_key  = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($p_key)  || is_null($addAmount)) {
             return $this->fail("Incoming data not found", 404);
@@ -247,13 +253,7 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
 
-        $inventory = [
-            "amount"     => $nowAmount + $addAmount,
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-        $productAmountAddResult = $productModel->where("p_key", $p_key)
-                                               ->set($inventory)
-                                               ->update();
+        $productAmountAddResult = $productModel->addInventoryTransaction($p_key, $nowAmount, $addAmount, $orch_key);
 
         if (!$productAmountAddResult) {
             return $this->fail("This product amount add fail", 400);
@@ -277,6 +277,11 @@ class ProductController extends BaseController
 
         $p_key        = $data["p_key"] ?? null;
         $reduceAmount = $data["reduceAmount"] ?? null;
+        $orch_key     = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($p_key) || is_null($reduceAmount)) {
             return $this->fail("Incoming data not found", 404);
@@ -294,14 +299,7 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
 
-        $inventory = [
-            "amount"     => $productionEntity->amount - $reduceAmount,
-            "updated_at" => date("Y-m-d H:i:s")
-        ];
-        $productAmountReduceResult = $productModel->where("p_key", $p_key)
-                                                  ->where("amount >=", $reduceAmount)
-                                                  ->set($inventory)
-                                                  ->update();
+        $productAmountReduceResult = $productModel->reduceInventoryTransaction($p_key, $productionEntity->amount, $reduceAmount, $orch_key);
 
         if (!$productAmountReduceResult) {
             return $this->fail("This product amount reduce fail", 400);

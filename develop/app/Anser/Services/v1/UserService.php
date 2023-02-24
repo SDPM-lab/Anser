@@ -21,7 +21,7 @@ class UserService extends SimpleService
     protected $retry = 1;
     protected $retryDelay = 1;
     protected $timeout = 3.0;
-    
+
     /**
      * 取得使用者清單
      *
@@ -29,13 +29,14 @@ class UserService extends SimpleService
      */
     public function getUserList()
     {
-        $action = $this->getAction("GET","/api/v1/user")
-            ->doneHandler(function(ActionInterface $runtimeAction){
-                $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(),true);
+        $action = $this->getAction("GET", "/api/v1/user")
+            ->doneHandler(
+                function (ActionInterface $runtimeAction) {
+                $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(), true);
                 $meaningData = $data["data"];
                 return $meaningData;
             }
-        );
+            );
         return $action;
     }
 
@@ -47,9 +48,9 @@ class UserService extends SimpleService
      */
     public function getUserData(int $id): ActionInterface
     {
-        $action = $this->getAction("GET","/api/v1/user/{$id}")
-            ->doneHandler(function(ActionInterface $runtimeAction){
-                $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(),true);
+        $action = $this->getAction("GET", "/api/v1/user/{$id}")
+            ->doneHandler(function (ActionInterface $runtimeAction) {
+                $data = json_decode($runtimeAction->getResponse()->getBody()->getContents(), true);
                 $meaningData = $data["data"];
                 return $meaningData;
             })
@@ -61,5 +62,4 @@ class UserService extends SimpleService
             });
         return $action;
     }
-
 }
