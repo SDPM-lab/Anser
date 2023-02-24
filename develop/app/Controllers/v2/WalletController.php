@@ -7,6 +7,7 @@ use CodeIgniter\API\ResponseTrait;
 use App\Controllers\BaseController;
 use App\Models\v2\WalletModel;
 use App\Services\UserService;
+use App\Models\v2\WalletHistoryModel;
 
 class WalletController extends BaseController
 {
@@ -63,11 +64,23 @@ class WalletController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($u_key) || is_null($addAmount)) {
+        if (is_null($addAmount)) {
             return $this->fail("Incoming data error", 400);
         }
 
-        $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+        if (is_null($u_key) && is_null($orch_key)) {
+            return $this->fail("The user key is required.", 400);
+        }
+
+        if (is_null($u_key)) {
+            $walletHistoryModel = new WalletHistoryModel();
+
+            $walletHistoryData = $walletHistoryModel->where('orch_key', $orch_key)
+                                                    ->first();
+            $u_key = $walletHistoryData->u_key;
+        }
+
+        $walletEntity = WalletModel::getWalletByUserID($u_key);
 
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);
@@ -107,11 +120,23 @@ class WalletController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($u_key) || is_null($reduceAmount)) {
+        if (is_null($reduceAmount)) {
             return $this->fail("Incoming data error", 400);
         }
 
-        $walletEntity = WalletModel::getWalletByUserID($this->u_key);
+        if (is_null($u_key) && is_null($orch_key)) {
+            return $this->fail("The user key is required.", 400);
+        }
+
+        if (is_null($u_key)) {
+            $walletHistoryModel = new WalletHistoryModel();
+
+            $walletHistoryData = $walletHistoryModel->where('orch_key', $orch_key)
+                                                    ->first();
+            $u_key = $walletHistoryData->u_key;
+        }
+
+        $walletEntity = WalletModel::getWalletByUserID($u_key);
 
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);

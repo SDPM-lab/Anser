@@ -7,6 +7,7 @@ use App\Controllers\BaseController;
 use App\Services\UserService;
 use App\Models\v2\OrderModel;
 use App\Entities\v2\OrderEntity;
+use App\Models\v2\OrderHistoryModel;
 
 class OrderController extends BaseController
 {
@@ -161,10 +162,6 @@ class OrderController extends BaseController
      */
     public function update($orderKey = null)
     {
-        if (is_null($orderKey)) {
-            return $this->fail("The Order key is required", 404);
-        }
-
         $data = $this->request->getJSON(true);
 
         $u_key    = $this->u_key;
@@ -176,6 +173,18 @@ class OrderController extends BaseController
 
         if (is_null($orch_key)) {
             return $this->fail("The orchestrator key is needed.", 404);
+        }
+
+        if (is_null($orderKey) && is_null($orch_key)) {
+            return $this->fail("The Order key is required", 404);
+        }
+
+        if (is_null($orderKey)) {
+            $orderHistoryModel = new OrderHistoryModel();
+
+            $orderHistoryData = $orderHistoryModel->where('orch_key', $orch_key)
+                                                  ->first();
+            $orderKey = $orderHistoryData->o_key;
         }
 
         $orderModel    = new OrderModel();
@@ -221,14 +230,22 @@ class OrderController extends BaseController
      */
     public function delete($orderKey = null)
     {
-        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+        $orch_key = $this->request->getHeaderLine("Orch-Key") ?? null;
 
         if (is_null($orch_key)) {
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($orderKey)) {
+        if (is_null($orderKey) && is_null($orch_key)) {
             return $this->fail("The Order key is required", 400);
+        }
+
+        if (is_null($orderKey)) {
+            $orderHistoryModel = new OrderHistoryModel();
+
+            $orderHistoryData = $orderHistoryModel->where('orch_key', $orch_key)
+                                                  ->first();
+            $orderKey = $orderHistoryData->o_key;
         }
 
         $orderModel  = new OrderModel();

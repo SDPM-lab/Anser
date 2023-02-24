@@ -23,7 +23,7 @@ class OrderHistoryEntity extends Entity
     /**
      * order key
      *
-     * @var int
+     * @var string
      */
     protected $o_key;
 

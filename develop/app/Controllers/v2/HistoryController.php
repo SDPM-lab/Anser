@@ -42,7 +42,11 @@ class HistoryController extends BaseController
                 "msg"    => "Get inventory history method successful."
             ]);
         } else {
-            return $this->fail("Get inventory history method fail.", 400);
+            return $this->respond([
+                "status" => true,
+                "data"   => null,
+                "msg"    => "Null if you wanna add a condition."
+            ]);
         }
     }
 
@@ -74,7 +78,11 @@ class HistoryController extends BaseController
                 "msg"    => "Get order history method successful."
             ]);
         } else {
-            return $this->fail("Get order history method fail.", 400);
+            return $this->respond([
+                "status" => true,
+                "data"   => null,
+                "msg"    => "Null if you wanna add a condition."
+            ]);
         }
     }
 
@@ -106,7 +114,11 @@ class HistoryController extends BaseController
                 "msg"    => "Get payment history method successful."
             ]);
         } else {
-            return $this->fail("Get payment history method fail.", 400);
+            return $this->respond([
+                "status" => true,
+                "data"   => null,
+                "msg"    => "Null if you wanna add a condition."
+            ]);
         }
     }
 
@@ -138,7 +150,11 @@ class HistoryController extends BaseController
                 "msg"    => "Get wallet history method successful."
             ]);
         } else {
-            return $this->fail("Get wallet history method fail.", 400);
+            return $this->respond([
+                "status" => true,
+                "data"   => null,
+                "msg"    => "Null if you wanna add a condition."
+            ]);
         }
     }
 }
