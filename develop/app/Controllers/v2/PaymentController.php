@@ -9,6 +9,7 @@ use App\Models\v2\PaymentModel;
 use App\Entities\v2\PaymentEntity;
 use App\Models\v2\WalletModel;
 use App\Services\UserService;
+use App\Models\v2\PaymentHistoryModel;
 
 class PaymentController extends BaseController
 {
@@ -186,9 +187,18 @@ class PaymentController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($paymentKey)) {
+        if (is_null($paymentKey) && is_null($orch_key)) {
             return $this->fail("The payment key is required.", 404);
         }
+
+        if (is_null($paymentKey)) {
+            $paymentHistoryModel = new PaymentHistoryModel();
+
+            $paymentHistoryData = $paymentHistoryModel->where('orch_key', $orch_key)
+                                                      ->first();
+            $paymentKey = $paymentHistoryData->pm_key;
+        }
+
 
         if (is_null($total) || is_null($paymentKey)) {
             return $this->fail("Incoming data error", 400);
@@ -228,8 +238,16 @@ class PaymentController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($paymentKey)) {
+        if (is_null($paymentKey) && is_null($orch_key)) {
             return $this->fail("The payment key is required.", 404);
+        }
+
+        if (is_null($paymentKey)) {
+            $paymentHistoryModel = new PaymentHistoryModel();
+
+            $paymentHistoryData = $paymentHistoryModel->where('orch_key', $orch_key)
+                                                      ->first();
+            $paymentKey = $paymentHistoryData->pm_key;
         }
 
         $paymentModel  = new PaymentModel();

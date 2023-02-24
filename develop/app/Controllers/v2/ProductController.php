@@ -240,8 +240,20 @@ class ProductController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($p_key)  || is_null($addAmount)) {
+        if (is_null($addAmount)) {
             return $this->fail("Incoming data not found", 404);
+        }
+
+        if (is_null($p_key) && is_null($orch_key)) {
+            return $this->fail("The product key is required.", 400);
+        }
+
+        if (is_null($p_key)) {
+            $inventoryHistoryModel = new InventoryHistoryModel();
+
+            $inventoryHistoryData = $inventoryHistoryModel->where('orch_key', $orch_key)
+                                                          ->first();
+            $p_key = $inventoryHistoryData->p_key;
         }
 
         $productionEntity = ProductModel::getProduct($p_key);
@@ -283,8 +295,20 @@ class ProductController extends BaseController
             return $this->fail("The orchestrator key is needed.", 404);
         }
 
-        if (is_null($p_key) || is_null($reduceAmount)) {
+        if (is_null($reduceAmount)) {
             return $this->fail("Incoming data not found", 404);
+        }
+
+        if (is_null($p_key) && is_null($orch_key)) {
+            return $this->fail("The product key is required.", 400);
+        }
+
+        if (is_null($p_key)) {
+            $inventoryHistoryModel = new InventoryHistoryModel();
+
+            $inventoryHistoryData = $inventoryHistoryModel->where('orch_key', $orch_key)
+                                                          ->first();
+            $p_key = $inventoryHistoryData->p_key;
         }
 
         $productionEntity = ProductModel::getProduct($p_key);
