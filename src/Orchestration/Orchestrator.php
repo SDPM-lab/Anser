@@ -114,7 +114,7 @@ abstract class Orchestrator implements OrchestratorInterface
     /**
      * {@inheritDoc}
      */
-    public function getOrchestratorKey(): ?string
+    public function getOrchestratorNumber(): ?string
     {
         return $this->orchestratorNumber;
     }
@@ -267,6 +267,8 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
 
+        $this->orchestratorNumber = $this::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+
         // Set up the cache info/variable if developer set the cache instance.
         if (!is_null($cacheInstance)) {
             $this->cacheInitial($cacheInstance);
@@ -336,8 +338,6 @@ abstract class Orchestrator implements OrchestratorInterface
         if ($this->serverName === null) {
             throw OrchestratorException::forServerNameNotFound();
         }
-
-        $this->orchestratorNumber = $this::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
         $cacheInstance->initOrchestrator($this->serverName, $this->orchestratorNumber, $this);
     }

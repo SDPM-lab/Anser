@@ -39,7 +39,7 @@ interface OrchestratorInterface
      *
      * @return string|null
      */
-    public function getOrchestratorKey(): ?string;
+    public function getOrchestratorNumber(): ?string;
 
     /**
      * Get the saga instance of this orchestrator.
