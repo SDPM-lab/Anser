@@ -106,7 +106,27 @@ $routes->group(
         $routes->post('inventory/reduceInventory', 'ProductController::reduceInventory');
 
         $routes->get('createOrder', 'CreateOrder::createOrder');
-        $routes->get('createOrderRestart', 'CreateOrderRestarter::restartCreateOrderOrchestrator');
+
+        $routes->get(
+            'restartCreateOrderOrchestratorByServerName',
+            'CreateOrderRestarter::restartCreateOrderOrchestratorByServerName'
+        );
+        $routes->get(
+            'restartCreateOrderOrchestratorByServerCluster',
+            'CreateOrderRestarter::restartCreateOrderOrchestratorByServerCluster'
+        );
+        $routes->get(
+            'restartCreateOrderOrchestratorByClassName',
+            'CreateOrderRestarter::restartCreateOrderOrchestratorByClassName'
+        );
+        $routes->get(
+            'restartCreateOrderOrchestratorByServerNameAndNeedRestart',
+            'CreateOrderRestarter::restartCreateOrderOrchestratorByServerNameAndNeedRestart'
+        );
+        $routes->get(
+            'restartCreateOrderOrchestratorByClassNameAndNeedRestart',
+            'CreateOrderRestarter::restartCreateOrderOrchestratorByClassNameAndNeedRestart'
+        );
 
         //HISTORY
         $routes->post('history/getInventoryHistory', 'HistoryController::getInventoryHistory');

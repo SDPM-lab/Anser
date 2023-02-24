@@ -263,7 +263,7 @@ abstract class Orchestrator implements OrchestratorInterface
      *
      * @return void
      */
-    protected function startAllStep(CacheHandlerInterface $cacheInstance = null)
+    public function startAllStep(CacheHandlerInterface $cacheInstance = null)
     {
         $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
 

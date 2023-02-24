@@ -12,12 +12,71 @@ class CreateOrderRestarter extends BaseController
 {
     use ResponseTrait;
 
-    public function restartCreateOrderOrchestrator()
+    public function restartCreateOrderOrchestratorByServerName()
     {
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
-        $userOrchRestarter = new Restarter();
-        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class);
 
-        $this->respond($result);
+        $userOrchRestarter = new Restarter();
+
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'server_1');
+
+        return $this->respond([
+            "result" => $result
+        ]);
+    }
+
+    public function restartCreateOrderOrchestratorByServerCluster()
+    {
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+
+        $userOrchRestarter = new Restarter();
+
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(
+            CreateOrderOrchestrator::class,
+            ["server_1", "server_2"]
+        );
+
+        return $this->respond([
+            "result" => $result
+        ]);
+    }
+
+    public function restartCreateOrderOrchestratorByClassName()
+    {
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+
+        $userOrchRestarter = new Restarter();
+
+        $result = $userOrchRestarter->reStartOrchestratorsByClass(CreateOrderOrchestrator::class);
+
+        return $this->respond([
+            "result" => $result
+        ]);
+    }
+
+    public function restartCreateOrderOrchestratorByServerNameAndNeedRestart()
+    {
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+
+        $userOrchRestarter = new Restarter();
+
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'server_1', true);
+
+        return $this->respond([
+            "result" => $result
+        ]);
+    }
+
+    public function restartCreateOrderOrchestratorByClassNameAndNeedRestart()
+    {
+        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+
+        $userOrchRestarter = new Restarter();
+
+        $result = $userOrchRestarter->reStartOrchestratorsByClass(CreateOrderOrchestrator::class, true);
+
+        return $this->respond([
+            "result" => $result
+        ]);
     }
 }

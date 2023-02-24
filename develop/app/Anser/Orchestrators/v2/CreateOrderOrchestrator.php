@@ -83,12 +83,6 @@ class CreateOrderOrchestrator extends Orchestrator
      */
     public $payment_key = null;
 
-    /**
-     * Cache instance.
-     *
-     */
-    protected $cache;
-
     public function __construct()
     {
         $this->productService = new ProductService();
@@ -102,11 +96,13 @@ class CreateOrderOrchestrator extends Orchestrator
             throw new Exception("The parameters of product or user_key fail.");
         }
 
-        $this->user_key      = $user_key;
+        $this->user_key       = $user_key;
         $this->product_amount = $product_amount;
-        $this->product_key   = $product_key;
+        $this->product_key    = $product_key;
 
-        CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+        $cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+
+        $this->setServerName("server_3");
 
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
