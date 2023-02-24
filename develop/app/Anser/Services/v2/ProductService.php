@@ -111,16 +111,16 @@ class ProductService extends SimpleService
                 "price"       => $price,
                 "amount"      => $amount
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["data"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -147,16 +147,16 @@ class ProductService extends SimpleService
                 "name"        => $name,
                 "price"       => $price,
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -216,16 +216,16 @@ class ProductService extends SimpleService
             ->addOption("headers", [
                 "Orch-Key"   => $orch_key
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -255,16 +255,16 @@ class ProductService extends SimpleService
             ->addOption("headers", [
                 "Orch-Key"   => $orch_key
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -321,16 +321,16 @@ class ProductService extends SimpleService
             ->addOption("json", [
                 "orch_key"  => $orch_key,
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["data"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e

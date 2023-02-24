@@ -183,16 +183,16 @@ class OrderService extends SimpleService
                 "X-User-Key" => $u_key,
                 "Orch-Key"   => $orch_key
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["status"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -219,16 +219,16 @@ class OrderService extends SimpleService
                 "X-User-Key" => $u_key,
                 "Orch-Key"   => $orch_key
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["data"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
@@ -252,16 +252,16 @@ class OrderService extends SimpleService
             ->addOption("json", [
                 "orch_key"  => $orch_key,
             ])
-           ->doneHandler(
-               function (
-                   ResponseInterface $response,
-                   Action $action
-               ) {
-                   $resBody = $response->getBody()->getContents();
-                   $data    = json_decode($resBody, true);
-                   $action->setMeaningData($data["data"]);
-               }
-           )
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
             ->failHandler(
                 function (
                     ActionException $e
