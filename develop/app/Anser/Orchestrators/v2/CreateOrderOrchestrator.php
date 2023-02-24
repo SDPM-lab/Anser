@@ -74,7 +74,7 @@ class CreateOrderOrchestrator extends Orchestrator
      *
      * @var integer
      */
-    public $product_amount = 0;
+    public $product_amout = 0;
 
     /**
      * The payment key.
@@ -96,14 +96,14 @@ class CreateOrderOrchestrator extends Orchestrator
         $this->orderService   = new OrderService();
     }
 
-    protected function definition(int $product_key = null, int $product_amount = null, int $user_key = null)
+    protected function definition(int $product_key = null, int $product_amout = null, int $user_key = null)
     {
-        if (is_null($product_key) || is_null($user_key) || is_null($product_amount)) {
+        if (is_null($product_key) || is_null($user_key) || is_null($product_amout)) {
             throw new Exception("The parameters of product or user_key fail.");
         }
 
         $this->user_key      = $user_key;
-        $this->product_amount = $product_amount;
+        $this->product_amout = $product_amout;
         $this->product_key   = $product_key;
 
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
@@ -111,7 +111,7 @@ class CreateOrderOrchestrator extends Orchestrator
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
             "product_check",
-            $this->productService->checkProductInventory($product_key, $product_amount)
+            $this->productService->checkProductInventory($product_key, $product_amout)
         );
 
         // Step 2. Get product info.
@@ -125,10 +125,10 @@ class CreateOrderOrchestrator extends Orchestrator
             OrchestratorInterface $runtimeOrch
         ) use (
             $user_key,
-            $product_amount
+            $product_amout
         ) {
             $product_data = $runtimeOrch->getStepAction("get_product_info")->getMeaningData();
-            $total        = $product_data["price"] * $product_amount;
+            $total        = $product_data["price"] * $product_amout;
 
             $runtimeOrch->product_data = &$product_data;
             $runtimeOrch->total        = $total;
@@ -147,13 +147,13 @@ class CreateOrderOrchestrator extends Orchestrator
             OrchestratorInterface $runtimeOrch
         ) use (
             $user_key,
-            $product_amount,
+            $product_amout,
             $product_key
         ) {
             return $runtimeOrch->orderService->createOrder(
                 $user_key,
                 $product_key,
-                $product_amount,
+                $product_amout,
                 $runtimeOrch->product_data["price"]
             );
         };
@@ -171,7 +171,7 @@ class CreateOrderOrchestrator extends Orchestrator
             OrchestratorInterface $runtimeOrch
         ) use (
             $user_key,
-            $product_amount
+            $product_amout
         ) {
             $order_key = $runtimeOrch->getStepAction("create_order")->getMeaningData();
 
@@ -180,7 +180,7 @@ class CreateOrderOrchestrator extends Orchestrator
             $action = $runtimeOrch->paymentService->createPayment(
                 $user_key,
                 $runtimeOrch->order_key,
-                $product_amount,
+                $product_amout,
                 $runtimeOrch->total
             );
 
@@ -197,12 +197,12 @@ class CreateOrderOrchestrator extends Orchestrator
 
         $step6Closure = static function (
             OrchestratorInterface $runtimeOrch
-        ) use ($product_key, $product_amount) {
+        ) use ($product_key, $product_amout) {
             $payment_key = $runtimeOrch->getStepAction("create_payment")->getMeaningData();
 
             $runtimeOrch->payment_key = $payment_key;
 
-            return $runtimeOrch->productService->reduceInventory($product_key, $product_amount);
+            return $runtimeOrch->productService->reduceInventory($product_key, $product_amout);
         };
 
         // Step 6. Reduce the product inventory amount.
