@@ -57,6 +57,11 @@ class WalletController extends BaseController
 
         $addAmount = $data["addAmount"] ?? null;
         $u_key     = $this->u_key;
+        $orch_key  = $this->request->getHeaderLine("Orch-Key") ?? null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($u_key) || is_null($addAmount)) {
             return $this->fail("Incoming data error", 400);
@@ -72,11 +77,7 @@ class WalletController extends BaseController
 
         $walletModel = new WalletModel();
 
-        $balance = $nowBalance + $addAmount;
-
-        $result = $walletModel->where("u_key", $u_key)
-                              ->set("balance", $balance)
-                              ->update();
+        $result = $walletModel->increaseBalanceTransaction($u_key, $nowBalance, $addAmount, $orch_key);
 
         if ($result) {
             return $this->respond([
@@ -100,13 +101,18 @@ class WalletController extends BaseController
 
         $reduceAmount = $data["reduceAmount"] ?? null;
         $u_key        = $this->u_key;
+        $orch_key     = $this->request->getHeaderLine("Orch-Key") ?? null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($u_key) || is_null($reduceAmount)) {
             return $this->fail("Incoming data error", 400);
         }
 
         $walletEntity = WalletModel::getWalletByUserID($this->u_key);
-        
+
         if (is_null($walletEntity)) {
             return $this->fail("This user wallet not exist", 404);
         }
@@ -119,11 +125,7 @@ class WalletController extends BaseController
 
         $walletModel = new WalletModel();
 
-        $balance = $nowBalance - $reduceAmount;
-
-        $result = $walletModel->where("u_key", $u_key)
-                              ->set("balance", $balance)
-                              ->update();
+        $result = $walletModel->reduceBalanceTransaction($u_key, $nowBalance, $reduceAmount, $orch_key);
 
         if ($result) {
             return $this->respond([

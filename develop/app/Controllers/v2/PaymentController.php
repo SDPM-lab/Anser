@@ -121,7 +121,12 @@ class PaymentController extends BaseController
         $o_key  = $data["o_key"];
         $amount = $data["amount"] ?? null;
         $price  = $data["price"]  ?? null;
-        $status = "paymentCreate";
+
+        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($u_key) || is_null($o_key) || is_null($amount) || is_null($price)) {
             return $this->fail("Incoming data error", 400);
@@ -149,16 +154,7 @@ class PaymentController extends BaseController
             return $this->fail("Insufficient balance", 400);
         }
 
-        $paymentData = [
-                "u_key"      => $u_key,
-                "o_key"      => $o_key,
-                "total"      => $total,
-                "status"     => $status,
-                "created_at" => date("Y-m-d H:i:s"),
-                "updated_at" => date("Y-m-d H:i:s")
-            ];
-
-        $paymentCreatedIDOrNull = $paymentModel->insert($paymentData);
+        $paymentCreatedIDOrNull = $paymentModel->paymentCreateTransaction($u_key, $o_key, $total, $orch_key);
 
         if (is_null($paymentCreatedIDOrNull)) {
             return $this->fail("Payment created failed.", 400);
@@ -182,8 +178,13 @@ class PaymentController extends BaseController
     {
         $data = $this->request->getJSON(true);
 
-        $total  = $data["total"] ?? null;
-        $status = $data["status"] ?? "paymentUpdate";
+        $total    = $data["total"] ?? null;
+        $status   = $data["status"] ?? "paymentUpdate";
+        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
 
         if (is_null($paymentKey)) {
             return $this->fail("The payment key is required.", 404);
@@ -200,10 +201,7 @@ class PaymentController extends BaseController
             return $this->fail("This payment information is not exist", 404);
         }
 
-        $result = $paymentModel->where('pm_key', $paymentKey)
-                               ->set('total', $total)
-                               ->set('status', $status)
-                               ->update();
+        $result = $paymentModel->paymentUpdateTransaction($paymentKey, $total, $status, $orch_key);
 
         if ($result) {
             return $this->respond([
@@ -224,6 +222,12 @@ class PaymentController extends BaseController
      */
     public function delete($paymentKey = null)
     {
+        $orch_key = $this->request->getHeaderLine("Orch-Key")??null;
+
+        if (is_null($orch_key)) {
+            return $this->fail("The orchestrator key is needed.", 404);
+        }
+
         if (is_null($paymentKey)) {
             return $this->fail("The payment key is required.", 404);
         }
@@ -235,14 +239,7 @@ class PaymentController extends BaseController
             return $this->fail("This payment information is not exist.", 404);
         }
 
-        $setDeleteStatus = $paymentModel->where('pm_key', $paymentKey)
-                                        ->set("status", "PaymentDelete")
-                                        ->update();
-        if (!$setDeleteStatus) {
-            return $this->fail("This payment status change to 'DELETE' fail.", 400);
-        }
-
-        $result = $paymentModel->delete($paymentKey);
+        $result = $paymentModel->paymentDeleteTransaction($paymentKey, $orch_key);
 
         if ($result) {
             return $this->respond([

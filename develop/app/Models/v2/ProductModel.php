@@ -56,4 +56,80 @@ class ProductModel extends Model
 
         return $productEntity;
     }
+
+    public function addInventoryTransaction(int $p_key,int $nowAmount,int $addAmount,string $orch_key)
+    {
+        $now = date("Y-m-d H:i:s");
+
+        $inventory_history = [
+            "type"       => "increaseInventoryAmount",
+            "p_key"      => $p_key,
+            "amount"     => $addAmount,
+            "orch_key"   => $orch_key,
+            "created_at" => $now,
+            "updated_at" => $now,
+        ];
+
+        try {
+            $this->db->transStart();
+
+            $inventory_data = [
+                "amount"     => $nowAmount + $addAmount,
+                "updated_at" => date("Y-m-d H:i:s")
+            ];
+
+            $this->db->table("product")
+                     ->where("p_key", $p_key)
+                     ->set($inventory_data)
+                     ->update();
+
+            $this->db->table("inventory_history")
+                     ->insert($inventory_history);
+
+            $result = $this->db->transComplete();
+
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return false;
+        }
+    }
+
+    public function reduceInventoryTransaction(int $p_key,int $nowAmount,int $reduceAmount,string $orch_key)
+    {
+        $now = date("Y-m-d H:i:s");
+
+        $inventory_history = [
+            "type"       => "reduceInventoryAmount",
+            "p_key"      => $p_key,
+            "amount"     => $reduceAmount,
+            "orch_key"   => $orch_key,
+            "created_at" => $now,
+            "updated_at" => $now,
+        ];
+
+        try {
+            $this->db->transStart();
+
+            $inventory_data = [
+                "amount"     => $nowAmount - $reduceAmount,
+                "updated_at" => date("Y-m-d H:i:s")
+            ];
+            $this->db->table("product")
+                     ->where("p_key", $p_key)
+                     ->where("amount >=", $reduceAmount)
+                     ->set($inventory_data)
+                     ->update();
+
+            $this->db->table("inventory_history")
+                     ->insert($inventory_history);
+
+            $result = $this->db->transComplete();
+
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return false;
+        }
+    }
 }

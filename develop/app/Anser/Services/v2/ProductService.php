@@ -203,14 +203,18 @@ class ProductService extends SimpleService
      *
      * @param integer $p_key
      * @param integer $addAmount
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function addInventory(int $p_key, int $addAmount): ActionInterface
+    public function addInventory(int $p_key, int $addAmount, string $orch_key): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/inventory/addInventory")
             ->addOption("json", [
                 "p_key"     => $p_key,
                 "addAmount" => $addAmount,
+            ])
+            ->addOption("headers", [
+                "Orch-Key"   => $orch_key
             ])
            ->doneHandler(
                function (
@@ -238,14 +242,18 @@ class ProductService extends SimpleService
      *
      * @param integer $p_key
      * @param integer $reduceAmount
+     * @param string $orch_key
      * @return ActionInterface
      */
-    public function reduceInventory(int $p_key, int $reduceAmount): ActionInterface
+    public function reduceInventory(int $p_key, int $reduceAmount, string $orch_key): ActionInterface
     {
         $action = $this->getAction("POST", "/api/v2/inventory/reduceInventory")
             ->addOption("json", [
                 "p_key"        => $p_key,
                 "reduceAmount" => $reduceAmount,
+            ])
+            ->addOption("headers", [
+                "Orch-Key"   => $orch_key
             ])
            ->doneHandler(
                function (
@@ -298,6 +306,39 @@ class ProductService extends SimpleService
                 }
             );
 
-            return $action;
+        return $action;
+    }
+
+    /**
+     * Get inventory history by orch_key.
+     *
+     * @param string $orch_key
+     * @return ActionInterface
+     */
+    public function getInventoryHistory(string $orch_key): ActionInterface
+    {
+        $action = $this->getAction('POST', "/api/v2/history/getInventoryHistory")
+            ->addOption("json", [
+                "orch_key"  => $orch_key,
+            ])
+           ->doneHandler(
+               function (
+                   ResponseInterface $response,
+                   Action $action
+               ) {
+                   $resBody = $response->getBody()->getContents();
+                   $data    = json_decode($resBody, true);
+                   $action->setMeaningData($data["data"]);
+               }
+           )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
     }
 }
