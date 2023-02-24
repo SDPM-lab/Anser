@@ -175,17 +175,17 @@ class Restarter implements RestarterInterface
             }
 
             // Compensate
-            $compensateResult[$runtimeOrch->getOrchestratorKey()] = [
+            $compensateResult[$runtimeOrch->getOrchestratorNumber()] = [
                 "compensateResult"    => $runtimeOrch->startOrchCompensation(),
                 "runtimeOrchestrator" => $runtimeOrch
             ];
 
-            if ($compensateResult[$runtimeOrch->getOrchestratorKey()] === false) {
+            if ($compensateResult[$runtimeOrch->getOrchestratorNumber()] === false) {
                 $this->isSuccess  = false;
-                $this->failCompensationOrchestrator[$runtimeOrch->getOrchestratorKey()] = $runtimeOrch;
+                $this->failCompensationOrchestrator[$runtimeOrch->getOrchestratorNumber()] = $runtimeOrch;
             }
 
-            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch->getOrchestratorKey());
+            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch->getOrchestratorNumber());
         }
 
         return $compensateResult;
@@ -210,12 +210,12 @@ class Restarter implements RestarterInterface
 
             $runtimeOrch->startAllStep();
 
-            $restartResult[$runtimeOrch->getOrchestratorKey()] = [
+            $restartResult[$runtimeOrch->getOrchestratorNumber()] = [
                 "restartResult" => $runtimeOrch->isSuccess()
             ];
 
             if ($runtimeOrch->isSuccess() === false) {
-                $restartResult[$runtimeOrch->getOrchestratorKey()] = [
+                $restartResult[$runtimeOrch->getOrchestratorNumber()] = [
                     "failStep" => $runtimeOrch->getFailActions()
                 ];
             }

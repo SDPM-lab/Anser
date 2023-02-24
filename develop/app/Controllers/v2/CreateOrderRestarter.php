@@ -16,7 +16,7 @@ class CreateOrderRestarter extends BaseController
     {
         CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
         $userOrchRestarter = new Restarter();
-        $result = $userOrchRestarter->reStartOrchestrator(CreateOrderOrchestrator::class);
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class);
 
         $this->respond($result);
     }
