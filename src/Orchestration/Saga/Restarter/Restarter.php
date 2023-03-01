@@ -40,11 +40,25 @@ class Restarter implements RestarterInterface
     protected $isSuccess = false;
 
     /**
+     * The result of server restart.
+     *
+     * @var array
+     */
+    protected $serverRestartResult = [];
+
+    /**
      * Undocumented variable
      *
      * @var array
      */
-    protected array $failOrchestrator = [];
+    protected array $failCompensationOrchestrator = [];
+
+    /**
+     * Undocumented variable
+     *
+     * @var array
+     */
+    protected array $failRestartOrchestrator = [];
 
     public function __construct(?string $orchestratorNumber = null)
     {
@@ -58,8 +72,12 @@ class Restarter implements RestarterInterface
     /**
      * {@inheritDoc}
      */
-    public function reStartOrchestrator(string $className = null, mixed $serverName = null, ?bool $isRestart = false, ?string $time = null): array
-    {
+    public function reStartOrchestratorsByServer(
+        string $className = null,
+        mixed $serverName = null,
+        ?bool $isRestart  = false,
+        ?string $time     = null
+    ): array {
         if (is_null($className)) {
             throw RestarterException::forClassNameIsNull();
         }
@@ -72,28 +90,72 @@ class Restarter implements RestarterInterface
             $serverName = getenv("serverName");
         }
 
-        $serverRestartResult = [];
-
         if (is_array($serverName)) {
-            // Handle each serverName.
             foreach ($serverName as $key => $singleServerName) {
                 $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($singleServerName, $className);
 
-                $serverRestartResult[$singleServerName] = $this->handleruntimeOrchArrayCompensate(
-                    $runtimeOrchArray,
-                    $singleServerName
-                );
+                $this->handleSingleServerRestart($singleServerName, $runtimeOrchArray, $isRestart);
             }
         } elseif (is_string($serverName)) {
             $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($serverName, $className);
 
-            $serverRestartResult[$serverName] = $this->handleruntimeOrchArrayCompensate(
-                $runtimeOrchArray,
-                $serverName
-            );
+            $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
         }
 
-        return $serverRestartResult;
+        return $this->serverRestartResult;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reStartOrchestratorsByClass(
+        ?string $className = null,
+        ?bool $isRestart   = false,
+        ?string $time      = null
+    ): array {
+        if (is_null($className)) {
+            throw RestarterException::forClassNameIsNull();
+        }
+
+        $serverNameAndRuntimeOrchArray = $this->cacheInstance->getOrchestratorsByClassName($className);
+
+        foreach ($serverNameAndRuntimeOrchArray as $serverName => $runtimeOrchArray) {
+            $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
+        }
+
+        return $this->serverRestartResult;
+    }
+
+    /**
+     * Handle the single server restart. Two step included:
+     * First, it will run the compensate of the runtime Orchestrator.
+     * And second is if the $isRestart is true,
+     * it will handle the restart all step of the runtime Orch and store the result.
+     *
+     * @param string $serverName
+     * @param array $runtimeOrchArray
+     * @param boolean $isRestart
+     * @return void
+     */
+    protected function handleSingleServerRestart(string $serverName, array $runtimeOrchArray, bool $isRestart)
+    {
+        // First, it will run the compensate of the runtime Orchestrator.
+        $compensateResult = $this->handleRuntimeOrchArrayCompensate(
+            $runtimeOrchArray,
+            $serverName
+        );
+
+        // Store the compensate result.
+        $this->serverRestartResult[$serverName] = [
+            "compensateResult" => $compensateResult
+        ];
+
+        // If the $isRestart is true, it will handle the restart all step of the runtime Orch and store the result.
+        if ($isRestart === true) {
+            $this->serverRestartResult[$serverName] = [
+                "restartResult" => $this->handleRuntimeOrchArrayRestart($compensateResult)
+            ];
+        }
     }
 
     /**
@@ -103,28 +165,63 @@ class Restarter implements RestarterInterface
      * @param string $serverName
      * @return array
      */
-    protected function handleruntimeOrchArrayCompensate(array $runtimeOrchArray, string $serverName): array
+    protected function handleRuntimeOrchArrayCompensate(array $runtimeOrchArray, string $serverName): array
     {
         $compensateResult = [];
 
-        foreach ($runtimeOrchArray as $key => $runtimeOrch) {
-
+        foreach ($runtimeOrchArray as $orchestratorNumber => $runtimeOrch) {
             if (is_null($runtimeOrch->getSagaInstance())) {
                 throw OrchestratorException::forSagaInstanceNotFound();
             }
-            // Compensate
-            $compensateResult[$runtimeOrch->getOrchestratorKey()] = $runtimeOrch->startOrchCompensation();
 
-            if ($compensateResult[$runtimeOrch->getOrchestratorKey()] === false) {
+            // Compensate
+            $compensateResult[$runtimeOrch->getOrchestratorNumber()] = [
+                "compensateResult"    => $runtimeOrch->startOrchCompensation(),
+                "runtimeOrchestrator" => $runtimeOrch
+            ];
+
+            if ($compensateResult[$runtimeOrch->getOrchestratorNumber()] === false) {
                 $this->isSuccess  = false;
-                $this->failOrchestrator[$runtimeOrch::class] = $runtimeOrch;
+                $this->failCompensationOrchestrator[$runtimeOrch->getOrchestratorNumber()] = $runtimeOrch;
             }
 
-
-            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch::class);
+            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch->getOrchestratorNumber());
         }
 
         return $compensateResult;
+    }
+
+    /**
+     * Handle the runtime Orch Array restart if that compensate successfully.
+     *
+     * @param array $compensateResultArray
+     * @return array
+     */
+    protected function handleRuntimeOrchArrayRestart(array $compensateResultArray): array
+    {
+        $restartResult = [];
+
+        foreach ($compensateResultArray as $orchestratorNumber => $compensateResult) {
+            if ($compensateResult["compensateResult"] === false) {
+                continue;
+            }
+
+            $runtimeOrch = $compensateResult["runtimeOrchestrator"];
+
+            $runtimeOrch->startAllStep();
+
+            $restartResult[$runtimeOrch->getOrchestratorNumber()] = [
+                "restartResult" => $runtimeOrch->isSuccess()
+            ];
+
+            if ($runtimeOrch->isSuccess() === false) {
+                $restartResult[$runtimeOrch->getOrchestratorNumber()] = [
+                    "failStep" => $runtimeOrch->getFailActions()
+                ];
+            }
+        }
+
+        return $restartResult;
     }
 
     /**
@@ -140,6 +237,6 @@ class Restarter implements RestarterInterface
      */
     public function getFailOrchestrator(): array
     {
-        return $this->failOrchestrator;
+        return $this->failCompensationOrchestrator;
     }
 }

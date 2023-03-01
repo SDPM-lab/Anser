@@ -162,11 +162,11 @@ class PaymentService extends SimpleService
      * @return ActionInterface
      */
     public function updatePayment(
-        int $payment_key,
+        int $payment_key = 0,
         ?int $total = null,
         ?string $status = null,
-        int $u_key,
-        string $orch_key
+        int $u_key = 0,
+        string $orch_key = ""
     ): ActionInterface {
         $action = $this->getAction("PUT", "/api/v2/payment/{$payment_key}")
             ->addOption("json", [
@@ -213,6 +213,41 @@ class PaymentService extends SimpleService
                 "X-User-Key" => $u_key,
                 "Orch-Key"   => $orch_key
             ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["status"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Delete payment data by runtime orch number.
+     *
+     * @param string $u_key
+     * @param string $orch_key
+     * @return ActionInterface
+     */
+    public function deletePaymentByRuntimeOrch(string $u_key, string $orch_key): ActionInterface
+    {
+        $action = $this->getAction("DELETE", "/api/v2/payment")
+        ->addOption("headers", [
+            "X-User-Key" => $u_key,
+            "Orch-Key"   => $orch_key
+        ])
             ->doneHandler(
                 function (
                     ResponseInterface $response,

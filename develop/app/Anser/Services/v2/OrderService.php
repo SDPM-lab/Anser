@@ -164,13 +164,13 @@ class OrderService extends SimpleService
      * @return ActionInterface
      */
     public function updateOrder(
-        int $u_key,
-        string $order_key,
+        int $u_key = 0,
+        string $order_key = "",
         ?int $p_key = null,
         ?int $amount = null,
         ?int $price = null,
         ?string $status = null,
-        string $orch_key
+        string $orch_key = ""
     ): ActionInterface {
         $action = $this->getAction("PUT", "/api/v2/order/{$order_key}")
             ->addOption("json", [
@@ -219,6 +219,42 @@ class OrderService extends SimpleService
                 "X-User-Key" => $u_key,
                 "Orch-Key"   => $orch_key
             ])
+            ->doneHandler(
+                function (
+                    ResponseInterface $response,
+                    Action $action
+                ) {
+                    $resBody = $response->getBody()->getContents();
+                    $data    = json_decode($resBody, true);
+                    $action->setMeaningData($data["data"]);
+                }
+            )
+            ->failHandler(
+                function (
+                    ActionException $e
+                ) {
+                    log_message("critical", $e->getMessage());
+                    $e->getAction()->setMeaningData(["message" => $e->getMessage()]);
+                }
+            );
+        return $action;
+    }
+
+    /**
+     * Delete order
+     *
+     * @param string $order_key
+     * @param string $u_key
+     * @param string $orch_key
+     * @return ActionInterface
+     */
+    public function deleteOrderByRuntimeOrch(string $u_key, string $orch_key): ActionInterface
+    {
+        $action = $this->getAction('DELETE', "/api/v2/order")
+        ->addOption("headers", [
+            "X-User-Key" => $u_key,
+            "Orch-Key"   => $orch_key
+        ])
             ->doneHandler(
                 function (
                     ResponseInterface $response,
