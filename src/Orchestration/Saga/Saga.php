@@ -124,10 +124,19 @@ class Saga implements SagaInterface
      */
     protected function canStartCompensation(): bool
     {
-        $nowStep = $this->stateInstance->getNowStep()->getNumber();
+        $nowStep = $this->stateInstance->getNowStep()?->getNumber();
+
+        if (is_null($nowStep)) {
+            return false;
+        }
+
+        var_dump("startStep" . $this->startStep);
+        var_dump("nowStep" . $nowStep);
+        var_dump("endStep" . $this->endStep);
+
         if (
-            $this->startStep >= $nowStep &&
-            $this->endStep <= $nowStep
+            $this->startStep <= $nowStep &&
+            $this->endStep >= $nowStep
         ) {
             return true;
         } else {
@@ -140,7 +149,7 @@ class Saga implements SagaInterface
      */
     public function startCompensation(array $stepList): ?bool
     {
-        if ($this->canStartCompensation()) {
+        if ($this->canStartCompensation() === false) {
             return null;
         }
 
@@ -164,7 +173,7 @@ class Saga implements SagaInterface
             $method = $this->compensationMethods[$stepNumber];
             return $this->simpleSagaInstance->{$method}();
         } else {
-            // The step is not in Saga list.
+            throw SagaException::forCompensationMethodNotFoundForStep($this->compensationMethods[$stepNumber]);
         }
     }
 

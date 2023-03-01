@@ -34,9 +34,9 @@ interface StateInterface
     /**
      * Get now step and return.
      *
-     * @return StepInterface
+     * @return StepInterface|null
      */
-    public function getNowStep(): StepInterface;
+    public function getNowStep(): ?StepInterface;
 
     /**
      * Get now status.
