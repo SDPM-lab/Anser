@@ -130,10 +130,6 @@ class Saga implements SagaInterface
             return false;
         }
 
-        var_dump("startStep" . $this->startStep);
-        var_dump("nowStep" . $nowStep);
-        var_dump("endStep" . $this->endStep);
-
         if (
             $this->startStep <= $nowStep &&
             $this->endStep >= $nowStep
@@ -154,10 +150,17 @@ class Saga implements SagaInterface
         }
 
         $nowStepNumber = $this->stateInstance->getNowStep()->getNumber();
-        $this->compensationStepList = array_chunk($stepList, $nowStepNumber+1)[0];
+
+        // Remove not run steps yet from step list.
+        $this->compensationStepList = array_chunk($stepList, $nowStepNumber + 1)[0];
+
+        // Remove the first few step that not in compensation step in compensationStepList.
+        $this->compensationStepList = array_slice($this->compensationStepList, $this->startStep);
+
         while (count($this->compensationStepList) > 0) {
             $this->startStepCompensation(array_pop($this->compensationStepList));
         }
+
         return true;
     }
 
@@ -173,7 +176,7 @@ class Saga implements SagaInterface
             $method = $this->compensationMethods[$stepNumber];
             return $this->simpleSagaInstance->{$method}();
         } else {
-            throw SagaException::forCompensationMethodNotFoundForStep($this->compensationMethods[$stepNumber]);
+            throw SagaException::forCompensationMethodNotFoundForStep($stepNumber);
         }
     }
 
