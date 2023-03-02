@@ -7,17 +7,34 @@ use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 
 class SimpleSaga implements SimpleSagaInterface
 {
+    /**
+     * The runtime orchestrator.
+     *
+     * @var OrchestratorInterface
+     */
     private OrchestratorInterface $orchestrator;
 
     public function __construct(OrchestratorInterface $orchestrator)
     {
-        $this->orchestrator = $orchestrator;
+        $this->orchestrator = &$orchestrator;
+    }
+
+    public function __sleep()
+    {
+        return [];   
     }
 
     /**
-     * 取得執行時期的編排器實體
-     *
-     * @return OrchestratorInterface
+     * {@inheritDoc}
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): SimpleSagaInterface
+    {
+        $this->orchestrator = &$runtimeOrch;
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function getOrchestrator(): OrchestratorInterface
     {

@@ -7,9 +7,17 @@ use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 interface SimpleSagaInterface
 {
     /**
-     * 取得執行時期的編排器實體
+     * Get the runtime orchestrator.
      *
      * @return OrchestratorInterface
      */
     public function getOrchestrator(): OrchestratorInterface;
+
+    /**
+     * Set the runtime orchestrator after de-serialize.
+     *
+     * @param OrchestratorInterface $runtimeOrch
+     * @return SimpleSagaInterface
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): SimpleSagaInterface;
 }

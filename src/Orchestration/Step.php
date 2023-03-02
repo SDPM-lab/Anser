@@ -10,7 +10,6 @@ use SDPMlab\Anser\Exception\StepException;
 
 class Step implements StepInterface
 {
-
     /**
      * 此 step 在編排器中的執行順序
      *
@@ -43,17 +42,28 @@ class Step implements StepInterface
         $this->number = $stepNumber;
     }
 
+    public function __sleep()
+    {
+        return [
+            "number",
+            "actionList",
+            "isSuccess",
+            "dynamicAction"
+        ];
+    }
+
     /**
-     * 新增 Action 至 Step 中。若新增了大於一個 Action ，這些 Action 會以併行模式執行。
-     * 
-     * 若你的 Step 所定義的 Action 倚賴 Orchestrator runtime 產生的資料。
-     * 你可以在 Action 中傳入 Callable，取得 runtime 的 Orchestrator 實體。
-     * 透過這個實體的定義，你能夠取得 Orchestrator 已完成的 Action 結果。
-     * 在取得你所需要的 Action 與其資料後，你只需要在 Callable 中 return Action 實體即可。
+     * {@inheritDoc}
      *
-     * @param string $alias 別名
-     * @param \SDPMlab\Anser\Service\ActionInterface|callable(\SDPMlab\Anser\Orchestration\Orchestrator):action $action
-     * @return StepInterface
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): StepInterface
+    {
+        $this->orchestrator = &$runtimeOrch;
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function addAction(string $alias, $action): StepInterface
     {
@@ -63,16 +73,7 @@ class Step implements StepInterface
     }
 
     /**
-     * 新增動態Action。
-     *
-     * 如果你不確定 Action 會產生的數量，則可以使用這個方法動態新增下一個 Step 所需的 Actions 。
-     * 你可以在這個方法中傳入 Callable。
-     * 這個 Callable 能夠取得 runtime 的 Orchestrator 實體以及 runtime 的 Step 實體。
-     * 你可以取得 Orchestrator 已經執行完畢的 Step 中的資料。
-     * 透過動態的資料，再自行定義自己的動態 Action。
-     * 
-     * @param callable(\SDPMlab\Anser\Orchestration\Orchestrator) $callable
-     * @return StepInterface
+     * {@inheritDoc}
      */
     public function addDynamicActions(callable $callable): StepInterface
     {
@@ -109,7 +110,7 @@ class Step implements StepInterface
         if ($actionCount == 1) {
             reset($this->actionList);
             $this->handleSingleAction(key($this->actionList));
-        } else if ($actionCount > 1) {
+        } elseif ($actionCount > 1) {
             $this->handleMultipleActions();
         } else {
             throw StepException::forNonStepAction();

@@ -2,6 +2,7 @@
 
 namespace SDPMlab\Anser\Orchestration\Saga;
 
+use SDPMlab\Anser\Exception\SagaException;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 use SDPMlab\Anser\Orchestration\Saga\StateInterface;
@@ -10,7 +11,6 @@ use SDPMlab\Anser\Orchestration\Saga\SimpleSagaInterface;
 
 class Saga implements SagaInterface
 {
-
     /**
      * 開發者所實作之 SAGA 實體
      *
@@ -61,13 +61,28 @@ class Saga implements SagaInterface
         if (class_exists($simpleSagaClassName)) {
             $this->simpleSagaInstance = new $simpleSagaClassName($runtimeOrchestrator);
         } else {
-            //拋出例外
+            throw SagaException::forSimpleSagaNotFound($simpleSagaClassName);
         }
+
         $this->stateInstance = new State($runtimeOrchestrator);
         $this->stateInstance->update(State::start);
         $this->startStep = $startStepNumber;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function setRuntimeOrchestrator(OrchestratorInterface $runtimeOrch): SagaInterface
+    {
+        $this->stateInstance->setRuntimeOrchestrator($runtimeOrch);
+        $this->simpleSagaInstance->setRuntimeOrchestrator($runtimeOrch);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function startStep(StepInterface $step)
     {
         if (
@@ -78,16 +93,25 @@ class Saga implements SagaInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setStartStep(StepInterface $step)
     {
         $this->startStep = $step->getNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setEndStep(StepInterface $step)
     {
         $this->endStep = $step->getNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getState(): StateInterface
     {
         return $this->stateInstance;
@@ -100,10 +124,15 @@ class Saga implements SagaInterface
      */
     protected function canStartCompensation(): bool
     {
-        $nowStep = $this->stateInstance->getNowStep()->getNumber();
+        $nowStep = $this->stateInstance->getNowStep()?->getNumber();
+
+        if (is_null($nowStep)) {
+            return false;
+        }
+
         if (
-            $this->startStep >= $nowStep &&
-            $this->endStep <= $nowStep
+            $this->startStep <= $nowStep &&
+            $this->endStep >= $nowStep
         ) {
             return true;
         } else {
@@ -112,25 +141,32 @@ class Saga implements SagaInterface
     }
 
     /**
-     * 開始補償
-     *
-     * @param StepInterface[] $stepList
-     * @return void
+     * {@inheritDoc}
      */
     public function startCompensation(array $stepList): ?bool
     {
-        if ($this->canStartCompensation()) {
+        if ($this->canStartCompensation() === false) {
             return null;
         }
 
         $nowStepNumber = $this->stateInstance->getNowStep()->getNumber();
-        $this->compensationStepList = array_chunk($stepList, $nowStepNumber+1)[0];
+
+        // Remove not run steps yet from step list.
+        $this->compensationStepList = array_chunk($stepList, $nowStepNumber + 1)[0];
+
+        // Remove the first few step that not in compensation step in compensationStepList.
+        $this->compensationStepList = array_slice($this->compensationStepList, $this->startStep);
+
         while (count($this->compensationStepList) > 0) {
             $this->startStepCompensation(array_pop($this->compensationStepList));
         }
+
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function startStepCompensation(StepInterface $step)
     {
         $this->stateInstance->setStepCompensating($step);
@@ -140,16 +176,19 @@ class Saga implements SagaInterface
             $method = $this->compensationMethods[$stepNumber];
             return $this->simpleSagaInstance->{$method}();
         } else {
-            //拋出例外
+            throw SagaException::forCompensationMethodNotFoundForStep($stepNumber);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function bindCompensationMethod(string $methodName, int $stepNumber)
     {
         if (method_exists($this->simpleSagaInstance, $methodName)) {
             $this->compensationMethods[$stepNumber] = $methodName;
-        } else {            
-            //拋出例外
+        } else {
+            throw SagaException::forCompensationMethodNotFound($methodName);
         }
     }
 }

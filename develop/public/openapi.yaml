@@ -1,0 +1,1102 @@
+openapi: 3.0.0
+info:
+  title: 'Anser Demo Service API'
+  version: 0.1.0
+servers:
+  -
+    url: 'http://localhost:8081'
+    description: Order Service
+  -
+    url: 'http://localhost:8082'
+    description: Product Service
+  -
+    url: 'http://localhost:8083'
+    description: Payment Service
+paths:
+  /api/v2/product:
+    get:
+      tags:
+        - Product Service
+      description: 'Get list of product'
+      operationId: 71a054629031f7bd8cbbdb76b578642a
+      parameters:
+        -
+          name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+        -
+          name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+        -
+          name: search
+          in: query
+          description: search
+          required: false
+          schema:
+            type: string
+        -
+          name: isDesc
+          in: query
+          description: isDesc
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Product index method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: boolean }
+                  data: { properties: { list: { type: array, items: { properties: { p_key: { type: integer, example: '1' }, name: { type: string, example: 'Awesome Wool Knife' }, price: { type: integer, example: '846' }, amount: { type: integer, example: '190' }, createdAt: { type: string, example: '2023-02-06 05:52:20' }, updatedAt: { type: string, example: '2023-02-08 09:37:44' } }, type: object } }, dataCount: { type: integer, example: '20' } }, type: object }
+                  msg: { type: string, example: 'Product index method successful.' }
+                type: object
+        '404':
+          description: 'Product data not found'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Product data not found', type: string, example: 'Product data not found' } }, type: object }
+                type: object
+    post:
+      tags:
+        - Product Service
+      description: 'Create product.'
+      operationId: 757ae20086110042c9741b094ce89999
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  example: 'Mediocre Silk Shoes'
+                price:
+                  type: integer
+                  example: '617'
+                amount:
+                  type: integer
+                  example: '266'
+              type: object
+      responses:
+        '200':
+          description: 'Product create method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  data: { type: integer, example: '22' }
+                  msg: { type: string, example: 'Product create method successful.' }
+                type: object
+        '404':
+          description: 'Incoming data error'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '404' }
+                  error: { description: '400', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Incoming data error', type: string, example: 'Incoming data error' } }, type: object }
+                type: object
+        '400':
+          description: 'The product create failed, please try again.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '400' }
+                  error: { description: '400', type: string, example: '400' }
+                  messages: { properties: { error: { description: 'The product create failed, please try again.', type: string, example: 'The product create failed, please try again.' } }, type: object }
+                type: object
+  '/api/v2/product/{p_key}':
+    get:
+      tags:
+        - Product Service
+      description: 'Get list of product'
+      operationId: 10c17f1852203ea7ddf1615860d0b2d8
+      parameters:
+        -
+          name: p_key
+          in: path
+          description: p_key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Product show method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { p_key: { type: integer, example: '2' }, name: { type: string, example: 'Mediocre Silk Shoes' }, price: { type: integer, example: '617' }, amount: { type: integer, example: '266' }, createdAt: { type: integer, example: '2023-01-26 10:31:50' }, updatedAt: { type: integer, example: '2023-02-08 09:37:44' } }, type: object }
+                  msg: { type: string, example: 'Product show method successful.' }
+                type: object
+        '400':
+          description: 'The Product key is required'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '400' }
+                  error: { description: '400', type: string, example: '400' }
+                  messages: { properties: { error: { description: 'The Product key is required', type: string, example: 'The Product key is required' } }, type: object }
+                type: object
+        '404':
+          description: 'Product data not found'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Product data not found', type: string, example: 'Product data not found' } }, type: object }
+                type: object
+    put:
+      tags:
+        - Product Service
+      description: 'Update someone product by p_key.'
+      operationId: de7d654602766011bb2a4c22ef147f97
+      parameters:
+        -
+          name: p_key
+          in: path
+          description: p_key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  example: 'Mediocre Silk Shoes'
+                price:
+                  type: integer
+                  example: '617'
+              type: object
+      responses:
+        '200':
+          description: 'Product show method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'update method successful.' }
+                type: object
+        '404':
+          description: 'Incoming data error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Incoming data error'
+                  value: { status: '404', error: '404', messages: { error: 'Incoming data error' } }
+                string2:
+                  summary: 'This product not found'
+                  value: { status: '404', error: '404', messages: { error: 'This product not found' } }
+        '400':
+          description: 'The product create failed, please try again.'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The Product key is required'
+                  value: { status: '400', error: '400', messages: { error: 'The Product key is required' } }
+                string2:
+                  summary: 'update method fail.'
+                  value: { status: '400', error: '400', messages: { error: 'update method fail.' } }
+    delete:
+      tags:
+        - Product Service
+      description: 'Update someone product by p_key.'
+      operationId: 8862bc4537e0e11051d212ae07f16d45
+      parameters:
+        -
+          name: p_key
+          in: path
+          description: p_key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Product delete method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Product delete method successful.' }
+                type: object
+        '404':
+          description: 'Delete product 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The Product key is required'
+                  value: { status: '404', error: '404', messages: { error: 'The Product key is required' } }
+                string2:
+                  summary: 'This product not found'
+                  value: { status: '404', error: '404', messages: { error: 'This product not found' } }
+  /api/v2/inventory/addInventory:
+    post:
+      tags:
+        - Product Service
+      description: 'Add product amount.'
+      operationId: d3d01a5767c0ab4f927438badf23f9a6
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_key:
+                  type: integer
+                  example: '22'
+                addAmount:
+                  type: integer
+                  example: '10'
+              type: object
+      responses:
+        '200':
+          description: 'Product amount add method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Product amount add method successful.' }
+                type: object
+        '404':
+          description: 'Add Inventory 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Incoming data not found'
+                  value: { status: '404', error: '404', messages: { error: 'Incoming data not found' } }
+                string2:
+                  summary: 'This product not found'
+                  value: { status: '404', error: '404', messages: { error: 'This product not found' } }
+        '400':
+          description: 'This product amount add fail'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '400' }
+                  error: { description: '400', type: string, example: '400' }
+                  messages: { properties: { error: { description: 'This product amount add fail', type: string, example: 'This product amount add fail' } }, type: object }
+                type: object
+  /api/v2/inventory/reduceInventory:
+    post:
+      tags:
+        - Product Service
+      description: 'Reduce product amount.'
+      operationId: 3fd5d2b84cf21fb19c8531706c48f1c0
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_key:
+                  type: integer
+                  example: '22'
+                reduceAmount:
+                  type: integer
+                  example: '10'
+              type: object
+      responses:
+        '200':
+          description: 'Product amount reduce method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Product amount reduce method successful.' }
+                type: object
+        '404':
+          description: 'Reduce Inventory 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Incoming data not found'
+                  value: { status: '404', error: '404', messages: { error: 'Incoming data not found' } }
+                string2:
+                  summary: 'This product not found'
+                  value: { status: '404', error: '404', messages: { error: 'This product not found' } }
+        '400':
+          description: 'Reduce Inventory 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'This product amount not enough'
+                  value: { status: '400', error: '400', messages: { error: 'This product amount not enough' } }
+                string2:
+                  summary: 'This product amount reduce fail'
+                  value: { status: '400', error: '400', messages: { error: 'This product amount reduce fail' } }
+  /api/v2/order:
+    get:
+      tags:
+        - Order Service
+      description: 'Get list of order'
+      parameters:
+        -
+          name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+        -
+          name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+        -
+          name: isDesc
+          in: query
+          description: isDesc
+          required: false
+          schema:
+            type: string
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Order index method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: boolean }
+                  data: { properties: { list: { type: array, items: { properties: { o_key: { type: string, example: '24f47aba9f54f6005253e576790c2b3719cfe6f0' }, u_key: { type: u_key, example: '1' }, p_key: { type: integer, example: '1' }, amount: { type: integer, example: '10' }, createdAt: { type: string, example: '2023-02-06 05:52:20' }, updatedAt: { type: string, example: '2023-02-08 09:37:44' } }, type: object } }, dataCount: { type: integer, example: '1' } }, type: object }
+                  msg: { type: string, example: 'Order index method successful.' }
+                type: object
+        '404':
+          description: 'Order data not found'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Order data not found', type: string, example: 'Order data not found' } }, type: object }
+                type: object
+    post:
+      tags:
+        - Order Service
+      description: 'Create Order.'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_key:
+                  type: integer
+                  example: '1'
+                amount:
+                  type: integer
+                  example: '10'
+                price:
+                  type: integer
+                  example: '846'
+              type: object
+      responses:
+        '200':
+          description: 'Order create method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  orderID: { type: string, example: '24f47aba9f54f6005253e576790c2b3719cfe6f0' }
+                  msg: { type: string, example: 'Order create method successful.' }
+                type: object
+        '404':
+          description: 'Incoming data error'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '404' }
+                  error: { description: '400', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Incoming data error', type: string, example: 'Incoming data error' } }, type: object }
+                type: object
+        '403':
+          description: 'Order key repeated input, Please try it later!'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '403', type: string, example: '403' }
+                  error: { description: '403', type: string, example: '403' }
+                  messages: { properties: { error: { description: 'Order key repeated input, Please try it later!', type: string, example: 'Order key repeated input, Please try it later!' } }, type: object }
+                type: object
+        '400':
+          description: 'Order created method fail'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '400', type: string, example: '400' }
+                  error: { description: '400', type: string, example: '400' }
+                  messages: { properties: { error: { description: 'Order created method fail', type: string, example: 'Order created method fail' } }, type: object }
+                type: object
+  '/api/v2/order/{o_key}':
+    get:
+      tags:
+        - Order Service
+      description: 'Get someone order by order key.'
+      parameters:
+        -
+          name: o_key
+          in: path
+          description: o_key
+          required: true
+          schema:
+            type: string
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Order show method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { o_key: { type: string, example: '24f47aba9f54f6005253e576790c2b3719cfe6f0' }, u_key: { type: integer, example: '1' }, p_key: { type: integer, example: '1' }, amount: { type: integer, example: '10' }, createdAt: { type: integer, example: '2023-01-26 10:31:50' }, updatedAt: { type: integer, example: '2023-02-08 09:37:44' } }, type: object }
+                  msg: { type: string, example: 'Order show method successful.' }
+                type: object
+        '404':
+          description: 'Show order 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The Order key is required'
+                  value: { status: '404', error: '404', messages: { error: 'The Order key is required' } }
+                string2:
+                  summary: 'This order not found'
+                  value: { status: '404', error: '404', messages: { error: 'This order not found' } }
+    put:
+      tags:
+        - Order Service
+      description: 'Update order by order key.'
+      parameters:
+        -
+          name: o_key
+          in: path
+          description: o_key
+          required: true
+          schema:
+            type: string
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                p_key:
+                  type: integer
+                  example: '2'
+                amount:
+                  type: integer
+                  example: '10'
+                price:
+                  type: integer
+                  example: '617'
+                status:
+                  type: string
+                  example: 'orderUpdate'
+              type: object
+      responses:
+        '200':
+          description: 'Order update method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Order update method successful.' }
+                type: object
+        '404':
+          description: 'Order update method 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Incoming data error'
+                  value: { status: '404', error: '404', messages: { error: 'This order not found' } }
+                string2:
+                  summary: 'This product not found'
+                  value: { status: '404', error: '404', messages: { error: 'The product key is required' } }
+                string3:
+                  summary: 'The Order key is required'
+                  value: { status: '404', error: '404', messages: { error: 'The Order key is required' } }
+        '400':
+          description: 'Order update method 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Order update method fail.'
+                  value: { status: '400', error: '400', messages: { error: 'Order update method fail.' } }
+    delete:
+      tags:
+        - Order Service
+      description: 'Delete order by order key.'
+      parameters:
+        -
+          name: o_key
+          in: path
+          description: o_key
+          required: true
+          schema:
+            type: string
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Order delete method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  data: { type: boolean, example: 'true' }
+                  msg: { type: string, example: 'Order delete method successful.' }
+                type: object
+        '404':
+          description: 'Delete order 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The Product key is required'
+                  value: { status: '404', error: '404', messages: { error: 'This order not found' } }
+        '400':
+          description: 'Update order 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The Order key is required'
+                  value: { status: '400', error: '400', messages: { error: 'The Order key is required' } }
+                string2:
+                  summary: "This order status change to 'DELETE' fail."
+                  value: { status: '400', error: '400', messages: { error: "This order status change to 'DELETE' fail." } }
+                string3:
+                  summary: 'Order delete method fail'
+                  value: { status: '400', error: '400', messages: { error: 'Order delete method fail' } }
+  /api/v2/payment:
+    get:
+      tags:
+        - Payment Service
+      description: 'Get list of payment'
+      parameters:
+        -
+          name: limit
+          in: query
+          description: limit
+          required: false
+          schema:
+            type: integer
+        -
+          name: offset
+          in: query
+          description: offset
+          required: false
+          schema:
+            type: integer
+        -
+          name: search
+          in: query
+          description: search
+          required: false
+          schema:
+            type: string
+        -
+          name: isDesc
+          in: query
+          description: isDesc
+          required: false
+          schema:
+            type: string
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Payment index method successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: boolean }
+                  data: { properties: { list: { type: array, items: { properties: { pm_key: { type: string, example: '1' }, u_key: { type: integer, example: '1' }, o_key: { type: string, example: 'bfaafe346f53da3ba689b43a7c58f8051f19ee8d' }, status: { type: string, example: 'paymentCreate' },total: { type: integer, example: '8460' }, createdAt: { type: string, example: '2023-02-06 05:52:20' }, updatedAt: { type: string, example: '2023-02-08 09:37:44' } }, type: object } }, dataCount: { type: integer, example: '1' } }, type: object }
+                  msg: { type: string, example: 'Payment index method successful' }
+                type: object
+        '404':
+          description: 'Payment data not found'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'Payment data not found', type: string, example: 'Payment data not found' } }, type: object }
+                type: object
+    post:
+      tags:
+        - Payment Service
+      description: 'Create Payment.'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                o_key:
+                  type: string
+                  example: 'bfaafe346f53da3ba689b43a7c58f8051f19ee8d'
+                amount:
+                  type: integer
+                  example: '10'
+                price:
+                  type: integer
+                  example: '846'
+              type: object
+      responses:
+        '200':
+          description: 'Payment create method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  paymentID: { type: string, example: '1' }
+                  msg: { type: string, example: 'Payment create method successful.' }
+                type: object
+        '403':
+          description: 'This payment information is exist.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '403', type: string, example: '403' }
+                  error: { description: '403', type: string, example: '403' }
+                  messages: { properties: { error: { description: 'This payment information is exist.', type: string, example: 'This payment information is exist.' } }, type: object }
+                type: object
+        '400':
+          description: 'Create payment 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                  string:
+                    summary: 'Incoming data error'
+                    value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
+                  string2:
+                    summary: "This user isn't exist."
+                    value: { status: '400', error: '400', messages: { error: "This user isn't exist." } }
+                  string3:
+                    summary: 'Insufficient balance'
+                    value: { status: '400', error: '400', messages: { error: 'Insufficient balance' } }
+                  string4:
+                    summary: 'Payment created failed.'
+                    value: { status: '400', error: '400', messages: { error: 'Payment created failed.' } }
+  '/api/v2/payment/{pm_key}':
+    get:
+      tags:
+        - Payment Service
+      description: 'Get payment data by payment key.'
+      parameters:
+        -
+          name: pm_key
+          in: path
+          description: pm_key
+          required: true
+          schema:
+            type: integer
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Payment show method successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  data: { properties: { pm_key: { type: string, example: '1' }, u_key: { type: integer, example: '1' }, o_key: { type: string, example: 'bfaafe346f53da3ba689b43a7c58f8051f19ee8d' }, status: { type: string, example: 'paymentCreate' },total: { type: integer, example: '8460' }, createdAt: { type: string, example: '2023-01-26 10:31:50' }, updatedAt: { type: string, example: '2023-02-08 09:37:44' } }, type: object }
+                  msg: { type: string, example: 'Payment show method successful' }
+                type: object
+        '404':
+          description: 'Show payment 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The payment key is required.'
+                  value: { status: '404', error: '404', messages: { error: 'The payment key is required.' } }
+                string2:
+                  summary: 'This payment information is not exist or cannot found.'
+                  value: { status: '404', error: '404', messages: { error: 'This payment information is not exist or cannot found.' } }
+    put:
+      tags:
+        - Payment Service
+      description: 'Update payment by payment key.'
+      parameters:
+        -
+          name: pm_key
+          in: path
+          description: pm_key
+          required: true
+          schema:
+            type: integer
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                total:
+                  type: integer
+                  example: '1000'
+                status:
+                  type: string
+                  example: 'paymentUpdate'
+              type: object
+      responses:
+        '200':
+          description: 'Payment update method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Payment update method successful.' }
+                type: object
+        '404':
+          description: 'Payment update method 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The payment key is required.'
+                  value: { status: '404', error: '404', messages: { error: 'The payment key is required.' } }
+                string2:
+                  summary: 'This payment information is not exist'
+                  value: { status: '404', error: '404', messages: { error: 'This payment information is not exist' } }
+        '400':
+          description: 'Payment update method 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'Incoming data error'
+                  value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
+                string1:
+                  summary: 'Payment update method fail'
+                  value: { status: '400', error: '400', messages: { error: 'Payment update method fail' } }
+    delete:
+      tags:
+        - Payment Service
+      description: 'Delete payment by payment key.'
+      parameters:
+        -
+          name: pm_key
+          in: path
+          description: pm_key
+          required: true
+          schema:
+            type: integer
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Payment delete method successful.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Payment delete method successful.' }
+                type: object
+        '404':
+          description: 'Delete payment 404 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: 'The payment key is required.'
+                  value: { status: '404', error: '404', messages: { error: 'The payment key is required.' } }
+                string1:
+                  summary: "This payment information is not exist."
+                  value: { status: '404', error: '404', messages: { error: "This payment information is not exist." } }
+        '400':
+          description: 'Update payment 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                string:
+                  summary: "This payment status change to 'DELETE' fail."
+                  value: { status: '400', error: '400', messages: { error: "This payment status change to 'DELETE' fail." } }
+                string2:
+                  summary: "Payment delete fail"
+                  value: { status: '400', error: '400', messages: { error: "Payment delete fail" } }
+  /api/v2/wallet:
+    get:
+      tags:
+        - Payment Service
+      description: 'Get user wallet'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Wallet show method successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: boolean }
+                  data: { properties: { u_key: { type: integer, example: '1' }, balance: { type: integer, example: '49991540' }}, type: object }
+                  msg: { type: string, example: 'Wallet show method successful' }
+                type: object
+        '404':
+          description: 'This user wallet not exist'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
+                type: object
+  /api/v2/wallet/increaseWalletBalance:
+    post:
+      tags:
+        - Payment Service
+      description: 'Increase wallet balance or compensate.'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                addAmount:
+                  type: integer
+                  example: '5000'
+              type: object
+      responses:
+        '200':
+          description: 'Wallet increase balance successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Wallet increase balance successful' }
+                type: object
+        '404':
+          description: 'Increase wallet 404 error'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
+                type: object
+        '400':
+          description: 'Increase wallet 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                  string:
+                    summary: 'Incoming data error'
+                    value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
+                  string2:
+                    summary: "Wallet increase balance fail"
+                    value: { status: '400', error: '400', messages: { error: "Wallet increase balance fail" } }
+  /api/v2/wallet/reduceWalletBalance:
+    post:
+      tags:
+        - Payment Service
+      description: 'Reduce wallet balance or compensate.'
+      parameters:
+        -
+          name: X-User-Key
+          in: header
+          description: X-User-Key
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Request body'
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                reduceAmount:
+                  type: integer
+                  example: '5000'
+              type: object
+      responses:
+        '200':
+          description: 'Wallet reduce balance successful'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { type: string, example: 'true' }
+                  msg: { type: string, example: 'Wallet reduce balance successful' }
+                type: object
+        '404':
+          description: 'Create wallet 404 error'
+          content:
+            application/json:
+              schema:
+                properties:
+                  status: { description: '404', type: string, example: '404' }
+                  error: { description: '404', type: string, example: '404' }
+                  messages: { properties: { error: { description: 'This user wallet not exist', type: string, example: 'This user wallet not exist' } }, type: object }
+                type: object
+        '400':
+          description: 'Create wallet 400 error'
+          content:
+            application/json:
+              schema: {  }
+              examples:
+                  string:
+                    summary: 'Incoming data error'
+                    value: { status: '400', error: '400', messages: { error: 'Incoming data error' } }
+                  string2:
+                    summary: "Wallet reduce balance fail"
+                    value: { status: '400', error: '400', messages: { error: "Wallet reduce balance fail" } }

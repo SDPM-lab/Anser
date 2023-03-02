@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+    anser_service:
+        image: webdevops/php-nginx-dev:8.1
+        ports:
+            - 8080:80
+        working_dir: /app
+        environment: 
+            - WEB_DOCUMENT_ROOT=/app/public
+            - PHP_MEMORY_LIMIT=512M
+            - PHP_MAX_EXECUTION_TIME=30
+            - PHP_POST_MAX_SIZE=20M
+            - PHP_UPLOAD_MAX_FILESIZE=20M
+        volumes:
+            - './develop:/app'
+            - './src:/src'
+    order_service:
+        image: webdevops/php-nginx-dev:8.1
+        ports:
+            - 8081:80
+        working_dir: /app
+        environment: 
+            - WEB_DOCUMENT_ROOT=/app/public
+            - PHP_MEMORY_LIMIT=512M
+            - PHP_MAX_EXECUTION_TIME=30
+            - PHP_POST_MAX_SIZE=20M
+            - PHP_UPLOAD_MAX_FILESIZE=20M
+        volumes:
+            - './develop:/app'
+            - './src:/src'
+    product_service:
+        image: webdevops/php-nginx-dev:8.1
+        ports:
+            - 8082:80
+        working_dir: /app
+        environment: 
+            - WEB_DOCUMENT_ROOT=/app/public
+            - PHP_MEMORY_LIMIT=512M
+            - PHP_MAX_EXECUTION_TIME=30
+            - PHP_POST_MAX_SIZE=20M
+            - PHP_UPLOAD_MAX_FILESIZE=20M
+        volumes:
+            - './develop:/app'
+            - './src:/src'
+    payment_service:
+        image: webdevops/php-nginx-dev:8.1
+        ports:
+            - 8083:80
+        working_dir: /app
+        environment: 
+            - WEB_DOCUMENT_ROOT=/app/public
+            - PHP_MEMORY_LIMIT=512M
+            - PHP_MAX_EXECUTION_TIME=30
+            - PHP_POST_MAX_SIZE=20M
+            - PHP_UPLOAD_MAX_FILESIZE=20M
+        volumes:
+            - './develop:/app'
+            - './src:/src'
+    anser_DB:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: ci4
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - "3306:3306"
+    anser_redis:
+        image: redis:latest
+        ports:
+            - 6379:6379
