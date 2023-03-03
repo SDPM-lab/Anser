@@ -29,6 +29,6 @@ class SagaException extends AnserException
 
     public static function forCompensationMethodNotFoundForStep($alias): SagaException
     {
-        return new self("{$alias} 步驟需補償但尚未定義補償方法。");
+        return new self("第 {$alias} 步驟需補償但尚未定義補償方法。");
     }
 }

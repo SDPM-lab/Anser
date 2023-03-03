@@ -134,7 +134,7 @@ abstract class Orchestrator implements OrchestratorInterface
      */
     public function transStart(string $transactionClass): OrchestratorInterface
     {
-        $startStepNumber = count($this->steps) > 0 ? count($this->steps)-1 : 0;
+        $startStepNumber = count($this->steps) > 0 ? count($this->steps) : 0;
         $this->sagaInstance = new Saga(
             $transactionClass,
             $this,
@@ -278,23 +278,28 @@ abstract class Orchestrator implements OrchestratorInterface
             $this->handleSingleStep($step);
 
             //若有執行交易，中止 Step 的執行，並開始補償
-            if (
-                $this->isSuccess === false &&
-                !is_null($this->sagaInstance)
-            ) {
-                if ($this->startOrchCompensation()) {
-                    log_message(
-                        "notice",
-                        "The orchestrator" . $this::class . "compensate completely at ". date("Y-m-d H:i:s")
-                    );
 
-                    break;
+            if ($this->isSuccess() === false) {
+                if (is_null($this->sagaInstance) === false) {
+                    if ($this->startOrchCompensation()) {
+                        log_message(
+                            "notice",
+                            "The orchestrator" . $this::class . "compensate completely at " . date("Y-m-d H:i:s")
+                        );
+                    } else {
+                        log_message(
+                            "critical",
+                            "The orchestrator" . $this::class . "compensate Fail at " . date("Y-m-d H:i:s")
+                        );
+                    }
                 } else {
                     log_message(
                         "critical",
-                        "The orchestrator" . $this::class . "compensate Fail at " . date("Y-m-d H:i:s")
+                        "The orchestrator" . $this::class . "run Fail at " . date("Y-m-d H:i:s")
                     );
                 }
+
+                break;
             }
         }
 

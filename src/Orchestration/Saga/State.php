@@ -89,7 +89,7 @@ class State implements StateInterface
     /**
      * {@inheritDoc}
      */
-    public function getNowStep(): StepInterface
+    public function getNowStep(): ?StepInterface
     {
         return $this->nowStep;
     }
