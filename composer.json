@@ -21,7 +21,9 @@
     "minimum-stability": "stable",
     "require": {
         "php" : "^7.4||^8.0",
-        "sdpmlab/anser-action": "^0.3.0"
+        "sdpmlab/anser-action": "^0.3.0",
+        "predis/predis": "^2.0",
+        "pingyi/json-serializer": "^0.1.2"
     },
     "autoload": {
 		"psr-4": {
