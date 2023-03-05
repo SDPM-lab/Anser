@@ -180,9 +180,6 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         foreach ($this->steps as $step) {
             if (!$step->aliasNonRepeat($alias)) {
-                if ($step->getStepAction($alias)->getMeaningData() === null) {
-                    throw OrchestratorException::forStepActionMeaningDataIsNull($alias);
-                }
                 return $step->getStepAction($alias);
             }
         }
