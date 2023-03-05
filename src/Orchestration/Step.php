@@ -20,7 +20,7 @@ class Step implements StepInterface
     /**
      * 儲存 Step 中的 array，其資料結構為 陣列<別名,Action實體>
      *
-     * @var array<string,ActionInterface>
+     * @var array<string,ActionInterface|callable>
      */
     protected array $actionList = [];
 
@@ -197,6 +197,12 @@ class Step implements StepInterface
      */
     public function getStepAction(string $alias): ActionInterface
     {
+        // If the step is not run yet and it's action type callable, 
+        // call the function to handle it.
+        if (is_callable($this->actionList[$alias]) === true) {
+            $this->handleActionCallable($alias, $this->actionList[$alias]);
+        }
+
         if (!isset($this->actionList[$alias])) {
             throw StepException::forUndefinedStepAction($alias);
         }
