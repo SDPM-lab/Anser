@@ -18,7 +18,7 @@ class CreateOrderRestarter extends BaseController
 
         $userOrchRestarter = new Restarter();
 
-        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'server_1');
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'Anser_Server_1');
 
         return $this->respond([
             "result" => $result
@@ -33,7 +33,7 @@ class CreateOrderRestarter extends BaseController
 
         $result = $userOrchRestarter->reStartOrchestratorsByServer(
             CreateOrderOrchestrator::class,
-            ["server_1", "server_2"]
+            ["Anser_Server_1", "Anser_Server_2"]
         );
 
         return $this->respond([
@@ -60,7 +60,7 @@ class CreateOrderRestarter extends BaseController
 
         $userOrchRestarter = new Restarter();
 
-        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'server_1', true);
+        $result = $userOrchRestarter->reStartOrchestratorsByServer(CreateOrderOrchestrator::class, 'Anser_Server_1', true);
 
         return $this->respond([
             "result" => $result
