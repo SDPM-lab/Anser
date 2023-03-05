@@ -56,4 +56,9 @@ class OrchestratorException extends AnserException
     {
         return new self("在重啟邏輯需先設定 Saga 補償邏輯。");
     }
+
+    public static function forStepActionMeaningDataIsNull($alias): OrchestratorException
+    {
+        return new self("此步驟- {$alias} 的 Action 的 meaningData 為 null，請確認 setMeaningData 方法或是此步驟尚未被處理。");
+    }
 }

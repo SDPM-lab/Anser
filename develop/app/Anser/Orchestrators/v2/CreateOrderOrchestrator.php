@@ -102,7 +102,7 @@ class CreateOrderOrchestrator extends Orchestrator
 
         $cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
 
-        $this->setServerName("server_3");
+        $this->setServerName("Anser_Server_1");
 
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
