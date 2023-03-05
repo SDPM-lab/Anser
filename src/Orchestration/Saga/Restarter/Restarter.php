@@ -94,12 +94,25 @@ class Restarter implements RestarterInterface
             foreach ($serverName as $key => $singleServerName) {
                 $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($singleServerName, $className);
 
-                $this->handleSingleServerRestart($singleServerName, $runtimeOrchArray, $isRestart);
+                if ($runtimeOrchArray === null) {
+                    $this->serverRestartResult[$serverName] = [
+                        "compensateResult" => "編排器名稱 - {$className} 不存在於 {$serverName} 內。"
+                    ];
+                    continue;
+                } else {
+                    $this->handleSingleServerRestart($singleServerName, $runtimeOrchArray, $isRestart);
+                }
             }
         } elseif (is_string($serverName)) {
             $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($serverName, $className);
 
-            $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
+            if ($runtimeOrchArray === null) {
+                $this->serverRestartResult[$serverName] = [
+                    "compensateResult" => "編排器名稱 - {$className} 不存在於 {$serverName} 內。"
+                ];
+            } else {
+                $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
+            }
         }
 
         return $this->serverRestartResult;
