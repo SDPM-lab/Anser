@@ -1,32 +1,30 @@
-# Anser: PHP Microservices Orchestration Library
+# Anser：PHP 微服務協作程式庫
 
 <p align="center">
   <img src="https://i.imgur.com/2vRAcI0.png" alt="logo" width="500" />
 </p>
 
-Anser is a PHP-based microservices orchestration library. You can use this library to manage connections and orchestrate your microservices. Through the Anser library, you can easily achieve the following goals:
+Anser 是一款基於 PHP 程式語言的微服務協作（Microservices Orchestration）程式庫，你可以透過這個程式庫管理、連線與指揮你的微服務。透過 Anser 程式庫，你可以輕鬆地達成以下目標：
 
-- Abstract specific classes and implementations for each HTTP-based microservice, and Anser will not limit your communication mode.
-- Quickly compose your microservices
-- Write a microservices script with order
-- Quickly adopt the SAGA Pattern to design your transaction logic
-- Simple backup mechanism, transaction restore when service is interrupted
+- 替每個基於 HTTP 的微服務抽象出特定類別與實作，Anser 並不會限制你溝通模式。
+- 快速的組合（Composition） 你的微服務
+- 撰寫具備順序性的微服務指揮腳本
+- 迅速地採用 SAGA 模式制定你的交易（Transaction）邏輯
+- 簡單的交易備份機制，服務意外中斷時的交易還原
 
-[正體中文文件](README_zh-TW.md)
+## 安裝
 
-## Installation
-
-Install Anser library via Composer:
+透過 Composer 安裝 Anser 程式庫：
 
 ```bash
 composer require sdpmlab/anser
 ```
 
-## Quick Start
+## 快速開始
 
-### Microservices Connection List
+### 微服務連線列表
 
-In your project, you must set the microservices connection list during the execution cycle. You can set it through the `ServiceList::addLocalService()` method. You can refer to the example we provide to create your microservices connection list, which will be the basis for all microservices connections.
+在你的專案中，你必須在執行週期內設定微服務的連線列表，你可以透過 `ServiceList::addLocalService()` 方法設定，你參考我們提供的範例建立你的微服務連線列表，這將會是所有微服務連線的基礎。：
 
 ```php
 namespace App\Anser\Config;
@@ -39,9 +37,9 @@ ServiceList::addLocalService("cart_service","localhost",8082,false);
 ServiceList::addLocalService("payment_service","localhost",8083,false);
 ```
 
-### Abstract Microservice
+### 抽象出微服務
 
-In Anser, you can abstract all endpoints of a microservice through the `SimpleService` class. We provide an example, you can refer to it to quickly create a microservice class:
+在 Anser 中，你可以透過 `SimpleService` 類別抽象出一個微服務的所有端點，我們提供了一個範例，你可以參考它快速地建立一個微服務類別：
 
 ```php
 namespace App\Anser\Services;
@@ -196,11 +194,11 @@ class OrderService extends SimpleService
 }
 ```
 
-You can directly refer to the [`Anser-Action`](https://github.com/SDPM-lab/Anser-Action) library to understand what mechanism Anser provides to handle microservices connections.
+你可以直接參考 [`Anser-Action`](https://github.com/SDPM-lab/Anser-Action) 程式庫，了解 Anser 提供了何種機制處理微服務的連線。
 
-### orchestrate Microservices
+### 編排你的微服務
 
-In Anser, you can orchestrate your microservices through the `Orchestrator` class. We provide an example, you can refer to it to quickly create an orchestration class:
+在 Anser 中，你可以透過 `Orchestrator` 類別編排你的微服務，我們提供了一個範例，你可以參考它快速地建立一個編排類別：
 
 ```php
 <?php
@@ -455,21 +453,20 @@ class CreateOrderOrchestrator extends Orchestrator
 
 ```
 
-In the above example, we can see that in the `definition` method, we use the `setStep()` method to define the behavior of each step, and use the `addAction()` method to define the logic required for each step.
+在上述的範例中，我們可以看到在 `definition` 方法中，我們透過 `setStep()` 方法來定義每個步驟的行為，並且透過 `addAction()` 方法來定義每個步驟所需執行的邏輯。
 
-In `addAction()`, you can pass in two types to achieve different orchestration needs:
+在 `addAction()` 中你可以傳入兩種型別以達成不同的編排需求：
 
-1. Pass in the instance of `SDPMlab\Anser\Service\ActionInterface`. When the microservices orchestrator executes this step, it will directly use this `Action` instance to communicate with the microservices.
-2. Pass in `callable`. When the microservices orchestrator executes this step, it will execute this Closure and pass in the Runtime Orchestrator. You can get the data of other steps through the Runtime Orchestrator instance to meet more logical requirements, and return the instance of `SDPMlab\Anser\Service\ActionInterface` at the end.
+1. 傳入 `SDPMlab\Anser\Service\ActionInterface` 的實體，當微服務協作器執行到這個步驟時，將直接使用這個 `Action` 實體與微服務進行溝通。
+2. 傳入 `callable` ，當微服務協作器執行到這個步驟時，將會執行這個 Closure 並傳入 Runtime 的 Orchestrator ，你可以透過 Runtime 的 Orchestrator 實體取得其他步驟的資料以滿足更多的邏輯判斷需求，並在結束時回傳 `SDPMlab\Anser\Service\ActionInterface` 的實體。
 
-Use the `transStart()` method to start a Saga transaction, and end the Saga transaction in the `transEnd()` method. Then, you can use the `setCompensationMethod()` method to define the compensation behavior of each step. When the step fails, the compensation behavior will be executed automatically.
+使用 `transStart()` 方法來啟動一個 Saga 交易，並且在 `transEnd()` 方法中來結束這個 Saga 交易。接著，你將可以透過 `setCompensationMethod()` 方法來定義每個步驟的補償行為，當步驟發生錯誤時，會自動執行補償行為。
 
-### Define Compensation
+### 定義補償行為
 
-In the above example, we can see that in the `definition` method, we use the `setCompensationMethod()` method to define the compensation behavior of each step. When the step fails, the compensation behavior will be executed automatically.
+在上述的範例中，我們可以看到在 `definition` 方法中，我們透過 `setCompensationMethod()` 方法來定義每個步驟的補償行為，當步驟發生錯誤時，會自動執行補償行為。
 
-You must implement the `SDPMlab\Anser\Orchestration\Saga\SimpleSaga` class to define your compensation logic, and get the Runtime Orchestrator instance through the `getOrchestrator()` method in the compensation logic. You can get the data of other steps through the Runtime Orchestrator instance to meet more logical requirements.
-
+你必須額外實作 `SDPMlab\Anser\Orchestration\Saga\SimpleSaga` 類別來定義你的補償邏輯，並且在補償邏輯中透過 `getOrchestrator()` 方法來取得 Runtime 的 Orchestrator 實體，你可以透過 Runtime 的 Orchestrator 實體取得其他步驟的資料以滿足更多的邏輯判斷需求。
 
 ```php
 namespace App\Anser\Sagas\V2;
@@ -551,11 +548,11 @@ class CreateOrderSaga extends SimpleSaga
 }
 ```
 
-### Execute the microservices orchestration logic 
+### 執行你所編排的微服務邏輯
 
-Depending on the framework you are using, you will need to execute your Orchestrator somewhere.
+根據你所使用的框架的不同，你會需要將你所撰寫的 Orchestrator 在某個地方執行。
 
-Here is a rough example:
+下方是一個概略的範例：
 
 ```php
 use App\Anser\Orchestrators\V2\CreateOrderOrchestrator;
@@ -581,12 +578,12 @@ class CreateOrderController extends BaseController
 }
 ```
 
-We can see that in the `createOrder()` method, we `new CreateOrderOrchestrator();` an Orchestrator instance, and use the `build()` method to start a service collaboration with Saga transaction, and pass in the `product_key`, `product_amout`, `user_key` three parameters in the `build()` method, these parameters will be used in the `definition()` method.
+我們可以看到在 `createOrder()` 方法中，我們 `new CreateOrderOrchestrator();` 了一個 Orchestrator 實體，並透過 `build()` 方法來啟動一個包含 Saga 交易的服務協作，並且在 `build()` 方法中傳入了 `product_key`、`product_amout`、`user_key` 三個參數，這些參數將會在 `definition()` 方法中被使用。
 
-Finally, you will get the return value after the `build()` is completed. This return value comes from the data processed by `defineResult()`.
+最後，你將在 `build()` 執行完成後獲得回傳值，這個回傳值源自於 `defineResult()` 所處理後的資料。
 
-The above is a full-featured example of the use of Anser Orchestrator Saga. You can use this example to understand how to use Anser Orchestrator.
+以上就是一個全功能的 Anser Orchestrator Saga 的使用範例，你可以透過這個範例來了解 Anser Orchestrator 的使用方式。
 
-## License
+## 授權條款
 
-Anser is released under the MIT License. See the bundled [LICENSE](LICENSE),
+Anser 是基於 [MIT license](https://opensource.org/licenses/MIT) 釋出。
