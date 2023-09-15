@@ -61,4 +61,9 @@ class OrchestratorException extends AnserException
     {
         return new self("此步驟- {$alias} 的 Action 的 meaningData 為 null，請確認 setMeaningData 方法或是此步驟尚未被處理。");
     }
+
+    public static function forStepExecuteFail($className, $motion): OrchestratorException
+    {
+        return new self("The orchestrator - {$className} {$motion} Fail at " . date("Y-m-d H:i:s"));
+    }
 }

@@ -124,7 +124,11 @@ class Saga implements SagaInterface
      */
     protected function canStartCompensation(): bool
     {
-        $nowStep = $this->stateInstance->getNowStep()?->getNumber();
+        $nowStep = null;
+
+        if (!is_null($this->stateInstance->getNowStep())) {
+            $nowStep = $this->stateInstance->getNowStep()->getNumber();
+        }
 
         if (is_null($nowStep)) {
             return false;

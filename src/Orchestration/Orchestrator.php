@@ -267,7 +267,7 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
 
-        $this->orchestratorNumber = $this::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $this->orchestratorNumber = static::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
         // Set up the cache info/variable if developer set the cache instance.
         if (!is_null($cacheInstance)) {
@@ -281,32 +281,16 @@ abstract class Orchestrator implements OrchestratorInterface
 
             if ($this->isSuccess() === false) {
                 if (is_null($this->sagaInstance) === false) {
-                    if ($this->startOrchCompensation()) {
-                        log_message(
-                            "notice",
-                            "The orchestrator" . $this::class . "compensate completely at " . date("Y-m-d H:i:s")
-                        );
-                    } else {
-                        log_message(
-                            "critical",
-                            "The orchestrator" . $this::class . "compensate Fail at " . date("Y-m-d H:i:s")
-                        );
+                    if (!$this->startOrchCompensation() || is_null($this->startOrchCompensation())) {
+                        throw OrchestratorException::forStepExecuteFail(static::class, "compensate");
                     }
                 } else {
-                    log_message(
-                        "critical",
-                        "The orchestrator" . $this::class . "run Fail at " . date("Y-m-d H:i:s")
-                    );
+                    throw OrchestratorException::forStepExecuteFail(static::class, "run");
                 }
 
                 break;
             }
         }
-
-        log_message(
-            "notice",
-            "The orchestrator" . $this::class . "orchestrator completely at " . date("Y-m-d H:i:s")
-        );
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
