@@ -281,32 +281,16 @@ abstract class Orchestrator implements OrchestratorInterface
 
             if ($this->isSuccess() === false) {
                 if (is_null($this->sagaInstance) === false) {
-                    if ($this->startOrchCompensation()) {
-                        log_message(
-                            "notice",
-                            "The orchestrator" . static::class . "compensate completely at " . date("Y-m-d H:i:s")
-                        );
-                    } else {
-                        log_message(
-                            "critical",
-                            "The orchestrator" . static::class . "compensate Fail at " . date("Y-m-d H:i:s")
-                        );
+                    if (!$this->startOrchCompensation() || is_null($this->startOrchCompensation())) {
+                        throw OrchestratorException::forStepExecuteFail(static::class, "compensate");
                     }
                 } else {
-                    log_message(
-                        "critical",
-                        "The orchestrator" . static::class . "run Fail at " . date("Y-m-d H:i:s")
-                    );
+                    throw OrchestratorException::forStepExecuteFail(static::class, "run");
                 }
 
                 break;
             }
         }
-
-        log_message(
-            "notice",
-            "The orchestrator" . static::class . "orchestrator completely at " . date("Y-m-d H:i:s")
-        );
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
