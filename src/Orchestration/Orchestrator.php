@@ -267,7 +267,7 @@ abstract class Orchestrator implements OrchestratorInterface
     {
         $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
 
-        $this->orchestratorNumber = self::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $this->orchestratorNumber = static::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
         // Set up the cache info/variable if developer set the cache instance.
         if (!is_null($cacheInstance)) {
@@ -284,18 +284,18 @@ abstract class Orchestrator implements OrchestratorInterface
                     if ($this->startOrchCompensation()) {
                         log_message(
                             "notice",
-                            "The orchestrator" . self::class . "compensate completely at " . date("Y-m-d H:i:s")
+                            "The orchestrator" . static::class . "compensate completely at " . date("Y-m-d H:i:s")
                         );
                     } else {
                         log_message(
                             "critical",
-                            "The orchestrator" . self::class . "compensate Fail at " . date("Y-m-d H:i:s")
+                            "The orchestrator" . static::class . "compensate Fail at " . date("Y-m-d H:i:s")
                         );
                     }
                 } else {
                     log_message(
                         "critical",
-                        "The orchestrator" . self::class . "run Fail at " . date("Y-m-d H:i:s")
+                        "The orchestrator" . static::class . "run Fail at " . date("Y-m-d H:i:s")
                     );
                 }
 
@@ -305,7 +305,7 @@ abstract class Orchestrator implements OrchestratorInterface
 
         log_message(
             "notice",
-            "The orchestrator" . self::class . "orchestrator completely at " . date("Y-m-d H:i:s")
+            "The orchestrator" . static::class . "orchestrator completely at " . date("Y-m-d H:i:s")
         );
 
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
