@@ -174,13 +174,19 @@ class Step implements StepInterface
      *
      * @param string $alias 別名
      * @param callable $getActionCallable 外部傳入的 Callable
-     * @return ActionInterface
+     * @return ?ActionInterface
      * @throws StepException
      */
     protected function handleActionCallable(
         string $alias,
         callable $getActionCallable
-    ): ActionInterface {
+    ): ?ActionInterface {
+        //如果 Orchestrator 執行失敗，則不執行 Callable，直接宣告 null
+        if($this->orchestrator->isSuccess() == false){
+            $this->actionList[$alias] = null;
+            return null;
+        }
+
         $action = $getActionCallable($this->orchestrator);
         if ($action instanceof ActionInterface) {
             $this->actionList[$alias] = $action;
@@ -193,9 +199,9 @@ class Step implements StepInterface
     /**
      * 取得 Action 實體
      *
-     * @return ActionInterface
+     * @return ?ActionInterface 回傳 Action 實體，若不存在、尚未被執行則回傳 null
      */
-    public function getStepAction(string $alias): ActionInterface
+    public function getStepAction(string $alias): ?ActionInterface
     {
         // If the step is not run yet and it's action type callable, 
         // call the function to handle it.
@@ -204,7 +210,7 @@ class Step implements StepInterface
         }
 
         if (!isset($this->actionList[$alias])) {
-            throw StepException::forUndefinedStepAction($alias);
+            return null;
         }
         return $this->actionList[$alias];
     }

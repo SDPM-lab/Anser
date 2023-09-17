@@ -11,7 +11,7 @@ use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Service\ActionInterface;
 
-abstract class Orchestrator implements OrchestratorInterface
+class Orchestrator implements OrchestratorInterface
 {
     /**
      * 儲存被新增的 step 實體
@@ -173,17 +173,15 @@ abstract class Orchestrator implements OrchestratorInterface
      * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體
      *
      * @param string $alias
-     * @return ActionInterface
-     * @throws OrchestratorException
+     * @return ?ActionInterface 回傳 Action 實體，若碰到不存在或尚未執行到的 Action 則回傳 null
      */
-    public function getStepAction(string $alias): ActionInterface
+    public function getStepAction(string $alias): ?ActionInterface
     {
         foreach ($this->steps as $step) {
             if (!$step->aliasNonRepeat($alias)) {
                 return $step->getStepAction($alias);
             }
         }
-        throw OrchestratorException::forActionNotFound($alias);
     }
 
     /**
@@ -219,7 +217,11 @@ abstract class Orchestrator implements OrchestratorInterface
 
         $this->startAllStep();
 
-        $result = $this->defineResult();
+        if($this->isSuccess()){
+            $result = $this->defineResult();
+        } else{
+            $result = $this->defineFailResult();
+        }
 
         return $result;
     }
@@ -256,6 +258,7 @@ abstract class Orchestrator implements OrchestratorInterface
                 $this->isSuccess = false;
             }
         }
+
     }
 
     /**
@@ -276,18 +279,20 @@ abstract class Orchestrator implements OrchestratorInterface
 
         foreach ($this->steps as $step) {
             $this->handleSingleStep($step);
-
             //若有執行交易，中止 Step 的執行，並開始補償
 
             if ($this->isSuccess() === false) {
                 if (is_null($this->sagaInstance) === false) {
                     if (!$this->startOrchCompensation() || is_null($this->startOrchCompensation())) {
-                        throw OrchestratorException::forStepExecuteFail(static::class, "compensate");
+                        if($this->defineFailResult() instanceof OrchestratorException) {
+                            throw OrchestratorException::forStepExecuteFail(static::class, "compensate");
+                        }
                     }
                 } else {
-                    throw OrchestratorException::forStepExecuteFail(static::class, "run");
+                    if($this->defineFailResult() instanceof OrchestratorException) {
+                        throw OrchestratorException::forStepExecuteFail(static::class, "run");
+                    }
                 }
-
                 break;
             }
         }
@@ -384,20 +389,31 @@ abstract class Orchestrator implements OrchestratorInterface
     }
 
     /**
-     * 定義 Orchestrator 的編排細節。開發者必須覆寫這個方法。
+     * 定義 Orchestrator 的編排細節。
+     * 開發者必須覆寫這個方法。
      *
-     * @return void
      */
-    abstract protected function definition();
+    protected function definition(){
+        throw OrchestratorException::forDefinitionNotOverride(static::class);
+    }
 
     /**
      * 定義整個 Orchestrator 成功後的回傳內容。
-     * 開發者可以覆寫這個方法。
+     * 開發者可以覆寫這個方法，若沒有覆寫則會回傳 isSuccess 的值。
      *
-     * @return void
      */
     protected function defineResult()
     {
         return $this->isSuccess;
+    }
+
+    /**
+     * 定義整個 Orchestrator 失敗後的回傳內容。
+     * 開發者若沒有覆寫這個方法，則會在失敗時拋出例外。
+     *
+     */
+    protected function defineFailResult()
+    {
+        return OrchestratorException::forDefinitionNotOverride(static::class);;
     }
 }

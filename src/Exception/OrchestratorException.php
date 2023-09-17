@@ -66,4 +66,15 @@ class OrchestratorException extends AnserException
     {
         return new self("The orchestrator - {$className} {$motion} Fail at " . date("Y-m-d H:i:s"));
     }
+
+    public static function forDefinitionNotOverride($className): OrchestratorException
+    {
+        return new self("The orchestrator - {$className} definition not override.");
+    }
+
+    public static function forDefineFailResultNotOverride($className): OrchestratorException
+    {
+        return new self("The orchestrator - {$className} defineFailResult not override.");
+    }
+
 }
