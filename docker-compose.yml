@@ -3,6 +3,7 @@ version: "3"
 services:
     anser_service:
         image: webdevops/php-nginx-dev:8.1
+        platform: linux/x86_64
         ports:
             - 8080:80
         working_dir: /app
@@ -17,6 +18,7 @@ services:
             - './src:/src'
     order_service:
         image: webdevops/php-nginx-dev:8.1
+        platform: linux/x86_64
         ports:
             - 8081:80
         working_dir: /app
@@ -31,6 +33,7 @@ services:
             - './src:/src'
     product_service:
         image: webdevops/php-nginx-dev:8.1
+        platform: linux/x86_64
         ports:
             - 8082:80
         working_dir: /app
@@ -45,6 +48,7 @@ services:
             - './src:/src'
     payment_service:
         image: webdevops/php-nginx-dev:8.1
+        platform: linux/x86_64
         ports:
             - 8083:80
         working_dir: /app
@@ -59,6 +63,7 @@ services:
             - './src:/src'
     anser_DB:
         image: mysql:5.7
+        platform: linux/x86_64
         environment:
             MYSQL_DATABASE: ci4
             MYSQL_ROOT_PASSWORD: root
