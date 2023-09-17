@@ -77,10 +77,9 @@ interface OrchestratorInterface
      * 取得目前 Orchestrator Steps 中符合傳入別名的 Action 實體
      *
      * @param string $alias
-     * @return ActionInterface
-     * @throws OrchestratorException
+     * @return ?ActionInterface
      */
-    public function getStepAction(string $alias): ActionInterface;
+    public function getStepAction(string $alias): ?ActionInterface;
 
     /**
      * 取得在所有 Step 中失敗的 Action 列表，若全數成功則回傳空陣列。

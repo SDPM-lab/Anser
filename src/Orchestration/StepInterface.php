@@ -61,9 +61,9 @@ interface StepInterface
     /**
      * 取得 Action 實體
      *
-     * @return ActionInterface
+     * @return ?ActionInterface
      */
-    public function getStepAction(string $alias): ActionInterface;
+    public function getStepAction(string $alias): ?ActionInterface;
 
     /**
      * 取得 Action 列表
