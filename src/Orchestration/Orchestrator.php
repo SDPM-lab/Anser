@@ -194,11 +194,7 @@ class Orchestrator implements OrchestratorInterface
     {
         $actions = [];
         foreach ($this->steps as $step) {
-            foreach ($step->getStepActionList() as $alias => $action) {
-                if (!$action->isSuccess()) {
-                    $actions[$alias] = $action;
-                }
-            }
+            $actions = array_merge($actions, $step->getFailStepActionList());
         }
         return $actions;
     }

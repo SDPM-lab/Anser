@@ -29,7 +29,7 @@ interface StepInterface
      * 你可以取得 Orchestrator 已經執行完畢的 Step 中的資料。
      * 透過動態的資料，再自行定義自己的動態 Action。
      *
-     * @param callable(\SDPMlab\Anser\Orchestration\Orchestrator) $callable
+     * @param callable(\SDPMlab\Anser\Orchestration\Orchestrator,\SDPMlab\Anser\Step) $callable
      * @return StepInterface
      */
     public function addDynamicActions(callable $callable): StepInterface;

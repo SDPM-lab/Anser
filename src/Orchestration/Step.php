@@ -222,7 +222,13 @@ class Step implements StepInterface
      */
     public function getStepActionList(): array
     {
-        return $this->actionList;
+        $returnList = [];
+        foreach ($this->actionList as $alias => $action) {
+            if ($action instanceof ActionInterface) {
+                $returnList[$alias] = $action;
+            }
+        }
+        return $returnList;
     }
 
     /**
@@ -234,6 +240,9 @@ class Step implements StepInterface
     {
         $failActions = [];
         foreach ($this->actionList as $alias => $action) {
+            if ($action instanceof ActionInterface === false) {
+                continue;
+            }
             if (!$action->isSuccess()) {
                 $failActions[$alias] = $action;
             }
