@@ -279,7 +279,8 @@ class Orchestrator implements OrchestratorInterface
 
             if ($this->isSuccess() === false) {
                 if (is_null($this->sagaInstance) === false) {
-                    if (!$this->startOrchCompensation() || is_null($this->startOrchCompensation())) {
+                    $transResult = $this->startOrchCompensation();
+                    if (!$transResult || is_null($transResult)) {
                         if($this->defineFailResult() instanceof OrchestratorException) {
                             throw OrchestratorException::forStepExecuteFail(static::class, "compensate");
                         }
