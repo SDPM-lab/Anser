@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3b128ab14dd76b60f0ebf4905d49d5b6",
+    "content-hash": "eb3958dab1191714d1666d138dcd588d",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -1768,16 +1768,16 @@
         },
         {
             "name": "sdpmlab/anser-action",
-            "version": "v0.3.4",
+            "version": "v0.3.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/SDPM-lab/Anser-Action.git",
-                "reference": "d7f8d733511333665e0baa58bd276fc952299cee"
+                "reference": "8ceadf0b5ffae1742b76f59e74edff871b66680a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SDPM-lab/Anser-Action/zipball/d7f8d733511333665e0baa58bd276fc952299cee",
-                "reference": "d7f8d733511333665e0baa58bd276fc952299cee",
+                "url": "https://api.github.com/repos/SDPM-lab/Anser-Action/zipball/8ceadf0b5ffae1742b76f59e74edff871b66680a",
+                "reference": "8ceadf0b5ffae1742b76f59e74edff871b66680a",
                 "shasum": ""
             },
             "require": {
@@ -1813,9 +1813,9 @@
             ],
             "support": {
                 "issues": "https://github.com/SDPM-lab/Anser-Action/issues",
-                "source": "https://github.com/SDPM-lab/Anser-Action/tree/v0.3.4"
+                "source": "https://github.com/SDPM-lab/Anser-Action/tree/v0.3.10"
             },
-            "time": "2023-02-06T14:44:29+00:00"
+            "time": "2023-09-17T15:11:15+00:00"
         },
         {
             "name": "sebastian/diff",

@@ -5,7 +5,6 @@ namespace SDPMlab\Anser\Orchestration;
 use SDPMlab\Anser\Orchestration\StepInterface;
 use SDPMlab\Anser\Exception\OrchestratorException;
 use SDPMlab\Anser\Service\ActionInterface;
-use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Orchestration\Saga\SagaInterface;
 
 interface OrchestratorInterface
