@@ -41,6 +41,8 @@ class Orchestrator implements OrchestratorInterface
      */
     protected ?SagaInterface $sagaInstance = null;
 
+    protected bool $useBackup = false;
+
     /**
      * The parameter of build funcion.
      *
@@ -208,6 +210,7 @@ class Orchestrator implements OrchestratorInterface
     final public function build(...$args)
     {
         $this->argsArray = func_get_args();
+        $this->orchestratorNumber = static::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
         call_user_func_array(array($this, "definition"), $this->argsArray);
 
@@ -230,7 +233,10 @@ class Orchestrator implements OrchestratorInterface
      */
     protected function handleSingleStep(StepInterface $step)
     {
-        $cacheInstance = CacheFactory::getCacheInstance();
+        $cacheInstance = null;
+        if($this->useBackup){
+            $cacheInstance = CacheFactory::getCacheInstance();
+        }
 
         // 將當前 Step 紀錄於 Saga
         if (!is_null($this->sagaInstance)) {
@@ -264,12 +270,13 @@ class Orchestrator implements OrchestratorInterface
      */
     public function startAllStep(CacheHandlerInterface $cacheInstance = null)
     {
-        $cacheInstance = $cacheInstance ?? CacheFactory::getCacheInstance();
-
-        $this->orchestratorNumber = static::class . '\\' . md5(json_encode($this->argsArray) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $cacheInstance = null;
+        if($this->useBackup){
+            $cacheInstance = CacheFactory::getCacheInstance();
+        }
 
         // Set up the cache info/variable if developer set the cache instance.
-        if (!is_null($cacheInstance)) {
+        if ($this->useBackup) {
             $this->cacheInitial($cacheInstance);
         }
 
@@ -297,7 +304,7 @@ class Orchestrator implements OrchestratorInterface
         // 當所有 Step 執行完成且都執行成功，則清除在快取的編排器
         // 並儲存 Log 進資料庫
         if (!is_null($cacheInstance)) {
-            $cacheInstance->clearOrchestrator($this->serverName, $this->orchestratorNumber);
+            $cacheInstance->clearOrchestrator($this);
         }
     }
 
@@ -321,16 +328,7 @@ class Orchestrator implements OrchestratorInterface
         if ($this->sagaInstance === null) {
             throw OrchestratorException::forSagaInstanceNotFoundInCache();
         }
-
-        if (getenv("serverName")) {
-            $this->serverName = getenv("serverName");
-        }
-
-        if ($this->serverName === null) {
-            throw OrchestratorException::forServerNameNotFound();
-        }
-
-        $cacheInstance->initOrchestrator($this->serverName, $this->orchestratorNumber, $this);
+        $cacheInstance->initOrchestrator($this);
     }
 
     /**
@@ -338,7 +336,10 @@ class Orchestrator implements OrchestratorInterface
      */
     public function reStartRuntimeOrchestrator()
     {
-        $cacheInstance = CacheFactory::getCacheInstance();
+        $cacheInstance = null;
+        if($this->useBackup){
+            $cacheInstance = CacheFactory::getCacheInstance();
+        }
 
         foreach ($this->steps as $step) {
             if ($step->isSuccess() === true) {
@@ -359,7 +360,7 @@ class Orchestrator implements OrchestratorInterface
         }
 
         if (!is_null($cacheInstance)) {
-            $cacheInstance->clearOrchestrator($this->orchestratorNumber);
+            $cacheInstance->clearOrchestrator($this);
         }
 
         $result = $this->defineResult();
