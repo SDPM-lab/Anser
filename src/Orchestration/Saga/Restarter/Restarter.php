@@ -185,8 +185,7 @@ class Restarter implements RestarterInterface
 
             // Compensate
             $compensateResult[$runtimeOrch->getOrchestratorNumber()] = [
-                "compensateResult"    => $runtimeOrch->startOrchCompensation(),
-                "runtimeOrchestrator" => $runtimeOrch
+                "compensateResult"    => $runtimeOrch->startOrchCompensation()
             ];
 
             if ($compensateResult[$runtimeOrch->getOrchestratorNumber()] === false) {

@@ -3,7 +3,6 @@
 namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 
 use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\PRedisHandler;
-use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\PhpRedisHandler;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Exception\RedisException;
 
@@ -44,11 +43,9 @@ class CacheFactory
      */
     public static function initCacheDriver(string $driver, $config = null, $option = null): CacheHandlerInterface
     {
-        $cacheDriver = ucfirst(strtolower($driver));
-
-        if (isset(self::$cacheMapping[$cacheDriver])) {
+        if (isset(self::$cacheMapping[$driver])) {
             self::$driver        = $driver;
-            self::$cacheInstance = new self::$cacheMapping[$cacheDriver]($config, $option);
+            self::$cacheInstance = new self::$cacheMapping[$driver]($config, $option);
             return self::$cacheInstance;
         } else {
             throw RedisException::forCacheDriverNotFound($driver);
