@@ -18,7 +18,7 @@ interface RestarterInterface
      */
     public function reStartOrchestratorsByServer(
         string $className = null,
-        mixed $serverName = null,
+        $serverName = null,
         ?bool $isRestart  = false,
         ?string $time = null
     ): array;

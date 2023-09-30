@@ -74,7 +74,7 @@ class Restarter implements RestarterInterface
      */
     public function reStartOrchestratorsByServer(
         string $className = null,
-        mixed $serverName = null,
+        $serverName = null,
         ?bool $isRestart  = false,
         ?string $time     = null
     ): array {
@@ -86,17 +86,13 @@ class Restarter implements RestarterInterface
             throw RestarterException::forServerNameIsNull();
         }
 
-        if ($serverName === null && !is_null(getenv("serverName"))) {
-            $serverName = getenv("serverName");
-        }
-
         if (is_array($serverName)) {
             foreach ($serverName as $key => $singleServerName) {
-                $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($singleServerName, $className);
+                $runtimeOrchArray = $this->cacheInstance->getOrchestrators($className, $singleServerName);
 
                 if ($runtimeOrchArray === null) {
-                    $this->serverRestartResult[$serverName] = [
-                        "compensateResult" => "編排器名稱 - {$className} 不存在於 {$serverName} 內。"
+                    $this->serverRestartResult[$singleServerName] = [
+                        "compensateResult" => "編排器名稱 - {$className} 不存在於 {$singleServerName} 內。"
                     ];
                     continue;
                 } else {
@@ -104,7 +100,7 @@ class Restarter implements RestarterInterface
                 }
             }
         } elseif (is_string($serverName)) {
-            $runtimeOrchArray = $this->cacheInstance->getOrchestratorsByServerName($serverName, $className);
+            $runtimeOrchArray = $this->cacheInstance->getOrchestrators($className, $serverName);
 
             if ($runtimeOrchArray === null) {
                 $this->serverRestartResult[$serverName] = [
@@ -130,7 +126,7 @@ class Restarter implements RestarterInterface
             throw RestarterException::forClassNameIsNull();
         }
 
-        $serverNameAndRuntimeOrchArray = $this->cacheInstance->getOrchestratorsByClassName($className);
+        $serverNameAndRuntimeOrchArray = $this->cacheInstance->getServersOrchestrator($className);
 
         foreach ($serverNameAndRuntimeOrchArray as $serverName => $runtimeOrchArray) {
             $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
@@ -174,7 +170,7 @@ class Restarter implements RestarterInterface
     /**
      * Handle the runtime orch array from Redis.
      *
-     * @param array  $runtimeOrchArray
+     * @param OrchestratorInterface[]  $runtimeOrchArray
      * @param string $serverName
      * @return array
      */
@@ -198,7 +194,7 @@ class Restarter implements RestarterInterface
                 $this->failCompensationOrchestrator[$runtimeOrch->getOrchestratorNumber()] = $runtimeOrch;
             }
 
-            $this->cacheInstance->clearOrchestrator($serverName, $runtimeOrch->getOrchestratorNumber());
+            $this->cacheInstance->clearOrchestrator($runtimeOrch);
         }
 
         return $compensateResult;
