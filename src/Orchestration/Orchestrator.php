@@ -225,6 +225,25 @@ class Orchestrator implements OrchestratorInterface
         return $result;
     }
 
+    public function reBuild()
+    {
+        $this->steps = [];
+        $this->isSuccess = true;
+        $this->isCompensationSuccess = true;
+        $this->sagaInstance = null;
+        call_user_func_array(array($this, "definition"), $this->argsArray);
+
+        $this->startAllStep();
+
+        if($this->isSuccess()){
+            $result = $this->defineResult();
+        } else{
+            $result = $this->defineFailResult();
+        }
+
+        return $result;
+    }
+
     /**
      * Handle the single step of steps array.
      *
@@ -268,7 +287,7 @@ class Orchestrator implements OrchestratorInterface
      *
      * @return void
      */
-    public function startAllStep(CacheHandlerInterface $cacheInstance = null)
+    public function startAllStep()
     {
         $cacheInstance = null;
         if($this->useBackup){
@@ -283,7 +302,6 @@ class Orchestrator implements OrchestratorInterface
         foreach ($this->steps as $step) {
             $this->handleSingleStep($step);
             //若有執行交易，中止 Step 的執行，並開始補償
-
             if ($this->isSuccess() === false) {
                 if (is_null($this->sagaInstance) === false) {
                     $transResult = $this->startOrchCompensation();
