@@ -75,7 +75,7 @@ class Restarter implements RestarterInterface
     public function reStartOrchestratorsByServer(
         string $className = null,
         $serverName = null,
-        ?bool $isRestart  = false,
+        ?bool $reBuild  = false,
         ?string $time     = null
     ): array {
         if (is_null($className)) {
@@ -96,7 +96,7 @@ class Restarter implements RestarterInterface
                     ];
                     continue;
                 } else {
-                    $this->handleSingleServerRestart($singleServerName, $runtimeOrchArray, $isRestart);
+                    $this->handleSingleServerRestart($singleServerName, $runtimeOrchArray, $reBuild);
                 }
             }
         } elseif (is_string($serverName)) {
@@ -107,7 +107,7 @@ class Restarter implements RestarterInterface
                     "compensateResult" => "編排器名稱 - {$className} 不存在於 {$serverName} 內。"
                 ];
             } else {
-                $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
+                $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $reBuild);
             }
         }
         return $this->serverRestartResult;
@@ -118,7 +118,7 @@ class Restarter implements RestarterInterface
      */
     public function reStartOrchestratorsByClass(
         ?string $className = null,
-        ?bool $isRestart   = false,
+        ?bool $reBuild   = false,
         ?string $time      = null
     ): array {
         if (is_null($className)) {
@@ -127,8 +127,14 @@ class Restarter implements RestarterInterface
 
         $serverNameAndRuntimeOrchArray = $this->cacheInstance->getServersOrchestrator($className);
 
+        if($serverNameAndRuntimeOrchArray === null) {
+            return [
+                "compensateResult" => "找不到編排器名稱 - {$className}。"
+            ];
+        }
+
         foreach ($serverNameAndRuntimeOrchArray as $serverName => $runtimeOrchArray) {
-            $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
+            $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $reBuild);
         }
 
         return $this->serverRestartResult;
