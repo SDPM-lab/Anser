@@ -110,7 +110,6 @@ class Restarter implements RestarterInterface
                 $this->handleSingleServerRestart($serverName, $runtimeOrchArray, $isRestart);
             }
         }
-
         return $this->serverRestartResult;
     }
 
@@ -154,15 +153,26 @@ class Restarter implements RestarterInterface
             $serverName
         );
 
+        $compensateUserResult = [];
+        //only need orchestratorNumber and compensateResult
+        foreach ($compensateResult as $orchestratorNumber => $data) {
+            $compensateUserResult[$orchestratorNumber] = $data["compensateResult"];
+        }
         // Store the compensate result.
         $this->serverRestartResult[$serverName] = [
-            "compensateResult" => $compensateResult
+            "compensateResult" => $compensateUserResult
         ];
 
         // If the $isRestart is true, it will handle the restart all step of the runtime Orch and store the result.
         if ($isRestart === true) {
+            $rebuiltResult = $this->handleRuntimeOrchArrayRestart($compensateResult); 
+            $rebuiltUserResult = [];
+            //only need orchestratorNumber and restartResult
+            foreach ($rebuiltResult as $orchestratorNumber => $data) {
+                $rebuiltUserResult[$orchestratorNumber] = $data["restartResult"];
+            }
             $this->serverRestartResult[$serverName] = [
-                "restartResult" => $this->handleRuntimeOrchArrayRestart($compensateResult)
+                "restartResult" => $rebuiltUserResult
             ];
         }
     }
@@ -185,7 +195,8 @@ class Restarter implements RestarterInterface
 
             // Compensate
             $compensateResult[$runtimeOrch->getOrchestratorNumber()] = [
-                "compensateResult"    => $runtimeOrch->startOrchCompensation()
+                "compensateResult"    => $runtimeOrch->startOrchCompensation(),
+                "runtimeOrchestrator" => $runtimeOrch
             ];
 
             if ($compensateResult[$runtimeOrch->getOrchestratorNumber()] === false) {
@@ -209,14 +220,14 @@ class Restarter implements RestarterInterface
     {
         $restartResult = [];
 
-        foreach ($compensateResultArray as $orchestratorNumber => $compensateResult) {
+        foreach ($compensateResultArray as &$compensateResult) {
             if ($compensateResult["compensateResult"] === false) {
                 continue;
             }
 
+            /** @var OrchestratorInterface */
             $runtimeOrch = $compensateResult["runtimeOrchestrator"];
-
-            $runtimeOrch->startAllStep();
+            $runtimeOrch->reBuild();
 
             $restartResult[$runtimeOrch->getOrchestratorNumber()] = [
                 "restartResult" => $runtimeOrch->isSuccess()
