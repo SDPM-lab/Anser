@@ -11,7 +11,7 @@ interface RestarterInterface
      *
      * @param string|null $className
      * @param array|string $serverName
-     * @param bool|null $isRestart If pass in true in this param, the restarter will restart the runtime orchestrator after compensation.
+     * @param bool|null $reBuild If pass in true in this param, the restarter will restart the runtime orchestrator after compensation.
      * Otherwise, The restarter will only run the compensation for this runtime orchestrator.
      * @param string|null $time
      * @return array
@@ -19,7 +19,7 @@ interface RestarterInterface
     public function reStartOrchestratorsByServer(
         string $className = null,
         $serverName = null,
-        ?bool $isRestart  = false,
+        ?bool $reBuild  = false,
         ?string $time = null
     ): array;
 
@@ -27,13 +27,13 @@ interface RestarterInterface
      * Re-start all same className runtime orchestrator in Redis no matter what the serverName is.
      *
      * @param string|null $className
-     * @param boolean|null $isRestart
+     * @param boolean|null $reBuild
      * @param string|null $time
      * @return array
      */
     public function reStartOrchestratorsByClass(
         string $className = null,
-        ?bool $isRestart  = false,
+        ?bool $reBuild  = false,
         ?string $time = null
     ): array;
 
