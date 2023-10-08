@@ -118,6 +118,15 @@ class NativeRedisHandlerTest extends CIUnitTestCase
         $this->assertEquals($runtimeOrch, $orchestrator);
     }
 
+    public function testGetOrchestratorNotFound()
+    {
+        $notExistOrchNum = TestOrchestratorForNative::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+
+        $this->expectException(RedisException::class);
+        $this->expectExceptionMessage("Redis 內找不到此編排器編號- {$notExistOrchNum} ，請重新輸入。");
+        $this->cache->getOrchestrator($notExistOrchNum);
+    }
+
     public function testGetOrchestrators()
     {
         $orchestrator = new TestOrchestratorForNative();
@@ -178,5 +187,21 @@ class NativeRedisHandlerTest extends CIUnitTestCase
             0,
             $this->cacheClient->sismember("serverNameList", getenv("serverName_1"))
         );
+    }
+
+    public function testClearOrchestratorNotFound()
+    {
+        $orchestrator = new TestOrchestratorForNative();
+        $orchestrator->build();
+
+        $this->cache->initOrchestrator($orchestrator);
+        $this->cacheClient->hdel(
+            getenv("serverName_1"),
+            $orchestrator->getOrchestratorNumber()
+        );
+
+        $this->expectException(RedisException::class);
+        $this->expectExceptionMessage("Redis 內找不到此編排器編號- {$orchestrator->getOrchestratorNumber()} ，請重新輸入。");
+        $this->cache->clearOrchestrator($orchestrator);
     }
 }

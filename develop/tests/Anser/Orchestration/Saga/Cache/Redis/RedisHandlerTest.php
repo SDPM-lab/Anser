@@ -7,7 +7,7 @@ use Predis\Client;
 use SDPMlab\Anser\Exception\RedisException;
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
-
+use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\config;
 class TestOrchestrator extends Orchestrator
 {
     protected function definition()
@@ -63,14 +63,24 @@ class RedisHandlerTest extends CIUnitTestCase
 
     protected function setUp(): void
     {
-        $this->cache        = CacheFactory::initCacheDriver('redis', 'tcp://127.0.0.1:6379');
+        $this->cache = CacheFactory::initCacheDriver(
+            CacheFactory::CACHE_DRIVER_PREDIS, 
+            new config(
+                host: "anser_redis",
+                port: 6379,
+                timeout: 0,
+                db: 1,
+                serverName: 'server_1'
+            )
+        );
 
-        $this->cacheClient            = new Client([
+        $this->cacheClient = new Client([
             'scheme'   => 'tcp',
-            'host'     => '127.0.0.1',
+            'host'     => 'anser_redis',
             'port'     => 6379,
             'timeout'  => 0,
         ]);
+        $this->cacheClient->select(1);
 
         putenv("serverName_1=server_1");
         putenv("serverName_2=server_2");
@@ -98,207 +108,146 @@ class RedisHandlerTest extends CIUnitTestCase
 
     public function testInitOrchestrator()
     {
-        $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+
+        $this->cache->initOrchestrator($orchestrator);
 
         // Check whether the serialized runtime orch is in serverName hashMap.
         $this->assertEquals(
-            $this->cache->serializeOrchestrator($this->testData_original["orchestrator"]),
+            $this->cache->serializeOrchestrator($orchestrator),
             $this->cacheClient->hget(
-                $this->testData_original["serverName"],
-                $this->testData_original["orchestratorNumber"]
+                getenv('serverName_1'),
+                $orchestrator->getOrchestratorNumber()
             )
         );
 
         // Check whether the serverName is in serverNameList set.
-        $this->assertEquals(1, $this->cacheClient->sismember("serverNameList", $this->testData_original["serverName"]));
+        $this->assertEquals(1, $this->cacheClient->sismember("serverNameList", getenv('serverName_1')));
 
         // Check the repeat orch number.
-        try {
-            $this->cache->initOrchestrator(
-                $this->testData_original["serverName"],
-                $this->testData_original["orchestratorNumber"],
-                $this->testData_original["orchestrator"]
-            );
-        } catch (\Exception $th) {
-            $this->assertInstanceOf(RedisException::class, $th);
-        }
+        $this->expectException(RedisException::class);
+        $this->expectExceptionMessage("此編排器編號- {$orchestrator->getOrchestratorNumber()} 已在 Redis 內被初始化，請重新輸入。");
+        $this->cache->initOrchestrator($orchestrator);
     }
 
     public function testSetOrchestrator()
     {
-        $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
 
-        $orchestrator = $this->testData_original["orchestrator"];
+        $this->cache->initOrchestrator($orchestrator);
 
         // Something change in runtime orch.
-        $orchestrator->setServerName($this->testData_original["serverName"]);
+        $orchestrator->setServerName(getenv("serverName_1"));
 
         $this->cache->setOrchestrator($orchestrator);
 
         $this->assertEquals(
             $this->cache->serializeOrchestrator($orchestrator),
-            $this->cacheClient->hget($this->testData_original["serverName"], $this->testData_original["orchestratorNumber"])
+            $this->cacheClient->hget(getenv("serverName_1"), $orchestrator->getOrchestratorNumber())
         );
     }
 
     public function testGetOrchestrator()
     {
-        $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+        
+        $this->cache->initOrchestrator($orchestrator);
 
         $runtimeOrch = $this->cache->getOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"]
+            $orchestrator->getOrchestratorNumber()
         );
 
-        $this->assertEquals($runtimeOrch, $this->testData_original["orchestrator"]);
+        $this->assertEquals($runtimeOrch, $orchestrator);
     }
 
-    public function testGetOrchestratorsByServerName()
+    
+    public function testGetOrchestratorNotFound()
     {
-        $cache_1 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $notExistOrchNum = TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
-        $newOrchNumberForCache_2 = TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
-
-        // Same orchestrator class but have different number.
-        $cache_2 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $newOrchNumberForCache_2,
-            $this->testData_original["orchestrator"]
-        );
-
-        $expected = [
-            $this->testData_original["orchestratorNumber"] =>
-            $this->cache->serializeOrchestrator($this->testData_original["orchestrator"]),
-            $newOrchNumberForCache_2 =>
-            $this->cache->serializeOrchestrator($this->testData_original["orchestrator"]),
-        ];
-
-        $actual = $cache_1->getOrchestratorsByServerName(
-            $this->testData_original["serverName"],
-            $this->testData_original["className"]
-        );
-
-        $this->assertEquals($expected, $actual);
+        $this->expectException(RedisException::class);
+        $this->expectExceptionMessage("Redis 內找不到此編排器編號- {$notExistOrchNum} ，請重新輸入。");
+        $this->cache->getOrchestrator($notExistOrchNum);
     }
 
-    public function testGetOrchestratorsByServerNameIsNull()
+    public function testGetOrchestrators()
     {
-        $cache_1 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+        
+        $this->cache->initOrchestrator($orchestrator);
 
-        $newOrchNumberForCache_2 = TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestrator::class, getenv("serverName_1"));
 
-        // Same orchestrator class but have different number.
-        $cache_2 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $newOrchNumberForCache_2,
-            $this->testData_original["orchestrator"]
-        );
-
-        $this->assertEquals(
-            null,
-            $cache_1->getOrchestratorsByServerName(
-                "serverNotFound",
-                $this->testData_original["className"]
-            )
-        );
-
-        $this->assertEquals(
-            [],
-            $cache_1->getOrchestratorsByServerName(
-                $this->testData_original["serverName"],
-                "classNotFound"
-            )
-        );
+        $this->assertEquals($runtimeOrch[$orchestrator->getOrchestratorNumber()], $orchestrator);
     }
 
     public function testGetOrchestratorsByClassName()
     {
-        $cache_1 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+        
+        $this->cache->initOrchestrator($orchestrator);
 
-        $newOrchNumberForCache_2 = TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestrator::class);
 
-        // Same orchestrator class but have different number.
-        $cache_2 = $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $newOrchNumberForCache_2,
-            $this->testData_original["orchestrator"]
-        );
-
-        $cache_3 = $this->cache->initOrchestrator(
-            $this->testData_server_diff["serverName"],
-            $this->testData_server_diff["orchestratorNumber"],
-            $this->testData_server_diff["orchestrator"]
-        );
-
-        $expected = [
-            $this->testData_original["serverName"] => [
-                $this->testData_original["orchestratorNumber"] =>
-                $this->cache->serializeOrchestrator($this->testData_original["orchestrator"]),
-                $newOrchNumberForCache_2 =>
-                $this->cache->serializeOrchestrator($this->testData_original["orchestrator"]),
-                
-            ],
-            $this->testData_server_diff["serverName"] => [
-                $this->testData_server_diff["orchestratorNumber"] =>
-                $this->cache->serializeOrchestrator($this->testData_server_diff["orchestrator"]),
-            ],
-        ];
-
-        $actual = $cache_1->getOrchestratorsByClassName(
-            $this->testData_original["className"]
-        );
-
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($runtimeOrch[$orchestrator->getOrchestratorNumber()], $orchestrator);
     }
 
+    public function testGetServersOrchestrator()
+    {
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+
+        $this->cache->initOrchestrator($orchestrator);
+
+        $runtimeOrch = $this->cache->getServersOrchestrator(TestOrchestrator::class);
+
+        $this->assertEquals(
+            $runtimeOrch[getenv("serverName_1")][$orchestrator->getOrchestratorNumber()], 
+            $orchestrator
+        );
+    }
+    
     public function testClearOrchestrator()
     {
-        $this->cache->initOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"],
-            $this->testData_original["orchestrator"]
-        );
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
 
-        $this->cache->clearOrchestrator(
-            $this->testData_original["serverName"],
-            $this->testData_original["orchestratorNumber"]
-        );
+        $this->cache->initOrchestrator($orchestrator);
+
+        $this->cache->clearOrchestrator($orchestrator);
 
         $this->assertEquals(
             0,
             $this->cacheClient->hget(
-                $this->testData_original["serverName"],
-                $this->testData_original["orchestratorNumber"]
+                getenv("serverName_1"),
+                $orchestrator->getOrchestratorNumber()
             )
         );
 
         $this->assertEquals(
             0,
-            $this->cacheClient->sismember("serverNameList", $this->testData_original["serverName"])
+            $this->cacheClient->sismember("serverNameList", getenv("serverName_1"))
         );
+    }
+
+    public function testClearOrchestratorNotFound()
+    {
+        $orchestrator = new TestOrchestrator();
+        $orchestrator->build();
+
+        $this->cache->initOrchestrator($orchestrator);
+        $this->cacheClient->hdel(
+            getenv("serverName_1"),
+            $orchestrator->getOrchestratorNumber()
+        );
+
+        $this->expectException(RedisException::class);
+        $this->expectExceptionMessage("Redis 內找不到此編排器編號- {$orchestrator->getOrchestratorNumber()} ，請重新輸入。");
+        $this->cache->clearOrchestrator($orchestrator);
     }
 }

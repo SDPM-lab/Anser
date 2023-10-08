@@ -131,7 +131,7 @@ class NativeRedisHandler extends BaseCacheHandler
      */
     public function getOrchestrator(string $orchestratorNumber = null): OrchestratorInterface
     {
-        if (is_null($this->client->hget($this->config->serverName, $orchestratorNumber))) {
+        if (!$this->client->hexists($this->config->serverName, $orchestratorNumber)) {
             throw RedisException::forCacheOrchestratorNumberNotFound($orchestratorNumber);
         }
 
@@ -202,7 +202,8 @@ class NativeRedisHandler extends BaseCacheHandler
     public function clearOrchestrator(OrchestratorInterface $runtimeOrchestrator): bool
     {
         $orchestratorNumber = $runtimeOrchestrator->getOrchestratorNumber();
-        if (is_null($this->client->hget($this->config->serverName, $orchestratorNumber))) {
+
+        if (!$this->client->hexists($this->config->serverName, $orchestratorNumber)) {
             throw RedisException::forCacheOrchestratorNumberNotFound($orchestratorNumber);
         }
 
