@@ -10,6 +10,7 @@ use App\Anser\Services\V2\OrderService;
 use Exception;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
+use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\Config;
 
 class CreateOrderOrchestrator extends Orchestrator
 {
@@ -100,9 +101,14 @@ class CreateOrderOrchestrator extends Orchestrator
         $this->product_amount = $product_amount;
         $this->product_key    = $product_key;
 
-        $cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+        $cache = CacheFactory::initCacheDriver('predis', new Config(
+            host: "anser_redis",
+            port: 6379,
+            db: 1,
+            serverName: 'Anser_Server_1'
+        ));
 
-        $this->setServerName("Anser_Server_1");
+        // $this->setServerName("Anser_Server_1");
 
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
