@@ -3,102 +3,57 @@
 namespace SDPMlab\Anser\Service;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Predis\Client;
+use SDPMlab\Anser\Orchestration\Saga\Cache\NativeRedis\NativeRedisHandler;
+use SDPMlab\Anser\Orchestration\Saga\Cache\NativeRedis\config as NativeRedisConfig;
 use SDPMlab\Anser\Exception\RedisException;
 use SDPMlab\Anser\Orchestration\Orchestrator;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
-use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\config;
-class TestOrchestrator extends Orchestrator
+
+class TestOrchestratorForNative extends Orchestrator
 {
     protected function definition()
     {
     }
 }
 
-class RedisHandlerTest extends CIUnitTestCase
+class NativeRedisHandlerTest extends CIUnitTestCase
 {
 
     /**
      * cacheInstance
      *
-     * @var SDPMlab\Anser\Orchestration\Saga\Cache\Redis\RedisHandler
+     * @var SDPMlab\Anser\Orchestration\Saga\Cache\NativeRedis\NativeRedisHandler
      */
     protected $cache;
 
     /**
-     * The cache client
+     * The cache client (native php redis)
      *
-     * @var Predis\Client;
+     * @var \Redis;
      */
-    protected \Predis\Client $cacheClient;
-
-    /**
-     * The original data is used at testing.
-     *
-     * @var array
-     */
-    protected array $testData_original;
-
-    /**
-     * The server name of data is different from original
-     *
-     * @var array
-     */
-    protected array $testData_server_diff;
-
-    /**
-     * The class name of data is different from original.
-     *
-     * @var array
-     */
-    protected array $testData_className_diff;
-
-
-    /**
-     * The class name and server name of data is different from original
-     *
-     * @var array
-     */
-    protected array $testData_server_className_diff;
+    protected \Redis $cacheClient;
 
     protected function setUp(): void
     {
-        $this->cache = CacheFactory::initCacheDriver(
-            CacheFactory::CACHE_DRIVER_PREDIS, 
-            new config(
+        $this->cache  = CacheFactory::initCacheDriver(
+            CacheFactory::CACHE_DRIVER_NATIVE_REDIS, 
+            new NativeRedisConfig(
                 host: "anser_redis",
                 port: 6379,
-                timeout: 0,
                 db: 1,
+                useDefaultConnection:true,
                 serverName: 'server_1'
-            )
-        );
+        ));
 
-        $this->cacheClient = new Client([
-            'scheme'   => 'tcp',
-            'host'     => 'anser_redis',
-            'port'     => 6379,
-            'timeout'  => 0,
-        ]);
+        $this->cacheClient = new \Redis();
+        $this->cacheClient->connect(
+            'anser_redis',
+            6379,
+            0
+        );
         $this->cacheClient->select(1);
 
         putenv("serverName_1=server_1");
-        putenv("serverName_2=server_2");
-
-        $this->testData_original = [
-            "orchestrator" => new TestOrchestrator(),
-            "serverName"   => getenv("serverName_1"),
-            "className"    => TestOrchestrator::class,
-            "orchestratorNumber" => TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s")
-        ];
-
-        $this->testData_server_diff = [
-            "orchestrator" => new TestOrchestrator(),
-            "serverName"   => getenv("serverName_2"),
-            "className"    => TestOrchestrator::class,
-            "orchestratorNumber" => TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s")
-        ];
-
     }
 
     protected function tearDown(): void
@@ -108,32 +63,32 @@ class RedisHandlerTest extends CIUnitTestCase
 
     public function testInitOrchestrator()
     {
-        $orchestrator = new TestOrchestrator();
-        $orchestrator->build();
+        $runTimeOrch = new TestOrchestratorForNative();
+        $runTimeOrch->build();
 
-        $this->cache->initOrchestrator($orchestrator);
+        $this->cache->initOrchestrator($runTimeOrch);
 
         // Check whether the serialized runtime orch is in serverName hashMap.
         $this->assertEquals(
-            $this->cache->serializeOrchestrator($orchestrator),
+            $this->cache->serializeOrchestrator($runTimeOrch),
             $this->cacheClient->hget(
-                getenv('serverName_1'),
-                $orchestrator->getOrchestratorNumber()
+                getenv("serverName_1"),
+                $runTimeOrch->getOrchestratorNumber()
             )
         );
 
         // Check whether the serverName is in serverNameList set.
-        $this->assertEquals(1, $this->cacheClient->sismember("serverNameList", getenv('serverName_1')));
+        $this->assertEquals(1, $this->cacheClient->sismember("serverNameList", getenv("serverName_1")));
 
-        // Check the repeat orch number.
+        // // Check the repeat orch number.
         $this->expectException(RedisException::class);
-        $this->expectExceptionMessage("此編排器編號- {$orchestrator->getOrchestratorNumber()} 已在 Redis 內被初始化，請重新輸入。");
-        $this->cache->initOrchestrator($orchestrator);
+        $this->expectExceptionMessage("此編排器編號- {$runTimeOrch->getOrchestratorNumber()} 已在 Redis 內被初始化，請重新輸入。");
+        $this->cache->initOrchestrator($runTimeOrch);
     }
 
     public function testSetOrchestrator()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
 
         $this->cache->initOrchestrator($orchestrator);
@@ -151,7 +106,7 @@ class RedisHandlerTest extends CIUnitTestCase
 
     public function testGetOrchestrator()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
         
         $this->cache->initOrchestrator($orchestrator);
@@ -163,10 +118,9 @@ class RedisHandlerTest extends CIUnitTestCase
         $this->assertEquals($runtimeOrch, $orchestrator);
     }
 
-    
     public function testGetOrchestratorNotFound()
     {
-        $notExistOrchNum = TestOrchestrator::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
+        $notExistOrchNum = TestOrchestratorForNative::class . '\\' . md5(json_encode(["foo" => "bar", "bar" => "baz"]) . uniqid("", true)) . '\\' . date("Y-m-d H:i:s");
 
         $this->expectException(RedisException::class);
         $this->expectExceptionMessage("Redis 內找不到此編排器編號- {$notExistOrchNum} ，請重新輸入。");
@@ -175,36 +129,36 @@ class RedisHandlerTest extends CIUnitTestCase
 
     public function testGetOrchestrators()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
         
         $this->cache->initOrchestrator($orchestrator);
 
-        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestrator::class, getenv("serverName_1"));
+        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestratorForNative::class, getenv("serverName_1"));
 
         $this->assertEquals($runtimeOrch[$orchestrator->getOrchestratorNumber()], $orchestrator);
     }
 
     public function testGetOrchestratorsByClassName()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
         
         $this->cache->initOrchestrator($orchestrator);
 
-        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestrator::class);
+        $runtimeOrch = $this->cache->getOrchestrators(TestOrchestratorForNative::class);
 
         $this->assertEquals($runtimeOrch[$orchestrator->getOrchestratorNumber()], $orchestrator);
     }
 
     public function testGetServersOrchestrator()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
 
         $this->cache->initOrchestrator($orchestrator);
 
-        $runtimeOrch = $this->cache->getServersOrchestrator(TestOrchestrator::class);
+        $runtimeOrch = $this->cache->getServersOrchestrator(TestOrchestratorForNative::class);
 
         $this->assertEquals(
             $runtimeOrch[getenv("serverName_1")][$orchestrator->getOrchestratorNumber()], 
@@ -214,7 +168,7 @@ class RedisHandlerTest extends CIUnitTestCase
     
     public function testClearOrchestrator()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
 
         $this->cache->initOrchestrator($orchestrator);
@@ -237,7 +191,7 @@ class RedisHandlerTest extends CIUnitTestCase
 
     public function testClearOrchestratorNotFound()
     {
-        $orchestrator = new TestOrchestrator();
+        $orchestrator = new TestOrchestratorForNative();
         $orchestrator->build();
 
         $this->cache->initOrchestrator($orchestrator);

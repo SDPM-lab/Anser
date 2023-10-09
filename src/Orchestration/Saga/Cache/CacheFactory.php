@@ -3,12 +3,14 @@
 namespace SDPMlab\Anser\Orchestration\Saga\Cache;
 
 use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\PRedisHandler;
+use SDPMlab\Anser\Orchestration\Saga\Cache\NativeRedis\NativeRedisHandler;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheHandlerInterface;
 use SDPMlab\Anser\Exception\RedisException;
 
 class CacheFactory
 {
     const CACHE_DRIVER_PREDIS = "predis";
+    const CACHE_DRIVER_NATIVE_REDIS = "nativeredis";
 
     /**
      * The mapping list of Cache Drivers instance.
@@ -16,7 +18,8 @@ class CacheFactory
      * @var array
      */
     private static $cacheMapping = [
-        "predis" => PRedisHandler::class,
+        "predis"      => PRedisHandler::class,
+        "nativeredis" => NativeRedisHandler::class
     ];
 
     /**

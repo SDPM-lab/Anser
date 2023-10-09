@@ -3410,16 +3410,16 @@
         },
         {
             "name": "zumba/json-serializer",
-            "version": "3.0.2",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zumba/json-serializer.git",
-                "reference": "421dcdd53d4b333303d984e9ebec557d3e37783b"
+                "reference": "93786164efd20b6e01d42b03d4f7c2e52c9cebd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zumba/json-serializer/zipball/421dcdd53d4b333303d984e9ebec557d3e37783b",
-                "reference": "421dcdd53d4b333303d984e9ebec557d3e37783b",
+                "url": "https://api.github.com/repos/zumba/json-serializer/zipball/93786164efd20b6e01d42b03d4f7c2e52c9cebd8",
+                "reference": "93786164efd20b6e01d42b03d4f7c2e52c9cebd8",
                 "shasum": ""
             },
             "require": {
@@ -3427,10 +3427,10 @@
                 "php": "^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": ">=6.0 <10.0"
+                "phpunit/phpunit": ">=6.0 <11.0"
             },
             "suggest": {
-                "jeremeamia/superclosure": "Allow to serialize PHP closures"
+                "opis/closure": "Allow to serialize PHP closures"
             },
             "type": "library",
             "autoload": {
@@ -3454,7 +3454,7 @@
                 }
             ],
             "description": "Serialize PHP variables, including objects, in JSON format. Support to unserialize it too.",
-            "homepage": "http://tech.zumba.com",
+            "homepage": "https://tech.zumba.com",
             "keywords": [
                 "json",
                 "serialize",
@@ -3462,9 +3462,9 @@
             ],
             "support": {
                 "issues": "https://github.com/zumba/json-serializer/issues",
-                "source": "https://github.com/zumba/json-serializer/tree/3.0.2"
+                "source": "https://github.com/zumba/json-serializer/tree/3.2.0"
             },
-            "time": "2022-12-07T14:14:45+00:00"
+            "time": "2023-09-25T19:48:23+00:00"
         }
     ],
     "packages-dev": [

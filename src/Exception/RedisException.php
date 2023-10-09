@@ -50,4 +50,9 @@ class RedisException extends AnserException
     {
         return new self("ClassName 尚未被設定，請傳入 className 參數。");
     }
+
+    public static function forRedisExtensionNotExist(): RedisException
+    {
+        return new self("未安裝 Redis 擴展，請檢查是否安裝。");
+    }
 }

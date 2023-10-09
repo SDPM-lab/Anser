@@ -10,6 +10,8 @@ use App\Anser\Services\V2\OrderService;
 use Exception;
 use SDPMlab\Anser\Orchestration\OrchestratorInterface;
 use SDPMlab\Anser\Orchestration\Saga\Cache\CacheFactory;
+use SDPMlab\Anser\Orchestration\Saga\Cache\Redis\Config;
+use SDPMlab\Anser\Orchestration\Saga\Cache\NativeRedis\Config as NativeRedisConfig;
 
 class CreateOrderOrchestrator extends Orchestrator
 {
@@ -83,6 +85,8 @@ class CreateOrderOrchestrator extends Orchestrator
      */
     public $payment_key = null;
 
+    protected bool $useBackup = true;
+
     public function __construct()
     {
         $this->productService = new ProductService();
@@ -100,9 +104,22 @@ class CreateOrderOrchestrator extends Orchestrator
         $this->product_amount = $product_amount;
         $this->product_key    = $product_key;
 
-        $cache = CacheFactory::initCacheDriver('redis', 'tcp://anser_redis:6379');
+        // Driver for predis
+        // $cache = CacheFactory::initCacheDriver(CacheFactory::CACHE_DRIVER_PREDIS, new Config(
+        //     host: "anser_redis",
+        //     port: 6379,
+        //     db: 1,
+        //     serverName: 'Anser_Server_1'
+        // ));
 
-        $this->setServerName("Anser_Server_1");
+        // Driver for phpredis
+        CacheFactory::initCacheDriver(CacheFactory::CACHE_DRIVER_NATIVE_REDIS, new NativeRedisConfig(
+            host: "anser_redis",
+            port: 6379,
+            db: 1,
+            useDefaultConnection:true,
+            serverName: 'Anser_Server_1'
+        ));
 
         // Step 1. Check the product inventory balance.
         $step1 = $this->setStep()->addAction(
@@ -123,6 +140,7 @@ class CreateOrderOrchestrator extends Orchestrator
             $user_key,
             $product_amount
         ) {
+            // exit;
             $product_data = $runtimeOrch->getStepAction("get_product_info")->getMeaningData();
             $total        = $product_data["price"] * $product_amount;
 
